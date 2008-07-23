@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<T3locallang>
+	<meta type="array">
+		<type>database</type>
+		<description>Language labels for database tables/fields belonging to extension 'templatedisplay'</description>
+	</meta>
+	<data type="array">
+		<languageKey index="default" type="array">
+			<label index="tx_templatedisplay_displays">Template-based Display</label>
+			<label index="tx_templatedisplay_displays.title">Title</label>
+			<label index="tx_templatedisplay_displays.description">Description</label>
+			<label index="tx_templatedisplay_displays.mappings">Mappings</label>
+		</languageKey>
+		<languageKey index="fr" type="array">
+			<label index="tx_templatedisplay_displays">Afficheur de données (modèle HTML)</label>
+			<label index="tx_templatedisplay_displays.title">Nom</label>
+			<label index="tx_templatedisplay_displays.description">Description</label>
+			<label index="tx_templatedisplay_displays.mappings">Corrélations</label>
+		</languageKey>
+	</data>
+</T3locallang>
