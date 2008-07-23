@@ -1,53 +1,65 @@
 <?php
 if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 
-$TCA['tx_templatedisplay_displays'] = array (
+$TCA['tx_templatedisplay_displays'] = array(
 	'ctrl' => $TCA['tx_templatedisplay_displays']['ctrl'],
-	'interface' => array (
+	'interface' => array(
 		'showRecordFieldList' => 'hidden,title,description,mappings'
 	),
 	'feInterface' => $TCA['tx_templatedisplay_displays']['feInterface'],
-	'columns' => array (
-		'hidden' => array (		
+	'columns' => array(
+		'hidden' => array(
 			'exclude' => 1,
 			'label'   => 'LLL:EXT:lang/locallang_general.xml:LGL.hidden',
-			'config'  => array (
+			'config'  => array(
 				'type'    => 'check',
 				'default' => '0'
 			)
 		),
-		'title' => array (		
-			'exclude' => 0,		
-			'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.title',		
-			'config' => array (
-				'type' => 'input',	
-				'size' => '30',	
+		'title' => array(
+			'exclude' => 0,
+			'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.title',
+			'config' => array(
+				'type' => 'input',
+				'size' => '30',
 				'eval' => 'required,trim',
 			)
 		),
-		'description' => array (		
-			'exclude' => 0,		
-			'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.description',		
-			'config' => array (
+		'description' => array(
+			'exclude' => 0,
+			'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.description',
+			'config' => array(
 				'type' => 'text',
-				'cols' => '40',	
+				'cols' => '40',
 				'rows' => '4',
 			)
 		),
-		'mappings' => array (		
-			'exclude' => 0,		
-			'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.mappings',		
-			'config' => array (
-				'type' => 'text',
-				'cols' => '30',	
-				'rows' => '5',
+		'template' => array(
+			'exclude' => 0,
+			'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.template',
+			'config' => array(
+				'type' => 'group',
+				'internal_type' => 'file',
+				'allowed' => 'htm,html,tmpl',
+				'max_size' => 1028,
+				'uploadfolder' => 'uploads/tx_templatedisplay',
+				'size' => 1,
+				'maxitems' => 1,
+			)
+		),
+		'mappings' => array(
+			'exclude' => 0,
+			'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.mappings',
+			'config' => array(
+				'type' => 'user',
+				'userFunc' => 'tx_templatedisplay_tceforms->mappingField',
 			)
 		),
 	),
-	'types' => array (
-		'0' => array('showitem' => 'hidden;;1;;1-1-1, title;;;;2-2-2, description;;;;3-3-3, mappings')
+	'types' => array(
+		'0' => array('showitem' => 'hidden;;1;;1-1-1, title;;;;2-2-2, description, template;;;;3-3-3, mappings')
 	),
-	'palettes' => array (
+	'palettes' => array(
 		'1' => array('showitem' => '')
 	)
 );

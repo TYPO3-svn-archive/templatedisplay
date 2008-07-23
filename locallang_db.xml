@@ -10,12 +10,14 @@
 			<label index="tx_templatedisplay_displays.title">Title</label>
 			<label index="tx_templatedisplay_displays.description">Description</label>
 			<label index="tx_templatedisplay_displays.mappings">Mappings</label>
+			<label index="tx_templatedisplay_displays.template">HTML Template</label>
 		</languageKey>
 		<languageKey index="fr" type="array">
 			<label index="tx_templatedisplay_displays">Afficheur de données (modèle HTML)</label>
 			<label index="tx_templatedisplay_displays.title">Nom</label>
 			<label index="tx_templatedisplay_displays.description">Description</label>
 			<label index="tx_templatedisplay_displays.mappings">Corrélations</label>
+			<label index="tx_templatedisplay_displays.template">Modèle HTML</label>
 		</languageKey>
 	</data>
 </T3locallang>
