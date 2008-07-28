@@ -56,14 +56,28 @@ class tx_templatedisplay_tceforms {
 			$row = $PA['row'];
 			// true when the user has defined a template.
 			if($row['template'] != ''){
+				# Retrieve the template string and init the path
 				$temporaryArray = explode('|', $row['template']);
 				$row['template'] = $temporaryArray[0];
-				$file = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
-				$marker['###TEMPLATE_CONTENT###'] = htmlspecialchars(file_get_contents($file));
+				$templateFile = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
+				$templateContent = htmlspecialchars(file_get_contents($templateFile));
+				$templateContent = ereg_replace('###([a-b].)###', 'coucou', $templateContent);
 				
-				$file = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
-				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($file), $marker);
-	
+				# Initialize some template variable
+				$marker['###TEMPLATE_CONTENT###'] = $templateContent;
+				$marker['###SELECT_ONE###'] = $this->getLL('tx_templatedisplay_displays.select_one');
+				$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
+				$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
+				$marker['###SHOW_XML###'] = $this->getLL('tx_templatedisplay_displays.show_xml');
+				$marker['###EDIT_XML###'] = $this->getLL('tx_templatedisplay_displays.edit_xml');
+				$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
+				$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
+				$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');
+				$marker['###INSERT_DEFAULT_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.insertDefaultConfiguration');
+				
+				# Parse the template and render it.
+				$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
+				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
 	        }
 			else{
 				$file = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templateMissing.html');
@@ -87,7 +101,7 @@ class tx_templatedisplay_tceforms {
 	 *
 	 * @param string key of label
 	 */
-	function getLanguage($key){
+	function getLL($key){
 		$langReference = 'LLL:EXT:templatedisplay/locallang_db.xml:';
 		return $GLOBALS['LANG']->sL($langReference . $key);
     }

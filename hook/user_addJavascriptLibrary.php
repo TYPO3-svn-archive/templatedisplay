@@ -33,12 +33,9 @@ function user_addJavascriptLibrary($parameters, $pObj) {
 	if(isset($parameters['title'])){
 		if($parameters['title'] == 'TYPO3 Edit Document'){
 			$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/templatedisplay.js');
+			$pObj->inDocStylesArray['templatedisplay'] = file_get_contents(t3lib_extMgm::extPath('templatedisplay').'resources/css/templatedisplay.css');
         }
     }
-}
-
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/hook/class.tx_templatedisplay_backendHeader.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/hook/class.tx_templatedisplay_backendHeader.php']);
 }
 
 ?>
