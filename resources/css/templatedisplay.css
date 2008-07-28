@@ -1,0 +1,34 @@
+#templatedisplay_box{
+	width:650px;
+}
+
+#templatedisplay_box label.templatedisplay_block{
+	display: block;
+}
+
+#templatedisplay_configuration{
+	height: 100px;
+}
+
+.templatedisplay_component{
+	margin-bottom: 20px;
+	width: 200px;
+}
+
+#templatedisplay_xmlBox *{
+	vertical-align: middle;
+}
+
+#templatedisplay_xml{
+	width:100%; 
+	height: 200px;
+}
+
+#templatedisplay_cellLeft{
+	width: 400px;
+	border-right: 1px dotted black;
+}
+
+#templatedisplay_cellLeft{
+	padding-left: 10px;
+}
