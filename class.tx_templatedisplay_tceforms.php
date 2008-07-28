@@ -47,10 +47,32 @@ class tx_templatedisplay_tceforms {
 	 */
 	public function mappingField($PA, $fobj) {
 		$formField = '';
-		$formField .= '<input type="hidden" name="'.$PA['itemFormElName'].'" value="Hello" />';
-//		$formField .= t3lib_div::view_array($PA);
-//		$formField .= t3lib_div::view_array($GLOBALS['TYPO3_CONF_VARS']);
+		
 		try {
+			$formField .= '<input type="hidden" name="'.$PA['itemFormElName'].'" value="Hello" />';
+//			$formField .= t3lib_div::view_array($PA);
+//			$formField .= t3lib_div::view_array($GLOBALS['TYPO3_CONF_VARS']);
+		
+			$row = $PA['row'];
+			// true when the user has defined a template.
+			if($row['template'] != ''){
+				$temporaryArray = explode('|', $row['template']);
+				$row['template'] = $temporaryArray[0];
+				$file = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
+				$marker['###TEMPLATE_CONTENT###'] = htmlspecialchars(file_get_contents($file));
+				
+				$file = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
+				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($file), $marker);
+	
+	        }
+			else{
+				$file = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templateMissing.html');
+				
+				$marker['###noTemplateFoundError1###'] = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError1');
+				$marker['###noTemplateFoundError2###'] = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError2');
+				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($file), $marker);
+	        }
+	        
 			$provider = $this->getRelatedProvider($PA['row']);
 		}
 		catch (Exception $e) {
@@ -59,6 +81,17 @@ class tx_templatedisplay_tceforms {
 		return $formField;
 	}
 
+
+	/**
+	 * Return the translated string according to the key
+	 *
+	 * @param string key of label
+	 */
+	function getLanguage($key){
+		$langReference = 'LLL:EXT:templatedisplay/locallang_db.xml:';
+		return $GLOBALS['LANG']->sL($langReference . $key);
+    }
+    
 	/**
      * This method returns the name of the table where the relations between
      * Data Providers and Controllers are saved

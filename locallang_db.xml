@@ -11,6 +11,8 @@
 			<label index="tx_templatedisplay_displays.description">Description</label>
 			<label index="tx_templatedisplay_displays.mappings">Mappings</label>
 			<label index="tx_templatedisplay_displays.template">HTML Template</label>
+			<label index="tx_templatedisplay_displays.noTemplateFoundError1">No template has been loaded. Please upload one.</label>
+			<label index="tx_templatedisplay_displays.noTemplateFoundError2">Example can be found somewhere...</label>
 		</languageKey>
 		<languageKey index="fr" type="array">
 			<label index="tx_templatedisplay_displays">Afficheur de données (modèle HTML)</label>
