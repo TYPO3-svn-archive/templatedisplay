@@ -1,0 +1,53 @@
+<div style="width:650px">
+	<table border="0">
+		<tbody>
+			<tr>
+				<td style="width: 400px; border-right: 1px dotted black"  valign="top">
+					<pre style="overflow:auto;">
+						###TEMPLATE_CONTENT###
+					</pre>
+				</td>
+				<td valign="top" style="padding-left: 10px;">
+					<label for="asdf" style="display: block">Fields</label>
+					<select id="asdf" style="margin-bottom: 20px; width: 200px">
+						<option value="">Select one</option>
+					</select>
+					<label for="asdf" style="display: block">Types</label>
+					<select id="asdf" style="margin-bottom: 20px; width: 200px">
+						<option value="">Select one</option>
+						<option value="text">Text</option>
+						<option value="image">Image</option>
+					</select>
+					<label for="asdf" style="display: block">Typoscript configuration</label>
+					<textarea style="width: 200px; height: 100px; margin-bottom: 20px; display: block">
+
+					</textarea>
+
+					<button>Insert default configuration</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<div>
+	<input type="checkbox" name="" value="1" id="templatedisplay_showXML" style="vertical-align: middle"/> 
+	<label for="templatedisplay_showXML" style="vertical-align: middle">Show XML</label>
+	<input type="checkbox" name="" value="1" id="templatedisplay_editXML" style="vertical-align: middle"/> 
+	<label for="templatedisplay_editXML" style="vertical-align: middle">Edit XML</label>
+	</div>
+	<textarea style="width:100%; height: 200px" disabled="disabled">
+<phparray>
+	<field1 type="array">
+		<marker>###FIELD.pages.title###</marker>
+		<field>pages.title</field>
+		<type>text</type>
+		<configuration></configuration>
+	</field1>
+	<field2 type="array">
+		<marker>###FIELD.tt_content.uid###</marker>
+		<field>tt_content.uid</field>
+		<type>text</type>
+		<configuration></configuration>
+	</field2>
+</phparray>
+	</textarea>
+</div>
