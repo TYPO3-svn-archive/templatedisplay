@@ -61,8 +61,12 @@ class tx_templatedisplay_tceforms {
 				$row['template'] = $temporaryArray[0];
 				$templateFile = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
 				$templateContent = htmlspecialchars(file_get_contents($templateFile));
-				$templateContent = ereg_replace('###([a-b].)###', 'coucou', $templateContent);
 				
+				$pattern = '/(#{3}FIELD[0-9a-zA-Z\.]+#{3})/m';
+				$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
+				$replacement = '<a href="#">$1</a><img src="'.$path.'error.png" alt="" style="position: relative; bottom: 10px; right: 20px"/>';
+				$templateContent = preg_replace($pattern, $replacement, $templateContent);
+                                
 				# Initialize some template variable
 				$marker['###TEMPLATE_CONTENT###'] = $templateContent;
 				$marker['###SELECT_ONE###'] = $this->getLL('tx_templatedisplay_displays.select_one');
