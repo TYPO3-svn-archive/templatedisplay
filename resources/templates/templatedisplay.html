@@ -1,49 +1,53 @@
-<div style="width:650px">
+<div id="templatedisplay_box">
 	<table border="0">
 		<tbody>
 			<tr>
-				<td style="width: 400px; border-right: 1px dotted black"  valign="top">
-					<pre style="overflow:auto;">
+				<td id="templatedisplay_cellLeft" valign="top">
+					<pre id="templatedisplay_templateBox">
 						###TEMPLATE_CONTENT###
 					</pre>
 				</td>
-				<td valign="top" style="padding-left: 10px;">
-					<label for="asdf" style="display: block">Fields</label>
-					<select id="asdf" style="margin-bottom: 20px; width: 200px">
-						<option value="">Select one</option>
-					</select>
-					<label for="asdf" style="display: block">Types</label>
-					<select id="asdf" style="margin-bottom: 20px; width: 200px">
-						<option value="">Select one</option>
-						<option value="text">Text</option>
-						<option value="image">Image</option>
-					</select>
-					<label for="asdf" style="display: block">Typoscript configuration</label>
-					<textarea style="width: 200px; height: 100px; margin-bottom: 20px; display: block">
+				<td id="templatedisplay_cellLeft" valign="top">
+					<div id="templatedisplay_fieldBox">
+						<label for="templatedisplay_fields" class="templatedisplay_block">###FIELDS###</label>
+						<select id="templatedisplay_fields" class="templatedisplay_component">
+							<option value="">###SELECT_ONE###</option>
+						</select>
+					</div>
+					<div id="templatedisplay_typeBox" class="templatedisplay_hidden">
+						<label for="templatedisplay_type" class="templatedisplay_block">###TYPES###</label>
+						<select id="templatedisplay_type" class="templatedisplay_component">
+							<option value="">###SELECT_ONE###</option>
+							<option value="text">###TEXT###</option>
+							<option value="image">###IMAGE###</option>
+						</select>
+					</div>
+					<div id="templatedisplay_configuationBox" class="templatedisplay_hidden">
+						<label for="templatedisplay_configuration" class="templatedisplay_block">###CONFIGURATION###</label>
+						<textarea id="templatedisplay_configuration" class="templatedisplay_component"></textarea>
+						<button>###INSERT_DEFAULT_CONFIGURATION###</button>
+					</div>
 
-					</textarea>
-
-					<button>Insert default configuration</button>
 				</td>
 			</tr>
 		</tbody>
 	</table>
-	<div>
-	<input type="checkbox" name="" value="1" id="templatedisplay_showXML" style="vertical-align: middle"/> 
-	<label for="templatedisplay_showXML" style="vertical-align: middle">Show XML</label>
-	<input type="checkbox" name="" value="1" id="templatedisplay_editXML" style="vertical-align: middle"/> 
-	<label for="templatedisplay_editXML" style="vertical-align: middle">Edit XML</label>
+	<div id="templatedisplay_xmlBox">
+		<input type="checkbox" name="" value="1" id="templatedisplay_showXML"/> 
+		<label for="templatedisplay_showXML">###SHOW_XML###</label>
+		<input type="checkbox" name="" value="1" id="templatedisplay_editXML"/> 
+		<label for="templatedisplay_editXML">###EDIT_XML###</label>
+		<textarea id="templatedisplay_xml" disabled="disabled"></textarea>
 	</div>
-	<textarea style="width:100%; height: 200px" disabled="disabled">
 <phparray>
 	<field1 type="array">
-		<marker>###FIELD.pages.title###</marker>
+		<marker>###FIELD.title###</marker>
 		<field>pages.title</field>
 		<type>text</type>
 		<configuration></configuration>
 	</field1>
 	<field2 type="array">
-		<marker>###FIELD.tt_content.uid###</marker>
+		<marker>###FIELD.uid###</marker>
 		<field>tt_content.uid</field>
 		<type>text</type>
 		<configuration></configuration>

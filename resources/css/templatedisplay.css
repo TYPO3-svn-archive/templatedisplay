@@ -1,3 +1,11 @@
+.templatedisplay_hidden{
+	display: none;
+}
+#templatedisplay_templateBox{
+	overflow: auto;
+	color: gray;
+}
+
 #templatedisplay_box{
 	width:650px;
 }
