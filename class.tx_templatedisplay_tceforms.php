@@ -64,10 +64,11 @@ class tx_templatedisplay_tceforms {
 					$row['template'] = $temporaryArray[0];
 					$templateFile = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
 					$templateContent = htmlspecialchars(file_get_contents($templateFile));
-
+					
+					# Wrap a fiew markers with a clickable href
 					$pattern = '/(#{3}FIELD[0-9a-zA-Z\.]+#{3})/m';
 					$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
-					$replacement = '<a href="#" onclick="return false">$1</a><img src="'.$path.'exclamation.png" alt="" style="position: relative; bottom: 10px; right: 20px"/>';
+					$replacement = '<a href="#" onclick="return false">$1</a><img src="'.$path.'empty.png" alt="" style="position: relative; bottom: 10px; right: 20px"/>';
 					$templateContent = preg_replace($pattern, $replacement, $templateContent);
 
 					# Initialize the select drop down which contains the fields
@@ -82,7 +83,8 @@ class tx_templatedisplay_tceforms {
 					$marker['###AVAILABLE_FIELDS###'] = $options;
 
 					# Initialize some template variable
-					$marker['###SUBMITTED_FIED###'] = $PA['itemFormElName'];
+					$marker['###STORED_FIELD_NAME###'] = $PA['itemFormElName'];
+					$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
 					$marker['###TEMPLATE_CONTENT###'] = $templateContent;
 					$marker['###INFOMODULE_PATH###'] = $path;
 					$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');

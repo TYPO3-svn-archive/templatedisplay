@@ -15,14 +15,14 @@
 							###AVAILABLE_FIELDS###
 						</select>
 					</div>
-					<div id="templatedisplay_typeBox" class="templatedisplay_hidde">
+					<div id="templatedisplay_typeBox" class="templatedisplay_hidden">
 						<label for="templatedisplay_type" class="templatedisplay_block">###TYPES###</label>
 						<select id="templatedisplay_type" class="templatedisplay_component">
 							<option value="text">###TEXT###</option>
 							<option value="image">###IMAGE###</option>
 						</select>
 					</div>
-					<div id="templatedisplay_configuationBox" class="templatedisplay_hidde">
+					<div id="templatedisplay_configuationBox" class="templatedisplay_hidden">
 						<label for="templatedisplay_configuration" class="templatedisplay_block">###CONFIGURATION###</label>
 						<textarea id="templatedisplay_configuration" class="templatedisplay_component"></textarea>
 						
@@ -41,9 +41,7 @@
 		<label for="templatedisplay_showJson">###SHOW_JSON###</label>
 		<input type="checkbox" name="" value="1" id="templatedisplay_editJson" class="templatedisplay_hidden"/> 
 		<label for="templatedisplay_editJson" id="templatedisplay_labelEditJson"  class="templatedisplay_hidden">###EDIT_JSON###</label>
-		<textarea id="templatedisplay_json" disabled="disabled" class="templatedisplay_hidde" name="###SUBMITTED_FIED###">
-
-		</textarea>
+		<textarea id="templatedisplay_json" class="templatedisplay_hidden" readonly="readonly" name="###STORED_FIELD_NAME###">###STORED_FIELD_VALUE###</textarea>
 	</div>
 </div>
 <script type="text/javascript">
