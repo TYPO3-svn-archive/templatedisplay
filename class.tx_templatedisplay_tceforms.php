@@ -64,11 +64,29 @@ class tx_templatedisplay_tceforms {
 				
 				$pattern = '/(#{3}FIELD[0-9a-zA-Z\.]+#{3})/m';
 				$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
-				$replacement = '<a href="#">$1</a><img src="'.$path.'error.png" alt="" style="position: relative; bottom: 10px; right: 20px"/>';
+				$replacement = '<a href="#" onclick="return false">$1</a><img src="'.$path.'exclamation.png" alt="" style="position: relative; bottom: 10px; right: 20px"/>';
 				$templateContent = preg_replace($pattern, $replacement, $templateContent);
-                                
+
+				# Initialize the select drop down which contains the fields
+				# Simulation. This is a typical array received by a consumer
+                $fieldsArray['pages']['label'] = 'Page';
+				$fieldsArray['pages']['fields']= array( 'title' => 'titre');
+                $fieldsArray['tt_content']['label'] = 'Page content';
+				$fieldsArray['tt_content']['fields']= array( 'uid' => 'uid', 'header' => 'en tête');
+				
+				$options = '';
+				foreach($fieldsArray as $keyTable => $fields){
+					$options .= '<optgroup label="'. $keyTable .'" class="c-divider">';
+					foreach($fields['fields'] as $keyField => $field){
+						$options .= '<option value="'.$keyTable.'.'.$keyField.'">'.$keyField.'</option>';
+                    }
+					$options .= '</optgroup>';
+                }
+				$marker['###AVAILABLE_FIELDS###'] = $options;
+			
 				# Initialize some template variable
 				$marker['###TEMPLATE_CONTENT###'] = $templateContent;
+				$marker['###INFOMODULE_PATH###'] = $path;
 				$marker['###SELECT_ONE###'] = $this->getLL('tx_templatedisplay_displays.select_one');
 				$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
 				$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
