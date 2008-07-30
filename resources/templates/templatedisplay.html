@@ -10,48 +10,42 @@
 				<td id="templatedisplay_cellLeft" valign="top">
 					<div id="templatedisplay_fieldBox">
 						<label for="templatedisplay_fields" class="templatedisplay_block">###FIELDS###</label>
-						<select id="templatedisplay_fields" class="templatedisplay_component">
-							<option value="">###SELECT_ONE###</option>
+						<select id="templatedisplay_fields" class="templatedisplay_component" disabled="disabled">
+							<option value=""></option>
+							###AVAILABLE_FIELDS###
 						</select>
 					</div>
-					<div id="templatedisplay_typeBox" class="templatedisplay_hidden">
+					<div id="templatedisplay_typeBox" class="templatedisplay_hidde">
 						<label for="templatedisplay_type" class="templatedisplay_block">###TYPES###</label>
 						<select id="templatedisplay_type" class="templatedisplay_component">
-							<option value="">###SELECT_ONE###</option>
 							<option value="text">###TEXT###</option>
 							<option value="image">###IMAGE###</option>
 						</select>
 					</div>
-					<div id="templatedisplay_configuationBox" class="templatedisplay_hidden">
+					<div id="templatedisplay_configuationBox" class="templatedisplay_hidde">
 						<label for="templatedisplay_configuration" class="templatedisplay_block">###CONFIGURATION###</label>
 						<textarea id="templatedisplay_configuration" class="templatedisplay_component"></textarea>
+						
+						<button id="templatedisplay_saveConfigurationBt" onclick="return false">###SAVE_FIELD_CONFIGURATION###</button>
+						<!--
 						<button>###INSERT_DEFAULT_CONFIGURATION###</button>
+						-->
 					</div>
 
 				</td>
 			</tr>
 		</tbody>
 	</table>
-	<div id="templatedisplay_xmlBox">
-		<input type="checkbox" name="" value="1" id="templatedisplay_showXML"/> 
-		<label for="templatedisplay_showXML">###SHOW_XML###</label>
-		<input type="checkbox" name="" value="1" id="templatedisplay_editXML"/> 
-		<label for="templatedisplay_editXML">###EDIT_XML###</label>
-		<textarea id="templatedisplay_xml" disabled="disabled"></textarea>
+	<div id="templatedisplay_jsonBox">
+		<input type="checkbox" name="" value="1" id="templatedisplay_showJson"/> 
+		<label for="templatedisplay_showJson">###SHOW_JSON###</label>
+		<input type="checkbox" name="" value="1" id="templatedisplay_editJson" class="templatedisplay_hidden"/> 
+		<label for="templatedisplay_editJson" id="templatedisplay_labelEditJson"  class="templatedisplay_hidden">###EDIT_JSON###</label>
+		<textarea id="templatedisplay_json" disabled="disabled" class="templatedisplay_hidde" name="###SUBMITTED_FIED###">
+
+		</textarea>
 	</div>
-<phparray>
-	<field1 type="array">
-		<marker>###FIELD.title###</marker>
-		<field>pages.title</field>
-		<type>text</type>
-		<configuration></configuration>
-	</field1>
-	<field2 type="array">
-		<marker>###FIELD.uid###</marker>
-		<field>tt_content.uid</field>
-		<type>text</type>
-		<configuration></configuration>
-	</field2>
-</phparray>
-	</textarea>
 </div>
+<script type="text/javascript">
+	var infomodule_path = '###INFOMODULE_PATH###';
+</script>

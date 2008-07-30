@@ -55,7 +55,6 @@ class tx_templatedisplay_tceforms {
 			$provider = $this->getRelatedProvider($PA['row']);
 			try {
 				$fieldsArray = $provider->getTablesAndFields();
-				$formField .= '<input type="hidden" name="'.$PA['itemFormElName'].'" value="Hello" />';
 
 				$row = $PA['row'];
 				// true when the user has defined a template.
@@ -72,14 +71,6 @@ class tx_templatedisplay_tceforms {
 					$templateContent = preg_replace($pattern, $replacement, $templateContent);
 
 					# Initialize the select drop down which contains the fields
-					# Simulation. This is a typical array received by a consumer
-/*
-					$fieldsArray['pages']['label'] = 'Page';
-					$fieldsArray['pages']['fields']= array( 'title' => 'titre');
-					$fieldsArray['tt_content']['label'] = 'Page content';
-					$fieldsArray['tt_content']['fields']= array( 'uid' => 'uid', 'header' => 'en tête');
-*/
-
 					$options = '';
 					foreach($fieldsArray as $keyTable => $fields){
 						$options .= '<optgroup label="'. $keyTable .'" class="c-divider">';
@@ -91,17 +82,17 @@ class tx_templatedisplay_tceforms {
 					$marker['###AVAILABLE_FIELDS###'] = $options;
 
 					# Initialize some template variable
+					$marker['###SUBMITTED_FIED###'] = $PA['itemFormElName'];
 					$marker['###TEMPLATE_CONTENT###'] = $templateContent;
 					$marker['###INFOMODULE_PATH###'] = $path;
-					$marker['###SELECT_ONE###'] = $this->getLL('tx_templatedisplay_displays.select_one');
 					$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
 					$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
-					$marker['###SHOW_XML###'] = $this->getLL('tx_templatedisplay_displays.show_xml');
-					$marker['###EDIT_XML###'] = $this->getLL('tx_templatedisplay_displays.edit_xml');
+					$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.show_json');
+					$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.edit_json');
 					$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
 					$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
 					$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');
-					$marker['###INSERT_DEFAULT_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.insertDefaultConfiguration');
+					$marker['###SAVE_FIELD_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.saveFieldConfiguration');
 
 					# Parse the template and render it.
 					$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
@@ -158,7 +149,7 @@ class tx_templatedisplay_tceforms {
 	protected function getRelatedProvider($row) {
 		// Get the tt_content record(s) the template display instance is related to
 		$mmTable = $this->getMMTableName();
-		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid_local', $mmTable, "uid_foreign = '".$row['uid']."'");
+		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid_local', $mmTable, "uid_foreign = '".$row['uid']."' AND tablenames = 'tx_templatedisplay_displays'");
 		$numRows = count($rows);
 
 		// The template display instance is not related yet

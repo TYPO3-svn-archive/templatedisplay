@@ -13,15 +13,15 @@
 			<label index="tx_templatedisplay_displays.template">HTML Template</label>
 			<label index="tx_templatedisplay_displays.noTemplateFoundError1">No template has been loaded. Please upload one.</label>
 			<label index="tx_templatedisplay_displays.noTemplateFoundError2">Example can be found somewhere...</label>
-			<label index="tx_templatedisplay_displays.select_one">Select one</label>
 			<label index="tx_templatedisplay_displays.text">Text</label>
 			<label index="tx_templatedisplay_displays.image">Image</label>
-			<label index="tx_templatedisplay_displays.show_xml">Show XML</label>
-			<label index="tx_templatedisplay_displays.edit_xml">Edit XML</label>
+			<label index="tx_templatedisplay_displays.show_json">Show JSON</label>
+			<label index="tx_templatedisplay_displays.edit_json">Edit JSON</label>
 			<label index="tx_templatedisplay_displays.fields">Fields</label>
 			<label index="tx_templatedisplay_displays.types">Types</label>
 			<label index="tx_templatedisplay_displays.configuration">Typoscript configuration</label>
 			<label index="tx_templatedisplay_displays.insertDefaultConfiguration">Insert default configuration</label>
+			<label index="tx_templatedisplay_displays.saveFieldConfiguration">Save field configuration</label>
 		</languageKey>
 		<languageKey index="fr" type="array">
 			<label index="tx_templatedisplay_displays">Afficheur de données (modèle HTML)</label>
