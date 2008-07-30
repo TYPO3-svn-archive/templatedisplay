@@ -20,7 +20,7 @@
  *
  *  This copyright notice MUST APPEAR in all copies of this script
  *
- * $Id:  $
+ * $Id: $
  ***************************************************************/
 
 /**
@@ -51,18 +51,23 @@ if (Prototype) {
 		},
 		
 		saveConfiguration: function(){
-			//var data = new Element('phparray')
-			var data = '[{"table": "pages", "field": "title", "type": "text", "configuration": ""},{"table": "tt_content", "field": "uid", "type": "text", "configuration": ""}]'.evalJSON(true);
+			var data;
+			if($('templatedisplay_json').value != ''){
+				data = $('templatedisplay_json').value.evalJSON(true);
+            }
+			else{
+				data = '[{"table": "pages", "field": "title", "type": "text", "configuration": ""},{"table": "tt_content", "field": "uid", "type": "text", "configuration": ""}]'.evalJSON(true);
+            }
 			
-			var found = false;
+			var found= false;
 			$(data).each(function(name, index){
 				console.log(name);
 				found = true;
 			});
 			
-			console.log(found)
+			//console.log(found)
 			
-			$('templatedisplay_json').update(data.toJSON());
+			$('templatedisplay_json').update(data.toJSONString(true));
 			
         },
 		
@@ -137,3 +142,5 @@ if (Prototype) {
 else{
 	alert('Problem loading templatedisplay library. Check if Prototype is loaded')
 }
+
+
