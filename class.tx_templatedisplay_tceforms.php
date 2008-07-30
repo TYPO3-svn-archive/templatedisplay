@@ -21,7 +21,7 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 *
-* $Id: $
+* $Id: class.tx_datadisplay_pi1.php 3938 2008-06-04 08:39:01Z fsuter $
 ***************************************************************/
 
 require_once(t3lib_extMgm::extPath('basecontroller', 'class.tx_basecontroller_div.php'));
