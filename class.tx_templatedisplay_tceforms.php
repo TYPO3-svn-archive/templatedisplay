@@ -47,69 +47,78 @@ class tx_templatedisplay_tceforms {
 	 */
 	public function mappingField($PA, $fobj) {
 		$formField = '';
-		
-		try {
-			$formField .= '<input type="hidden" name="'.$PA['itemFormElName'].'" value="Hello" />';
-//			$formField .= t3lib_div::view_array($PA);
-//			$formField .= t3lib_div::view_array($GLOBALS['TYPO3_CONF_VARS']);
-		
-			$row = $PA['row'];
-			// true when the user has defined a template.
-			if($row['template'] != ''){
-				# Retrieve the template string and init the path
-				$temporaryArray = explode('|', $row['template']);
-				$row['template'] = $temporaryArray[0];
-				$templateFile = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
-				$templateContent = htmlspecialchars(file_get_contents($templateFile));
-				
-				$pattern = '/(#{3}FIELD[0-9a-zA-Z\.]+#{3})/m';
-				$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
-				$replacement = '<a href="#" onclick="return false">$1</a><img src="'.$path.'exclamation.png" alt="" style="position: relative; bottom: 10px; right: 20px"/>';
-				$templateContent = preg_replace($pattern, $replacement, $templateContent);
+//		$formField .= t3lib_div::view_array($PA);
+//		$formField .= t3lib_div::view_array($GLOBALS['TYPO3_CONF_VARS']);
 
-				# Initialize the select drop down which contains the fields
-				# Simulation. This is a typical array received by a consumer
-                $fieldsArray['pages']['label'] = 'Page';
-				$fieldsArray['pages']['fields']= array( 'title' => 'titre');
-                $fieldsArray['tt_content']['label'] = 'Page content';
-				$fieldsArray['tt_content']['fields']= array( 'uid' => 'uid', 'header' => 'en tête');
-				
-				$options = '';
-				foreach($fieldsArray as $keyTable => $fields){
-					$options .= '<optgroup label="'. $keyTable .'" class="c-divider">';
-					foreach($fields['fields'] as $keyField => $field){
-						$options .= '<option value="'.$keyTable.'.'.$keyField.'">'.$keyField.'</option>';
-                    }
-					$options .= '</optgroup>';
-                }
-				$marker['###AVAILABLE_FIELDS###'] = $options;
-			
-				# Initialize some template variable
-				$marker['###TEMPLATE_CONTENT###'] = $templateContent;
-				$marker['###INFOMODULE_PATH###'] = $path;
-				$marker['###SELECT_ONE###'] = $this->getLL('tx_templatedisplay_displays.select_one');
-				$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
-				$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
-				$marker['###SHOW_XML###'] = $this->getLL('tx_templatedisplay_displays.show_xml');
-				$marker['###EDIT_XML###'] = $this->getLL('tx_templatedisplay_displays.edit_xml');
-				$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
-				$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
-				$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');
-				$marker['###INSERT_DEFAULT_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.insertDefaultConfiguration');
-				
-				# Parse the template and render it.
-				$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
-				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
-	        }
-			else{
-				$file = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templateMissing.html');
-				
-				$marker['###noTemplateFoundError1###'] = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError1');
-				$marker['###noTemplateFoundError2###'] = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError2');
-				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($file), $marker);
-	        }
-	        
+		try {
+			// Get the related (primary) provider
 			$provider = $this->getRelatedProvider($PA['row']);
+			try {
+				$fieldsArray = $provider->getTablesAndFields();
+				$formField .= '<input type="hidden" name="'.$PA['itemFormElName'].'" value="Hello" />';
+
+				$row = $PA['row'];
+				// true when the user has defined a template.
+				if($row['template'] != ''){
+					# Retrieve the template string and init the path
+					$temporaryArray = explode('|', $row['template']);
+					$row['template'] = $temporaryArray[0];
+					$templateFile = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
+					$templateContent = htmlspecialchars(file_get_contents($templateFile));
+
+					$pattern = '/(#{3}FIELD[0-9a-zA-Z\.]+#{3})/m';
+					$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
+					$replacement = '<a href="#" onclick="return false">$1</a><img src="'.$path.'exclamation.png" alt="" style="position: relative; bottom: 10px; right: 20px"/>';
+					$templateContent = preg_replace($pattern, $replacement, $templateContent);
+
+					# Initialize the select drop down which contains the fields
+					# Simulation. This is a typical array received by a consumer
+/*
+					$fieldsArray['pages']['label'] = 'Page';
+					$fieldsArray['pages']['fields']= array( 'title' => 'titre');
+					$fieldsArray['tt_content']['label'] = 'Page content';
+					$fieldsArray['tt_content']['fields']= array( 'uid' => 'uid', 'header' => 'en tête');
+*/
+
+					$options = '';
+					foreach($fieldsArray as $keyTable => $fields){
+						$options .= '<optgroup label="'. $keyTable .'" class="c-divider">';
+						foreach($fields['fields'] as $keyField => $field){
+							$options .= '<option value="'.$keyTable.'.'.$keyField.'">'.$keyField.'</option>';
+						}
+						$options .= '</optgroup>';
+					}
+					$marker['###AVAILABLE_FIELDS###'] = $options;
+
+					# Initialize some template variable
+					$marker['###TEMPLATE_CONTENT###'] = $templateContent;
+					$marker['###INFOMODULE_PATH###'] = $path;
+					$marker['###SELECT_ONE###'] = $this->getLL('tx_templatedisplay_displays.select_one');
+					$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
+					$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
+					$marker['###SHOW_XML###'] = $this->getLL('tx_templatedisplay_displays.show_xml');
+					$marker['###EDIT_XML###'] = $this->getLL('tx_templatedisplay_displays.edit_xml');
+					$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
+					$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
+					$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');
+					$marker['###INSERT_DEFAULT_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.insertDefaultConfiguration');
+
+					# Parse the template and render it.
+					$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
+					$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
+				}
+				else{
+					$file = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templateMissing.html');
+
+					$marker['###noTemplateFoundError1###'] = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError1');
+					$marker['###noTemplateFoundError2###'] = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError2');
+					$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($file), $marker);
+				}
+            }
+			catch (Exception $e) {
+				$formField .= tx_basecontroller_div::wrapMessage($e->getMessage());
+			}
+
 		}
 		catch (Exception $e) {
 			$formField .= tx_basecontroller_div::wrapMessage($e->getMessage());
@@ -127,7 +136,7 @@ class tx_templatedisplay_tceforms {
 		$langReference = 'LLL:EXT:templatedisplay/locallang_db.xml:';
 		return $GLOBALS['LANG']->sL($langReference . $key);
     }
-    
+
 	/**
      * This method returns the name of the table where the relations between
      * Data Providers and Controllers are saved
