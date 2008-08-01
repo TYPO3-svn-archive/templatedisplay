@@ -1,6 +1,5 @@
 /*
-    formatJson.js
-    2006-04-28
+    2006-04-28 first release
     2006-05-27 added prettyPrint argument
 	manual: http://www.matsblog.com/stories/2075888/
 	by Matthias.Platzer@knallgrau.at                        

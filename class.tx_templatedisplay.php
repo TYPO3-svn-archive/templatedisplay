@@ -176,6 +176,14 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	void
 	 */
 	public function startProcess() {
+		
+		/* CHANGE THIS
+		 * Transform the string from field mappings into an array.
+		 * This array can be considered as a datasource containing the mapping information btw a marker and a field.
+		 */
+		$datasource = json_decode($row['mappings'],true);	
+					
+					
 			// Get record where the details of the data display are stored
 		$tableTCA = $GLOBALS['TCA'][$this->table];
 		$whereClause = "uid = '".$this->uid."'";

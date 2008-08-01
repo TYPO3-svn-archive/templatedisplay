@@ -31,7 +31,7 @@
  * @param array $parameters
  * @param object $pObj (template object)
  */
-function user_addJavascriptLibrary($parameters, $pObj) {
+function user_addBackendLibrary($parameters, $pObj) {
 	if(isset($parameters['title'])){
 		if($parameters['title'] == 'TYPO3 Edit Document'){
 			$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/formatJson.js');

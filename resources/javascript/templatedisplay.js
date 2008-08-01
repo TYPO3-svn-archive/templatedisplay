@@ -32,6 +32,11 @@ var templatedisplay;
 
 if (Prototype) {
 	var Templatedisplay = Class.create({
+		
+		/**
+         * Stores the datasource
+         */
+		records: '',
 
 		/**
 		 * Registers event listener and executes on DOM ready
@@ -146,20 +151,26 @@ if (Prototype) {
 				table = content[0];
             }
 			
-			// TODO: handle the datasource as a property for performance purpose and avoiding n alert message....
-			// Get the datasource
-			try{
-				records = $('templatedisplay_json').value.evalJSON(true);
-            }
-			catch(error){
-				alert('JSON ransformation has failed!\n You should check the datasource \n' + error)
+			// True, when no JSON information is available -> put an empty icon
+			if($('templatedisplay_json').value == ''){
+				image.src = infomodule_path + 'exclamation.png';
 				return;
             }
 			
+			// Fetch the records and store them for performance
+			if(templatedisplay.records == ''){
+				try{
+					templatedisplay.records = $('templatedisplay_json').value.evalJSON(true);
+				}
+				catch(error){
+					alert('JSON ransformation has failed!\n You should check the datasource \n' + error)
+					return;
+				}
+            }
 			
 			// Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
 			var isFound = false;
-			$(records).each(function(record, index){
+			$(templatedisplay.records).each(function(record, index){
 				if(record.table == table && record.field == field){
 					isFound = true;
 				}
