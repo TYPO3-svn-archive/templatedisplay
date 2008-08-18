@@ -39,19 +39,28 @@ require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecont
  */
 class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
-	public $tsKey        = 'tx_templatedisplay';	// The key to find the TypoScript in "plugin."
+	public $tsKey = 'tx_templatedisplay';	// The key to find the TypoScript in "plugin."
 	protected $conf;
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
 	protected static $structure = array(); // Input standardised data structure
 	protected $result; // The result of the processing by the Data Consumer
-	protected static $currentIndex = 0;
 
 	protected $subTemplateCode = array();
 	protected $labelMarkers = array();
 	protected $fieldMarker = array();
 	protected $markers = array();
 
+	protected $datasource = array();
+	protected $configurations = array();
+	protected $cObjTypes = array();
+
+	/**
+	 *
+	 * @var tslib_cObj
+	 */
+	protected $localCObj;
+	
 	/**
 	 * This method is used to pass a TypoScript configuration (in array form) to the Data Consumer
 	 *
@@ -110,6 +119,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	void
 	 */
 	public function startProcess() {
+		
+		// Initializes local cObj
+		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
 
 		// Fetches mappings + template file
 		$whereClause = "uid = '".$this->uid."'";
@@ -130,13 +142,25 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
-		$datasources = json_decode($record[0]['mappings'],true);
+		$this->datasource = json_decode($record[0]['mappings'],true);
+
+		// Transforms the configuration string into an array
+		$parseObj = t3lib_div::makeInstance('t3lib_TSparser');
+		foreach ($this->datasource as &$data) {
+			if(trim($data['configuration']) != ''){
+				$parseObj->parse($data['configuration']);
+				$data['configuration'] = $parseObj->setup;
+			}
+			else{
+				$data['configuration'] = array();
+			}
+		}
 
 		$subTemplateContent = $this->getSubContent(self::$structure,$templateCode);
 
 		// Substitutes subpart
 		$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[self::$structure['name']], $subTemplateContent);
-		
+
 		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###
 		$pattern = '/#{3}(LLL:EXT:.+)#{3}/isU';
 		preg_match_all($pattern,$templateCode,$matches);
@@ -144,9 +168,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		if(isset($matches[1])){
 			foreach($matches[1] as $label){
 				$_labels['###' . $label . '###'] = $GLOBALS['LANG']->sL($label);
-            }
-        }
-		$this->labelMarkers = array_merge($this->labelMarkers[self::$structure['name']], $_labels); 
+			}
+		}
+
+		// Merges together 2 label arrays for performance reasons.
+		$this->labelMarkers = array_merge($this->labelMarkers[self::$structure['name']], $_labels);
 
 		// Substititutes label translation
 		$this->result = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers);
@@ -154,12 +180,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 
 	/**
-     * Recursive method. Gets the subpart template and substitutes content (label or field).
-     *
-     * @param array		$sdd
-     * @param string	$templateCode
-     * @return string	HTML code
-     */
+	 * Recursive method. Gets the subpart template and substitutes content (label or field).
+	 *
+	 * @param array		$sdd
+	 * @param string	$templateCode
+	 * @return string	HTML code
+	 */
 	private function getSubContent(&$sds, $templateCode){
 
 		// Defines marker array according to $sds['name'] which contains a table name.
@@ -174,7 +200,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		$templateContent = '';
 
-		// Initializes languge label and stores the lables for a possible further use.
+		// Initializes language label and stores the lables for a possible further use.
 		if (!isset($this->labelMarkers[$sds['name']])) {
 			$this->labelMarkers[$sds['name']] = array();
 
@@ -186,18 +212,27 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// Traverses the records...
 		foreach ($sds['records'] as $records) {
 			$_fieldMarkers = array();
-			
+
 			// ... and stores them in an array.
-			foreach ($records as $index => $values) {
-				if ($index != 'sds:subtables') {
-					$_fieldMarkers['###FIELD.'.$index.'###'] = $values;
+			foreach ($records as $field => $value) {
+				if ($field != 'sds:subtables') {
+					switch ($this->getCObjType($sds['name'],$field)) {
+						case 'text':
+							$configuration = $this->getConfiguration($sds['name'],$field);
+							$configuration['value'] = $value;
+							$_fieldMarkers['###FIELD.'.$field.'###'] = $this->localCObj->TEXT($configuration);
+							break;
+						case 'image':
+							break;
+					}
+
 				}
 			}
-			
+
 			// Merges "field" with "label" and substitutes content
 			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
 			$templateContent .= t3lib_parsehtml::substituteMarkerArray($this->subTemplateCode[$sds['name']], $_fieldMarkers);
-			
+
 			// If the records contains subtables, recursively calls getSubContent()
 			// Else, removes a possible unwanted part <!-- ###LOOP.unsed ### begin -->.+<!-- ###LOOP.unsed ### end -->
 			if (isset($records['sds:subtables'])) {
@@ -217,7 +252,45 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		return $templateContent;
 	}
-	
+
+	/**
+	 * This method returns a configuration array. Furthermore, it stores the array for later use.
+	 *
+	 * @return	mixed	TypoScript configuration array
+	 */
+	private function getCObjType($table,$field){
+		if(!isset($this->cObjTypes[$table.$field])){
+			foreach($this->datasource as $data){
+				if($data['table'] == $table && $data['field'] == $field){
+					$this->cObjTypes[$table.$field] = $data['type'];
+				}
+			}
+			if(!isset($this->cObjTypes[$table.$field])){
+				$this->cObjTypes[$table.$field] = 'text';
+			}
+		}
+		return $this->cObjTypes[$table.$field];
+	}
+
+	/**
+	 * This method returns a configuration array. Furthermore, it stores the array for later use.
+	 *
+	 * @return	mixed	TypoScript configuration array
+	 */
+	private function getConfiguration($table,$field){
+		if(!isset($this->configurations[$table.$field])){
+			foreach($this->datasource as $data){
+				if($data['table'] == $table && $data['field'] == $field){
+					$this->configurations[$table.$field] = $data['configuration'];
+				}
+			}
+			if(!isset($this->configurations[$table.$field])){
+				$this->configurations[$table.$field] = array();
+			}
+		}
+		return $this->configurations[$table.$field];
+	}
+
 	/**
 	 * This method returns the result of the work done by the Data Consumer (FE output or whatever else)
 	 *
