@@ -189,7 +189,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			
 			if (isset($records['sds:subtables'])) {
 				foreach ($records['sds:subtables'] as $subSds) {
-					$subTemplateContent = $this->processRecordset($subSds,$this->subTemplateCode[$sds['name']]);
+					$subTemplateContent = $this->getSubContent($subSds,$this->subTemplateCode[$sds['name']]);
 					$templateContent = t3lib_parsehtml::substituteSubpart($templateContent, $this->markers[$subSds['name']], $subTemplateContent);
 				}
 			}
