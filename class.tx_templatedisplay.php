@@ -47,6 +47,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected $result; // The result of the processing by the Data Consumer
 	protected static $currentIndex = 0;
 
+	protected $subTemplateCode = array();
+	protected $templateContent = array();
+	protected $labelMarkers = array();
+	protected $fieldMarker = array();
+	protected $markers = array();
+
 	/**
 	 * This method is used to pass a TypoScript configuration (in array form) to the Data Consumer
 	 *
@@ -105,7 +111,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	void
 	 */
 	public function startProcess() {
-		
+
 		// Fetches mappings + template file
 		$whereClause = "uid = '".$this->uid."'";
 		$whereClause .= $GLOBALS['TSFE']->sys_page->enableFields($this->table, $GLOBALS['TSFE']->showHiddenRecords);
@@ -122,58 +128,92 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		if(is_file($templatePath)){
 			$templateCode = file_get_contents($templatePath);
 		}
-		
+
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
 		$datasources = json_decode($record[0]['mappings'],true);
-		
+
 		#$string = '<!-- ###LOOP.pages### begin -->';
 		#$pattern = '/LOOP\.([^#]+)### begin/i';
 		#preg_match_all($pattern,$templateCode,$matches);
-		
-		$marker = '###LOOP.' . self::$structure['name'] . '###';
-		$subTemplate = t3lib_parsehtml::getSubpart($templateCode, $marker);
-//		print_r(self::$structure['header']);
 
-		$langMarkerArray = array();
-		foreach (self::$structure['header'] as $index => $labelArray) {
-			$langMarkerArray['###LABEL.' . $index . '###'] = $labelArray['label'];
+
+		$subTemplateContent = $this->getSubContent(self::$structure,$templateCode);
+
+		// Search / replace label translation in the main section
+		$templateContent = t3lib_parsehtml::substituteMarkerArray($templateCode, $this->labelMarkers[self::$structure['name']]);
+
+		// Substitute subpart
+		$this->result = t3lib_parsehtml::substituteSubpart($templateContent, $this->markers[self::$structure['name']], $subTemplateContent);
+	}
+
+
+	/**
+     * Recursive method. Get the subpart template and substitute content (label or field).
+     *
+     * @param array		$sdd
+     * @param string	$templateCode
+     * @return string	HTML code
+     */
+	private function getSubContent(&$sds, $templateCode){
+
+		if (!isset($this->markers[$sds['name']])) {
+			$this->markers[$sds['name']] = '###LOOP.' . $sds['name'] . '###';
 		}
 
-		$subTemplateContent = '';
-		foreach (self::$structure['records'] as $records) {
-			$_markerArray = array();
-			if (is_array($records)) {
-				foreach ($records as $index => $record) {
-					if ($index != 'sds:subtables') {
-						$_markerArray['###FIELD.'.$index.'###'] = $record;
-					}
-				}
-				// Merge field content with label translation
-				$_markerArray = array_merge($_markerArray, $langMarkerArray);
-				$subTemplateContent .= t3lib_parsehtml::substituteMarkerArray($subTemplate, $_markerArray);
+		if (!isset($this->subTemplateCode[$sds['name']])) {
+			$this->subTemplateCode[$sds['name']] = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
+		}
+
+		$templateContent = '';
+
+		if (!isset($this->labelMarkers[$sds['name']])) {
+			$this->labelMarkers[$sds['name']] = array();
+
+			foreach ($sds['header'] as $index => $labelArray) {
+				$this->labelMarkers[$sds['name']]['###LABEL.' . $index . '###'] = $labelArray['label'];
 			}
 		}
 
-		// Search / replace label translation
-		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $langMarkerArray);
+		foreach ($sds['records'] as $records) {
+			$_fieldMarkers = array();
+			foreach ($records as $index => $values) {
+				if ($index != 'sds:subtables') {
+					$_fieldMarkers['###FIELD.'.$index.'###'] = $values;
+				}
+			}
+			
+			// Merge field content with label translation
+			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
+			$templateContent .= t3lib_parsehtml::substituteMarkerArray($this->subTemplateCode[$sds['name']], $_fieldMarkers);
+			
+			if (isset($records['sds:subtables'])) {
+				foreach ($records['sds:subtables'] as $subSds) {
+					$subTemplateContent = $this->processRecordset($subSds,$this->subTemplateCode[$sds['name']]);
+					$templateContent = t3lib_parsehtml::substituteSubpart($templateContent, $this->markers[$subSds['name']], $subTemplateContent);
+				}
+			}
+			else{
+				$pattern = '/<!-- *###LOOP\.[^#]+### *begin *-->.+<!-- *###LOOP\.[^#]+### *end *-->/is';
+				# Debug code
+				#preg_match_all($pattern,$templateContent,$matches);
+				#print_r($matches);
+				$templateContent = preg_replace($pattern, '', $templateContent);
+			}
+		}
 
-		// Substitute subpart
-		$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $marker, $subTemplateContent);
-		$this->result = $templateContent;
+		return $templateContent;
 	}
-
 	/**
 	 * This method returns the result of the work done by the Data Consumer (FE output or whatever else)
 	 *
 	 * @return	mixed	the result of the Data Consumer's work
 	 */
 	public function getResult() {
+
 		return $this->result;
 	}
 }
-
-
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/pi1/class.tx_templatedisplay_pi1.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/pi1/class.tx_templatedisplay_pi1.php']);
