@@ -48,7 +48,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected static $currentIndex = 0;
 
 	protected $subTemplateCode = array();
-	protected $templateContent = array();
 	protected $labelMarkers = array();
 	protected $fieldMarker = array();
 	protected $markers = array();
@@ -133,23 +132,29 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// This array contains the mapping information btw a marker and a field.
 		$datasources = json_decode($record[0]['mappings'],true);
 
-		#$string = '<!-- ###LOOP.pages### begin -->';
-		#$pattern = '/LOOP\.([^#]+)### begin/i';
-		#preg_match_all($pattern,$templateCode,$matches);
-
-
 		$subTemplateContent = $this->getSubContent(self::$structure,$templateCode);
 
-		// Search / replace label translation in the main section
-		$templateContent = t3lib_parsehtml::substituteMarkerArray($templateCode, $this->labelMarkers[self::$structure['name']]);
+		// Substitutes subpart
+		$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[self::$structure['name']], $subTemplateContent);
+		
+		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###
+		$pattern = '/#{3}(LLL:EXT:.+)#{3}/isU';
+		preg_match_all($pattern,$templateCode,$matches);
+		$_labels = array();
+		if(isset($matches[1])){
+			foreach($matches[1] as $label){
+				$_labels['###' . $label . '###'] = $GLOBALS['LANG']->sL($label);
+            }
+        }
+		$this->labelMarkers = array_merge($this->labelMarkers[self::$structure['name']], $_labels); 
 
-		// Substitute subpart
-		$this->result = t3lib_parsehtml::substituteSubpart($templateContent, $this->markers[self::$structure['name']], $subTemplateContent);
+		// Substititutes label translation
+		$this->result = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers);
 	}
 
 
 	/**
-     * Recursive method. Get the subpart template and substitute content (label or field).
+     * Recursive method. Gets the subpart template and substitutes content (label or field).
      *
      * @param array		$sdd
      * @param string	$templateCode
@@ -157,16 +162,19 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
      */
 	private function getSubContent(&$sds, $templateCode){
 
+		// Defines marker array according to $sds['name'] which contains a table name.
 		if (!isset($this->markers[$sds['name']])) {
 			$this->markers[$sds['name']] = '###LOOP.' . $sds['name'] . '###';
 		}
 
+		// Defines subTemplateCode (template HTML) array according to $sds['name'] which contains a table name.
 		if (!isset($this->subTemplateCode[$sds['name']])) {
 			$this->subTemplateCode[$sds['name']] = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
 		}
 
 		$templateContent = '';
 
+		// Initializes languge label and stores the lables for a possible further use.
 		if (!isset($this->labelMarkers[$sds['name']])) {
 			$this->labelMarkers[$sds['name']] = array();
 
@@ -175,18 +183,23 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 
+		// Traverses the records...
 		foreach ($sds['records'] as $records) {
 			$_fieldMarkers = array();
+			
+			// ... and stores them in an array.
 			foreach ($records as $index => $values) {
 				if ($index != 'sds:subtables') {
 					$_fieldMarkers['###FIELD.'.$index.'###'] = $values;
 				}
 			}
 			
-			// Merge field content with label translation
+			// Merges "field" with "label" and substitutes content
 			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
 			$templateContent .= t3lib_parsehtml::substituteMarkerArray($this->subTemplateCode[$sds['name']], $_fieldMarkers);
 			
+			// If the records contains subtables, recursively calls getSubContent()
+			// Else, removes a possible unwanted part <!-- ###LOOP.unsed ### begin -->.+<!-- ###LOOP.unsed ### end -->
 			if (isset($records['sds:subtables'])) {
 				foreach ($records['sds:subtables'] as $subSds) {
 					$subTemplateContent = $this->getSubContent($subSds,$this->subTemplateCode[$sds['name']]);
@@ -194,7 +207,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				}
 			}
 			else{
-				$pattern = '/<!-- *###LOOP\.[^#]+### *begin *-->.+<!-- *###LOOP\.[^#]+### *end *-->/is';
+				$pattern = '/<!-- *###LOOP\.[^#]+### *begin *-->.+<!-- *###LOOP\.[^#]+### *end *-->/isU';
 				# Debug code
 				#preg_match_all($pattern,$templateContent,$matches);
 				#print_r($matches);
@@ -204,6 +217,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		return $templateContent;
 	}
+	
 	/**
 	 * This method returns the result of the work done by the Data Consumer (FE output or whatever else)
 	 *
