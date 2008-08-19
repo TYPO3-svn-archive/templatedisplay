@@ -122,6 +122,18 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
+		
+		// Initializes LANG Object. The object does'not exist in the frontend
+		global $LANG;
+		if($LANG == null){
+
+			if (isset($GLOBALS['TSFE']->tmpl->setup['config.']['language'])) {
+				$languageCode = $GLOBALS['TSFE']->tmpl->setup['config.']['language'];
+			}
+
+			$LANG = t3lib_div::makeInstance('language');
+			$LANG->init('default');
+		}
 
 		// Fetches mappings + template file
 		$whereClause = "uid = '".$this->uid."'";
@@ -156,6 +168,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 
+		// Get the content from sub template, typically LOOP part
 		$subTemplateContent = $this->getSubContent(self::$structure,$templateCode);
 
 		// Substitutes subpart
@@ -167,7 +180,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$_labels = array();
 		if(isset($matches[1])){
 			foreach($matches[1] as $label){
-				$_labels['###' . $label . '###'] = $GLOBALS['LANG']->sL($label);
+				$_labels['###' . $label . '###'] = $LANG->sL($label);
 			}
 		}
 
@@ -186,7 +199,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @param string	$templateCode
 	 * @return string	HTML code
 	 */
-	private function getSubContent(&$sds, $templateCode){
+	protected function getSubContent(&$sds, $templateCode){
 
 		// Defines marker array according to $sds['name'] which contains a table name.
 		if (!isset($this->markers[$sds['name']])) {
@@ -218,12 +231,13 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				if ($field != 'sds:subtables') {
 					switch ($this->getCObjType($sds['name'],$field)) {
 						case 'text':
-							$configuration = $this->getConfiguration($sds['name'],$field);
-							$configuration['value'] = $value;
-							$_fieldMarkers['###FIELD.'.$field.'###'] = $this->localCObj->TEXT($configuration);
-							break;
+						$configuration = $this->getConfiguration($sds['name'],$field);
+						$configuration['value'] = $value;
+						$_fieldMarkers['###FIELD.'.$field.'###'] = $this->localCObj->TEXT($configuration);
+						break;
 						case 'image':
-							break;
+						// TODO
+						break;
 					}
 
 				}
@@ -258,7 +272,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 *
 	 * @return	mixed	TypoScript configuration array
 	 */
-	private function getCObjType($table,$field){
+	protected function getCObjType($table,$field){
 		if(!isset($this->cObjTypes[$table.$field])){
 			foreach($this->datasource as $data){
 				if($data['table'] == $table && $data['field'] == $field){
@@ -277,7 +291,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 *
 	 * @return	mixed	TypoScript configuration array
 	 */
-	private function getConfiguration($table,$field){
+	protected function getConfiguration($table,$field){
 		if(!isset($this->configurations[$table.$field])){
 			foreach($this->datasource as $data){
 				if($data['table'] == $table && $data['field'] == $field){
@@ -302,8 +316,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 }
 
-if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/pi1/class.tx_templatedisplay_pi1.php'])	{
-	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/pi1/class.tx_templatedisplay_pi1.php']);
+if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay.php']){
+	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay.php']);
 }
 
 ?>
