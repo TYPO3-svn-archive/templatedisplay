@@ -1,138 +1,68 @@
-/*
-    2006-04-28 first release
-    2006-05-27 added prettyPrint argument
-	manual: http://www.matsblog.com/stories/2075888/
-	by Matthias.Platzer@knallgrau.at                        
-*/
-(function () {
-    var INTEND = "\t";
-    var NEWLINE = "\n";
-    var pPr = false;
-    var intendLevel = 0;
-    var intend = function(a) {
-        if (!pPr) return a;
-        for (var l=0; l<intendLevel; l++) {
-            a[a.length] = INTEND;
-        }
-        return a;
-    };
+/* @autor Fabien Udriot <fabien.udriot@ecodev.ch> */
 
-    var newline = function(a) {
-        if (pPr) a[a.length] = NEWLINE;
-        return a;
-    };
-
-    var m = {
-            '\b': '\\b',
-            '\t': '\\t',
-            '\n': '\\n',
-            '\f': '\\f',
-            '\r': '\\r',
-            '"' : '\\"',
-            '\\': '\\\\'
-        },
-        s = {
-            array: function (x) {
-                var a = ['['], b, f, i, l = x.length, v;
-                a = newline(a);
-                intendLevel++;
-                for (i = 0; i < l; i += 1) {
-                    v = x[i];
-                    f = s[typeof v];
-                    if (f) {
-                        v = f(v);
-                        if (typeof v == 'string') {
-                            if (b) {
-                                a[a.length] = ',';
-                                a = newline(a);
-                            }
-                            a = intend(a);
-                            a[a.length] = v;
-                            b = true;
-                        }
-                    }
-                }
-                intendLevel--;
-                a = newline(a);
-                a = intend(a);
-                a[a.length] = ']';
-                return a.join('');
-            },
-            'boolean': function (x) {
-                return String(x);
-            },
-            'null': function (x) {
-                return "null";
-            },
-            number: function (x) {
-                return isFinite(x) ? String(x) : 'null';
-            },
-            object: function (x, formatedOutput) {
-                if (x) {
-                    if (x instanceof Array) {
-                        return s.array(x);
-                    }
-                    var a = ['{'], b, f, i, v;
-                    a = newline(a);
-                    intendLevel++;
-                    for (i in x) {
-                        v = x[i];
-                        f = s[typeof v];
-                        if (f) {
-                            v = f(v);
-                            if (typeof v == 'string') {
-                                if (b) {
-                                    a[a.length] = ',';
-                                    a = newline(a);
-                                }
-                                a = intend(a);
-                                a.push(s.string(i), ((pPr) ? ' : ' : ':'), v);
-                                b = true;
-                            }
-                        }
-                    }
-                    intendLevel--;
-                    a = newline(a);
-                    a = intend(a);
-                    a[a.length] = '}';
-                    return a.join('');
-                }
-                return 'null';
-            },
-            string: function (x) {
-                if (/["\\\x00-\x1f]/.test(x)) {
-                    x = x.replace(/([\x00-\x1f\\"])/g, function(a, b) {
-                        var c = m[b];
-                        if (c) {
-                            return c;
-                        }
-                        c = b.charCodeAt();
-                        return '\\u00' +
-                            Math.floor(c / 16).toString(16) +
-                            (c % 16).toString(16);
-                    });
-                }
-                return '"' + x + '"';
-            }
-        };
-
-    Object.prototype.toJSONString = function (prettyPrint) {
-        pPr = prettyPrint;
-        return s.object(this);
-    };
-
-    Array.prototype.toJSONString = function (prettyPrint) {
-        pPr = prettyPrint;
-        return s.array(this);
-    };
-})();
-
-String.prototype.parseJSON = function () {
-    try {
-        return !(/[^,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]/.test(
-                this.replace(/"(\\.|[^"\\])*"/g, ''))) &&
-            eval('(' + this + ')');
-    } catch (e) {
-        return false;
+// Debug data
+//data =
+//[
+//	{
+//		"table" : "pages",
+//		"field" : "title",
+//		"type" : "text",
+//		"configuration" : 'wr"ap" = <b>|</b>\ncase = upper'
+//	},
+//	{
+//		"table" : "pages",
+//		"field" : "title",
+//		"type" : "text",
+//		"configuration" : 'wrap = <b>|</b>\ncase = upper'
+//	}
+//]
+//var jsonString = formatJson(data);
+//console.log(jsonString)
+function formatJson(object, level){
+	if(typeof(level) == 'undefined'){
+		level = 0;
     }
-};
+	
+	// Defines somes variable
+    var INTEND = formatedString = "";
+    var NEWLINE = "\n";
+	for(var loop = 0; loop < level; loop++){
+		INTEND += "\t";
+    }
+
+	// Tries to get the length of the object
+	var length = object.length;
+
+	// True whenever object is an array ["value1","value2"]
+	// False means object is an object {value1","value2}
+	if(typeof(length) == 'number'){
+		var _array = new Array();
+		for (var index = 0; index < length; index ++) {
+			if (typeof(object[index]) == 'object') {
+				_array.push(formatJson(object[index],level + 1));
+			}
+		}
+		// Coution: formatedString exists in the clausure, means the variable still exists in the recursive function
+		formatedString = INTEND + '[' + NEWLINE;
+		formatedString += _array.join(',' + NEWLINE) + NEWLINE;
+		formatedString += INTEND + ']' + NEWLINE;
+    }
+	// Means this is an object
+	else{
+		formatedString += INTEND + '{' + NEWLINE;
+		// Traverses the object which contains the real information
+		var _array = new Array();
+		for (var key in object) {
+			_array.push(INTEND + "\t" + '"' + key + '" : "' + protectJsonString(object[key]) + '"');
+		}
+		formatedString += _array.join(',' + NEWLINE) + NEWLINE;
+		formatedString += INTEND + '}';
+    }
+
+	return formatedString;
+}
+
+function protectJsonString(string){
+	string = string.replace(/\n/g,"\\n");
+	return string.replace(/"/g,"\\\"");
+}
