@@ -72,7 +72,7 @@ if (Prototype) {
 					}
                 }
 				catch(error){
-					alert('JSON ransformation has failed!\n\n' + error)
+					alert('JSON transformation has failed!\n\n' + error)
 					return;
                 }
 				
@@ -81,8 +81,8 @@ if (Prototype) {
 				var content = $('templatedisplay_fields').value.split('.');
 				var type = $('templatedisplay_type').value;
 				var configuration = $('templatedisplay_configuration').value;
-				var newRecord = '{"table": "'+ content[0] +'", "field": "' + content[1] + '", "type": "' + type + '", "configuration": "' + configuration + '"}'
-				newRecord = newRecord.replace(/\n/g,'\\n').evalJSON(true);
+				var newRecord = '{"table": "'+ content[0] +'", "field": "' + content[1] + '", "type": "' + type + '", "configuration": "' + protectJsonString(configuration) + '"}'
+				newRecord = newRecord.evalJSON(true);
 				
 				// Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
 				$(records).each(function(record, index){
@@ -98,7 +98,8 @@ if (Prototype) {
 				records[offset] = newRecord;
 				
 				// Reinject the JSON in the textarea
-				$('templatedisplay_json').update(records.toJSONString(true));
+				//formatJson is a method from formatJson
+				$('templatedisplay_json').update(formatJson(records));
 				
 				// Change the accept icon
 				$$('img[src="' + infomodule_path + 'pencil.png"]')[0].src = infomodule_path + 'accept.png';
@@ -163,7 +164,7 @@ if (Prototype) {
 					templatedisplay.records = $('templatedisplay_json').value.evalJSON(true);
 				}
 				catch(error){
-					alert('JSON ransformation has failed!\n You should check the datasource \n' + error)
+					alert('JSON transformation has failed!\n You should check the datasource \n' + error)
 					return;
 				}
             }
