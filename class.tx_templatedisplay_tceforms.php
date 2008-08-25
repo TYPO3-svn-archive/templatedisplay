@@ -56,6 +56,8 @@ class tx_templatedisplay_tceforms {
 			try {
 				$fieldsArray = $provider->getTablesAndFields();
 
+				#$GLOBALS['TBE_TEMPLATE']->loadJavascriptLib('js/common.js');
+
 				$row = $PA['row'];
 				// true when the user has defined a template.
 				if($row['template'] != ''){
