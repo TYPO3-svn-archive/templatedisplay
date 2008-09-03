@@ -31,224 +31,250 @@
 var templatedisplay;
 
 if (Prototype) {
-	var Templatedisplay = Class.create({
+    var Templatedisplay = Class.create({
 		
-		/**
+        /**
          * Stores the datasource
          */
-		records: '',
+        records: '',
 
-		/**
+        /**
 		 * Registers event listener and executes on DOM ready
 		 */
-		initialize: function() {
+        initialize: function() {
 			
-			//Event.observe(document, 'dom:loaded', function(){
-			Event.observe(document, 'dom:loaded', function(){
-				$$('#templatedisplay_templateBox a').each(function(element){
-					templatedisplay.initializeImages(element);
-					Event.observe(element, 'click', templatedisplay.selectField);
-				});
-				Event.observe($('templatedisplay_showJson'),'click',templatedisplay.toggleJsonBoxVisibility);
-				Event.observe($('templatedisplay_editJson'),'click',templatedisplay.toggleJsonBoxReadonly);
-				Event.observe($('templatedisplay_saveConfigurationBt'),'click',templatedisplay.saveConfiguration);
-			});
+            //Event.observe(document, 'dom:loaded', function(){
+            Event.observe(document, 'dom:loaded', function(){
+                $$('#templatedisplay_templateBox a').each(function(element){
+                    templatedisplay.initializeImages(element);
+                    Event.observe(element, 'click', templatedisplay.selectField);
+                });
+                Event.observe($('templatedisplay_showJson'),'click',templatedisplay.toggleJsonBoxVisibility);
+                Event.observe($('templatedisplay_editJson'),'click',templatedisplay.toggleJsonBoxReadonly);
+                Event.observe($('templatedisplay_saveConfigurationBt'),'click',templatedisplay.saveConfiguration);
+            });
 			
-		},
+        },
 		
-		/**
+        /**
          * Fetch the form informations and save them into the datasource.
          */
-		saveConfiguration: function(){
+        saveConfiguration: function(){
 
-			// Make sure the select drop down contains something... True when auto detection has worked correctly or the user has set manually a field.
-			if($('templatedisplay_fields').value != ''){
-				var records = new Array();
+            // Make sure the select drop down contains something... True when auto detection has worked correctly or the user has set manually a field.
+            if($('templatedisplay_fields').value != ''){
+				// Cosmetic changes
+				$('loadingBox').removeClassName('templatedisplay_hidden');
+
+                var records = new Array();
 				
-				// Try parsing the existing datasource
-				try{
-					if($('templatedisplay_json').value != ''){
-						records = $('templatedisplay_json').value.evalJSON(true);
-					}
-                }
-				catch(error){
-					alert('JSON transformation has failed!\n\n' + error)
-					return;
-                }
-				
-				// Get the formular value
-				var offset = '';
-				var content = $('templatedisplay_fields').value.split('.');
-				var type = $('templatedisplay_type').value;
-				var configuration = $('templatedisplay_configuration').value;
-				var newRecord = '{"table": "'+ content[0] +'", "field": "' + content[1] + '", "type": "' + type + '", "configuration": "' + protectJsonString(configuration) + '"}'
-				newRecord = newRecord.evalJSON(true);
-				
-				// Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
-				$(records).each(function(record, index){
-					if(record.table == newRecord.table && record.field == newRecord.field){
-						offset = index;
+                // Try parsing the existing datasource
+                try{
+                    if($('templatedisplay_json').value != ''){
+                        records = $('templatedisplay_json').value.evalJSON(true);
                     }
-				});
-				
-				// True, when this is a new record => new position in the datasource
-				if(typeof(offset) == 'string'){
-					offset = records.length;
                 }
-				records[offset] = newRecord;
+                catch(error){
+                    alert('JSON transformation has failed!\n\n' + error)
+                    return;
+                }
 				
-				// Reinject the JSON in the textarea
-				//formatJson is a method from formatJson
-				$('templatedisplay_json').update(formatJson(records));
+                // Get the formular value
+                var offset = '';
+                var content = $('templatedisplay_fields').value.split('.');
+                var type = $('templatedisplay_type').value;
+                var configuration = $('templatedisplay_configuration').value;
+                var newRecord = '{"table": "'+ content[0] +'", "field": "' + content[1] + '", "type": "' + type + '", "configuration": "' + protectJsonString(configuration) + '"}'
+                newRecord = newRecord.evalJSON(true);
 				
-				// Change the accept icon
-				$$('img[src="' + infomodule_path + 'pencil.png"]')[0].src = infomodule_path + 'accept.png';
+                // Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
+                $(records).each(function(record, index){
+                    if(record.table == newRecord.table && record.field == newRecord.field){
+                        offset = index;
+                    }
+                });
+				
+                // True, when this is a new record => new position in the datasource
+                if(typeof(offset) == 'string'){
+                    offset = records.length;
+                }
+                records[offset] = newRecord;
+				
+                // Reinject the JSON in the textarea
+                //formatJson is a method from formatJson
+                $('templatedisplay_json').update(formatJson(records));
+				
+                // Sends the content in an Ajax request
+                new Ajax.Request("ajax.php", {
+                    method: "post",
+                    parameters: {
+                        "ajaxID": "templatedisplay::saveConfiguration",
+                        "uid" : tx_templatedisplay_uid,
+                        "mappings" : $('templatedisplay_json').value
+                    },
+                    onComplete: function(xhr) {
+                        console.log(xhr.responseText);
+                        if(xhr.responseText == 1){
+                            // Change the accept icon
+                            $$('img[src="' + infomodule_path + 'pencil.png"]')[0].src = infomodule_path + 'accept.png';
+							$('templatedisplay_typeBox').addClassName('templatedisplay_hidden');
+							$('templatedisplay_configuationBox').addClassName('templatedisplay_hidden');
+							$('templatedisplay_configuration').value = '';
+							$('templatedisplay_fields').value = '';
+							$('loadingBox').addClassName('templatedisplay_hidden');
+                        }
+						
+                    }.bind(this),
+                    onT3Error: function(xhr) {
+						alert(xhr);
+                    }.bind(this)
+                });
             }
 			
         },
 		
-		toggleJsonBoxVisibility: function(){
-			//templatedisplay_hidden
-			if($('templatedisplay_json').className == 'templatedisplay_hidden'){
-				$('templatedisplay_json').className = '';
-				$('templatedisplay_editJson').className = '';
-				$('templatedisplay_labelEditJson').className = '';
+        toggleJsonBoxVisibility: function(){
+            //templatedisplay_hidden
+            if($('templatedisplay_json').className == 'templatedisplay_hidden'){
+                $('templatedisplay_json').className = '';
+                $('templatedisplay_editJson').className = '';
+                $('templatedisplay_labelEditJson').className = '';
             }
-			else{
-				$('templatedisplay_json').className = 'templatedisplay_hidden';
-				$('templatedisplay_editJson').className = 'templatedisplay_hidden';
-				$('templatedisplay_labelEditJson').className = 'templatedisplay_hidden';
+            else{
+                $('templatedisplay_json').className = 'templatedisplay_hidden';
+                $('templatedisplay_editJson').className = 'templatedisplay_hidden';
+                $('templatedisplay_labelEditJson').className = 'templatedisplay_hidden';
             }
         },
 		
-		toggleJsonBoxReadonly: function(){
-			if($('templatedisplay_json').getAttribute('readonly') == 'readonly'){
-				$('templatedisplay_json').removeAttribute('readonly');
+        toggleJsonBoxReadonly: function(){
+            if($('templatedisplay_json').getAttribute('readonly') == 'readonly'){
+                $('templatedisplay_json').removeAttribute('readonly');
             }
-			else{
-				$('templatedisplay_json').setAttribute('readonly','readonly');
+            else{
+                $('templatedisplay_json').setAttribute('readonly','readonly');
             }
         },
 
-		/**
+        /**
          * Define the images above the clickable markers. Can be exclamation.png or accept.png
          */
-		initializeImages: function(element){
-			// Extract the field name
-			var field = element.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\.]+)#{3}/g,'$1');
+        initializeImages: function(element){
+            // Extract the field name
+            var field = element.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\.]+)#{3}/g,'$1');
 			
-			// Extract the table name's field
-			var table = '';
+            // Extract the table name's field
+            var table = '';
 			
-			// Get a reference
-			var image = $(element.nextSibling)
+            // Get a reference
+            var image = $(element.nextSibling)
 				
-			// Add a little mark in order to be able to split the content in the right place
-			image.src = '';
-			var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('src=""');
-			content = content[0].split('###LOOP.');
-			if(typeof(content[content.length - 1] == 'string')){
-				content = content[content.length - 1].split(/#{3}/);
-				table = content[0];
+            // Add a little mark in order to be able to split the content in the right place
+            image.src = '';
+            var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('src=""');
+            content = content[0].split('###LOOP.');
+            if(typeof(content[content.length - 1] == 'string')){
+                content = content[content.length - 1].split(/#{3}/);
+                table = content[0];
             }
 			
-			// True, when no JSON information is available -> put an empty icon
-			if($('templatedisplay_json').value == ''){
-				image.src = infomodule_path + 'exclamation.png';
-				return;
+            // True, when no JSON information is available -> put an empty icon
+            if($('templatedisplay_json').value == ''){
+                image.src = infomodule_path + 'exclamation.png';
+                return;
             }
 			
-			// Fetch the records and store them for performance
-			if(templatedisplay.records == ''){
-				try{
-					templatedisplay.records = $('templatedisplay_json').value.evalJSON(true);
-				}
-				catch(error){
-					alert('JSON transformation has failed!\n You should check the datasource \n' + error)
-					return;
-				}
+            // Fetch the records and store them for performance
+            if(templatedisplay.records == ''){
+                try{
+                    templatedisplay.records = $('templatedisplay_json').value.evalJSON(true);
+                }
+                catch(error){
+                    alert('JSON transformation has failed!\n You should check the datasource \n' + error)
+                    return;
+                }
             }
 			
-			// Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
-			var isFound = false;
-			$(templatedisplay.records).each(function(record, index){
-				if(record.table == table && record.field == field){
-					isFound = true;
-				}
-			});
+            // Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
+            var isFound = false;
+            $(templatedisplay.records).each(function(record, index){
+                if(record.table == table && record.field == field){
+                    isFound = true;
+                }
+            });
 			
-			// Put the right icon wheter a marker is defined or not
-			if(isFound){
-				image.src = infomodule_path + 'accept.png';
+            // Put the right icon wheter a marker is defined or not
+            if(isFound){
+                image.src = infomodule_path + 'accept.png';
             }
-			else{
-				image.src = infomodule_path + 'exclamation.png';
+            else{
+                image.src = infomodule_path + 'exclamation.png';
             }
         },
 		
-		/**
+        /**
          * Try to guess an association between a field and a marker
          */
-		selectField: function(){
+        selectField: function(){
 			
-			// Cosmetic: add an editing icon above the marker
-			$$('#templatedisplay_templateBox a').each(function(element){
-				templatedisplay.initializeImages(element);
-			});
-			$(this).next().src = infomodule_path + 'pencil.png';
+            // Cosmetic: add an editing icon above the marker
+            $$('#templatedisplay_templateBox a').each(function(element){
+                templatedisplay.initializeImages(element);
+            });
+            $(this).next().src = infomodule_path + 'pencil.png';
 			
-			// Extract the field name
-			var field = this.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\.]+)#{3}/g,'$1');
+            // Extract the field name
+            var field = this.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\.]+)#{3}/g,'$1');
 			
-			// Extract the table name's field
-			var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('templatedisplay/resources/images/pencil.png');
-			content = content[0].split('###LOOP.');
-			var table = '';
-			if(typeof(content[content.length - 1] == 'string')){
-				content = content[content.length - 1].split(/#{3}/);
-				table = content[0];
+            // Extract the table name's field
+            var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('templatedisplay/resources/images/pencil.png');
+            content = content[0].split('###LOOP.');
+            var table = '';
+            if(typeof(content[content.length - 1] == 'string')){
+                content = content[content.length - 1].split(/#{3}/);
+                table = content[0];
             }
 			
-			// Select the right entry in the select drop down
-			if(table != '' && field != ''){
-				$$('#templatedisplay_fields')[0].value = table + '.' + field;
+            // Select the right entry in the select drop down
+            if(table != '' && field != ''){
+                $$('#templatedisplay_fields')[0].value = table + '.' + field;
             }
-			else{
-				$$('#templatedisplay_fields')[0].value = '';
+            else{
+                $$('#templatedisplay_fields')[0].value = '';
             }
 			
-			// Show the other boxes that was hidden
-			$('templatedisplay_fields').disabled = "";
-			$('templatedisplay_typeBox').removeClassName('templatedisplay_hidden');
-			$('templatedisplay_configuationBox').removeClassName('templatedisplay_hidden');
+            // Show the other boxes that was hidden
+            $('templatedisplay_fields').disabled = "";
+            $('templatedisplay_typeBox').removeClassName('templatedisplay_hidden');
+            $('templatedisplay_configuationBox').removeClassName('templatedisplay_hidden');
 			
 			
-			// Inject the value in the field
-			var currentRecord = '';
-			records = $('templatedisplay_json').value.evalJSON(true);
-			$(records).each(function(record, index){
-				if(record.table == table && record.field == field){
-					currentRecord = record;
-				}
-			});
-			if(typeof(currentRecord) == 'object'){
-				$('templatedisplay_type').value = currentRecord.type;
-				$('templatedisplay_configuration').value = currentRecord.configuration;
+            // Inject the value in the field
+            var currentRecord = '';
+            records = $('templatedisplay_json').value.evalJSON(true);
+            $(records).each(function(record, index){
+                if(record.table == table && record.field == field){
+                    currentRecord = record;
+                }
+            });
+            if(typeof(currentRecord) == 'object'){
+                $('templatedisplay_type').value = currentRecord.type;
+                $('templatedisplay_configuration').value = currentRecord.configuration;
             }
-			else{
-				$('templatedisplay_type').value = 'text';
-				$('templatedisplay_configuration').value = '';
+            else{
+                $('templatedisplay_type').value = 'text';
+                $('templatedisplay_configuration').value = '';
             }
         }
 
-	});
+    });
 
-	// Initialize the object
-	templatedisplay = new Templatedisplay();
+    // Initialize the object
+    templatedisplay = new Templatedisplay();
 	
 }
 else{
-	alert('Problem loading templatedisplay library. Check if Prototype is loaded')
+    alert('Problem loading templatedisplay library. Check if Prototype is loaded')
 }
 
 

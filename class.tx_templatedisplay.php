@@ -268,7 +268,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-	 * This method returns a configuration array. Furthermore, it stores the array for later use.
+	 * This method returns a configuration array. Furthermore, it stores the array for later use. (more performance)
 	 *
 	 * @return	mixed	TypoScript configuration array
 	 */
@@ -287,7 +287,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-	 * This method returns a configuration array. Furthermore, it stores the array for later use.
+	 * This method returns a configuration array. Furthermore, it stores the array for later use. (more performance)
 	 *
 	 * @return	mixed	TypoScript configuration array
 	 */

@@ -41,30 +41,24 @@ class tx_templatedisplay_ajax {
 	 * @return	void	(with 4.2)
 	 */
 	public function saveConfiguration($params, $ajaxObj) {
-		print_r($params);
-		$theTable = t3lib_div::_GP('table');
-		print_r(&$ajaxObj);
-
-		return true;
-		$importer = t3lib_div::makeInstance('tx_externalimport_importer');
-		$messages = $importer->synchronizeData($theTable);
-
-// Pre-4.2 calling method
-
-		if (get_class($ajaxObj) == 'tx_templatedisplay_ajax') {
-			return $messages;
-		}
-
-// Post-4.2 calling method
-
-		else {
-			$ajaxObj->setContentFormat('json');
-			foreach ($messages as $code => $messageList) {
-				if (count($messageList) > 0) {
-					$ajaxObj->addContent($code, $messageList);
-				}
+		$uid = t3lib_div::_GP('uid');
+		$mappings = t3lib_div::_GP('mappings');
+		$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid','tx_templatedisplay_displays','uid = '. $uid);
+		
+		$result = 0;
+		
+		if (!empty($record)) {
+			$updateArray['mappings'] = $mappings;
+			$msg = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_templatedisplay_displays', 'uid = '. $uid, $updateArray);
+			
+			if ($msg == 1) {
+				$result = 1;
 			}
 		}
+
+		echo $result;
+		
+
 	}
 }
 ?>

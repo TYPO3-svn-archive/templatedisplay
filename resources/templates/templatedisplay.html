@@ -31,7 +31,10 @@
 						<button>###INSERT_DEFAULT_CONFIGURATION###</button>
 						-->
 					</div>
-						<button onclick="saveConfiguration('123','123'); return false;">###SAVE_FIELD_CONFIGURATION###</button>
+					<div id="loadingBox" class="templatedisplay_hidden">
+						<img src="###INFOMODULE_PATH###loading.gif" alt="loading" />
+					</div>
+
 
 				</td>
 			</tr>
@@ -47,4 +50,5 @@
 </div>
 <script type="text/javascript">
 	var infomodule_path = '###INFOMODULE_PATH###';
+	var tx_templatedisplay_uid = '###UID###';
 </script>

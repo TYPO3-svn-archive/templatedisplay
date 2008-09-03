@@ -89,6 +89,7 @@ class tx_templatedisplay_tceforms {
 					$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
 					$marker['###TEMPLATE_CONTENT###'] = $templateContent;
 					$marker['###INFOMODULE_PATH###'] = $path;
+					$marker['###UID###'] = $row['uid'];
 					$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
 					$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
 					$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.show_json');
