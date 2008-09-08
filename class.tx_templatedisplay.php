@@ -52,6 +52,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected $markers = array();
 
 	protected $datasource = array();
+	protected $fieldsInDatasource = array();
 	protected $configurations = array();
 	protected $cObjTypes = array();
 
@@ -114,11 +115,50 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
+	 * This method is used to get a data structure
+	 *
+	 * @return 	array	$structure: standardised data structure
+	 */
+	public function getDataStructure() {
+		return self::$structure;
+	}
+
+	/**
+	 * This method returns the result of the work done by the Data Consumer (FE output or whatever else)
+	 *
+	 * @return	mixed	the result of the Data Consumer's work
+	 */
+	public function getResult() {
+		return $this->result;
+	}
+
+	/**
+	 * This method sets the result. Useful for hooks.
+	 *
+	 * @return	void
+	 */
+	public function setResult($result) {
+
+		$this->result = $result;
+	}
+	
+	/**
 	 * This method starts whatever rendering process the Data Consumer is programmed to do
 	 *
 	 * @return	void
 	 */
 	public function startProcess() {
+		// Declares global objects
+		global $TYPO3_CONF_VARS;
+
+		/* Hook that enables to pre process the output) */
+		if (is_array($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PreProcessingProc'])) {
+			$_params = array(); // Associative array. In this case, $_params is empty.
+			foreach ($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PreProcessingProc'] as $_funcRef) {
+				t3lib_div::callUserFunction($_funcRef, $_params, $this);
+			}
+		}
+
 		
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
@@ -166,6 +206,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			else{
 				$data['configuration'] = array();
 			}
+			$this->fieldsInDatasource[$data['field']] = '';
 		}
 
 		// Get the content from sub template, typically LOOP part
@@ -189,6 +230,15 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		// Substititutes label translation
 		$this->result = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers);
+
+
+		/* Hook that enables to post process the output) */
+		if (is_array($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'])) {
+			$_params = array(); // Associative array. In this case, $_params is empty.
+			foreach ($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'] as $_funcRef) {
+				t3lib_div::callUserFunction($_funcRef, $_params, $this);
+			}
+		}
 	}
 
 
@@ -228,7 +278,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 			// ... and stores them in an array.
 			foreach ($records as $field => $value) {
-				if ($field != 'sds:subtables') {
+				// Important control. Makes sure the field has been mapped. 
+				// Furthermore, it avoids the field "sds:subtables" to enter in the test
+				if (isset($this->fieldsInDatasource[$field])) {
 					switch ($this->getCObjType($sds['name'],$field)) {
 						case 'text':
 						$configuration = $this->getConfiguration($sds['name'],$field);
@@ -304,16 +356,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 		return $this->configurations[$table.$field];
 	}
-
-	/**
-	 * This method returns the result of the work done by the Data Consumer (FE output or whatever else)
-	 *
-	 * @return	mixed	the result of the Data Consumer's work
-	 */
-	public function getResult() {
-
-		return $this->result;
-	}
+	
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay.php']){
