@@ -113,7 +113,6 @@ if (Prototype) {
                         "mappings" : $('templatedisplay_json').value
                     },
                     onComplete: function(xhr) {
-                        console.log(xhr.responseText);
                         if(xhr.responseText == 1){
                             // Change the accept icon
                             $$('img[src="' + infomodule_path + 'pencil.png"]')[0].src = infomodule_path + 'accept.png';
@@ -161,12 +160,12 @@ if (Prototype) {
          */
         initializeImages: function(element){
             // Extract the field name
-            var field = element.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\.]+)#{3}/g,'$1');
+            var field = element.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\_\-\.]+)#{3}/g,'$1');
 			
             // Extract the table name's field
             var table = '';
 			
-            // Get a reference
+            // Get a reference of the image
             var image = $(element.nextSibling)
 				
             // Add a little mark in order to be able to split the content in the right place
@@ -216,6 +215,8 @@ if (Prototype) {
          * Try to guess an association between a field and a marker
          */
         selectField: function(){
+			// Resets the local datasource
+			templatedisplay.records = '';
 			
             // Cosmetic: add an editing icon above the marker
             $$('#templatedisplay_templateBox a').each(function(element){
@@ -224,7 +225,7 @@ if (Prototype) {
             $(this).next().src = infomodule_path + 'pencil.png';
 			
             // Extract the field name
-            var field = this.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\.]+)#{3}/g,'$1');
+            var field = this.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\_\-\.]+)#{3}/g,'$1');
 			
             // Extract the table name's field
             var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('templatedisplay/resources/images/pencil.png');
@@ -248,19 +249,23 @@ if (Prototype) {
             $('templatedisplay_typeBox').removeClassName('templatedisplay_hidden');
             $('templatedisplay_configuationBox').removeClassName('templatedisplay_hidden');
 			
-			
             // Inject the value in the field
             var currentRecord = '';
             records = $('templatedisplay_json').value.evalJSON(true);
+
+			// Tries to find out which field has been clicked
             $(records).each(function(record, index){
                 if(record.table == table && record.field == field){
                     currentRecord = record;
                 }
             });
+			
+			// currentRecord is a reference to the ###FIELD.xxx###
             if(typeof(currentRecord) == 'object'){
                 $('templatedisplay_type').value = currentRecord.type;
                 $('templatedisplay_configuration').value = currentRecord.configuration;
             }
+			// means the field has not been found for some reasons
             else{
                 $('templatedisplay_type').value = 'text';
                 $('templatedisplay_configuration').value = '';
