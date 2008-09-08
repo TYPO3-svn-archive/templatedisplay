@@ -67,12 +67,16 @@ class tx_templatedisplay_tceforms {
 					$templateFile = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
 					$templateContent = htmlspecialchars(file_get_contents($templateFile));
 					
-					# Wrap a fiew markers with a clickable href
-					$pattern = '/(#{3}FIELD[0-9a-zA-Z\.]+#{3})/m';
+					# Wrap a few markers with a clickable href
+					$pattern = '/(#{3}FIELD[0-9a-zA-Z\_\-\.]+#{3})/m';
 					$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
-					$replacement = '<a href="#" onclick="return false">$1</a><img src="'.$path.'empty.png" alt="" style="position: relative; bottom: 10px; right: 20px"/>';
+					$replacement = '<a href="#" onclick="return false">$1</a><img src="'.$path.'empty.png" alt="" class="mapping_pictograms"/>';
 					$templateContent = preg_replace($pattern, $replacement, $templateContent);
 
+					$pattern = '/(&lt;!-- *#{3}LOOP[0-9a-zA-Z\_\-\.]+#{3} *[a-z]+ *--&gt;)/m';
+					$replacement = '<span style="background: #fff; color: #333">$1</span>';
+					$templateContent = preg_replace($pattern, $replacement, $templateContent);
+					
 					# Initialize the select drop down which contains the fields
 					$options = '';
 					foreach($fieldsArray as $keyTable => $fields){
