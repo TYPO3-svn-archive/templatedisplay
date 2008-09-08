@@ -41,5 +41,4 @@ function user_addBackendLibrary($parameters, $pObj) {
         }
     }
 }
-
 ?>
