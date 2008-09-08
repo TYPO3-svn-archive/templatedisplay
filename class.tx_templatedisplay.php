@@ -43,7 +43,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected $conf;
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
-	protected static $structure = array(); // Input standardised data structure
+	protected $structure = array(); // Input standardised data structure
 	protected $result; // The result of the processing by the Data Consumer
 
 	protected $subTemplateCode = array();
@@ -61,7 +61,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @var tslib_cObj
 	 */
 	protected $localCObj;
-	
+
 	/**
 	 * This method is used to pass a TypoScript configuration (in array form) to the Data Consumer
 	 *
@@ -99,7 +99,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @param	array	$data: Data for the Data Consumer
 	 * @return	void
 	 */
-	public function loadConsumerData($data) {
+	public function loadData($data) {
 		$this->table = $data['table'];
 		$this->uid = $data['uid'];
 	}
@@ -111,7 +111,17 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	void
 	 */
 	public function setDataStructure($structure) {
-		self::$structure = $structure;
+		$this->structure = $structure;
+	}
+
+	/**
+	 * This method is used to pass a filter to the Data Consumer
+	 *
+	 * @param 	array	$filter: Data Filter structure
+	 * @return	void
+	 */
+	public function setDataFilter($filter) {
+		$this->filter = $filter;
 	}
 
 	/**
@@ -120,7 +130,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return 	array	$structure: standardised data structure
 	 */
 	public function getDataStructure() {
-		return self::$structure;
+		return $this->structure;
 	}
 
 	/**
@@ -141,7 +151,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		$this->result = $result;
 	}
-	
+
 	/**
 	 * This method starts whatever rendering process the Data Consumer is programmed to do
 	 *
@@ -159,10 +169,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 
-		
+
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
-		
+
 		// Initializes LANG Object. The object does'not exist in the frontend
 		global $LANG;
 		if($LANG == null){
@@ -210,10 +220,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		// Get the content from sub template, typically LOOP part
-		$subTemplateContent = $this->getSubContent(self::$structure,$templateCode);
+		$subTemplateContent = $this->getSubContent($this->structure,$templateCode);
 
 		// Substitutes subpart
-		$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[self::$structure['name']], $subTemplateContent);
+		$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[$this->structure['name']], $subTemplateContent);
 
 		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###
 		$pattern = '/#{3}(LLL:EXT:.+)#{3}/isU';
@@ -226,7 +236,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		// Merges together 2 label arrays for performance reasons.
-		$this->labelMarkers = array_merge($this->labelMarkers[self::$structure['name']], $_labels);
+		$this->labelMarkers = array_merge($this->labelMarkers[$this->structure['name']], $_labels);
 
 		// Substititutes label translation
 		$this->result = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers);
@@ -278,7 +288,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 			// ... and stores them in an array.
 			foreach ($records as $field => $value) {
-				// Important control. Makes sure the field has been mapped. 
+				// Important control. Makes sure the field has been mapped.
 				// Furthermore, it avoids the field "sds:subtables" to enter in the test
 				if (isset($this->fieldsInDatasource[$field])) {
 					switch ($this->getCObjType($sds['name'],$field)) {
@@ -288,7 +298,35 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 						$_fieldMarkers['###FIELD.'.$field.'###'] = $this->localCObj->TEXT($configuration);
 						break;
 						case 'image':
-						// TODO
+						$configuration = $this->getConfiguration($sds['name'],$field);
+
+						$configuration['file'] = $value;
+						#						$configuration['file'] = 'fileadmin/media/dewitt/le-night-chronographe/tesà t2.sal-_ut.jpeg';
+						
+						// Sets the alt attribute if no altText is defined
+						if (!isset($configuration['altText'])) {
+							// Gets the file name
+							$configuration['altText'] = $this->getFileName($configuration['file']);
+							
+						}
+						
+						// Sets the title attribute if no title is defined
+						if (!isset($configuration['titleText'])) {
+							if ($configuration['altText'] != '') {
+								$configuration['titleText'] = $configuration['altText'];
+							}
+							else{
+								$configuration['titleText'] = $this->getFileName($configuration['file']);
+                            }
+						}
+
+						if (is_file($configuration['file'])) {
+							$_fieldMarkers['###FIELD.'.$field.'###'] = $this->localCObj->IMAGE($configuration);
+						}
+						else {
+							$_fieldMarkers['###FIELD.'.$field.'###'] = '<img src="" class="templateDisplay_imageNotFound" alt="Image not found"/>';
+						}
+
 						break;
 					}
 
@@ -319,6 +357,22 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		return $templateContent;
 	}
 
+	/**
+     * Extracts the filename of a path
+     *
+     * @param	string	$filename
+     * @return	string	the filename
+     */
+	protected function getFileName($filepath) {
+		$filename = '';
+		#$pattern = '/([^\/]+)\.(.+)$/';
+		#preg_match($pattern, $filepath, $matches);
+		$fileInfo = t3lib_div::split_fileref($filepath);
+		if (isset($fileInfo['filebody'])) {
+			$filename = $fileInfo['filebody'];
+		}
+		return $filename;
+	}
 	/**
 	 * This method returns a configuration array. Furthermore, it stores the array for later use. (more performance)
 	 *
@@ -356,7 +410,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 		return $this->configurations[$table.$field];
 	}
-	
+
+
+
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay.php']){
