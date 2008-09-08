@@ -44,10 +44,10 @@ class tx_infomodule_mappings {
      */
     function processDatamap_postProcessFieldArray($status, $table, $id, &$fieldArray, $pObj) {
         if($table == 'tx_templatedisplay_displays' && ($status == 'new' || $status == 'update')) {
-			
 			// Retrieves the uploaded file value.
-            $uploadedFile = $pObj->uploadedFileArray['tx_templatedisplay_displays'][1]['template'];
-			
+			$key = key($pObj->uploadedFileArray['tx_templatedisplay_displays']); // Defines the index of the index
+			$uploadedFile = $pObj->uploadedFileArray['tx_templatedisplay_displays'][$key]['template'];
+
 			// If a name exists, means the mappings has to be reset.
 			if($uploadedFile['name'] != ''){
 				$fieldArray['mappings'] = '';
