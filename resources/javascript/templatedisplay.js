@@ -114,8 +114,12 @@ if (Prototype) {
                     },
                     onComplete: function(xhr) {
                         if(xhr.responseText == 1){
-                            // Change the accept icon
-                            $$('img[src="' + infomodule_path + 'pencil.png"]')[0].src = infomodule_path + 'accept.png';
+                            // Change the accept icon and the type icon
+							var image1 = $$('img[src="' + infomodule_path + 'pencil.png"]')[0];
+							var image2 = image1.nextSibling;
+                            image1.src = infomodule_path + 'accept.png';
+                            image2.src = infomodule_path + type + '.png';
+                            
 							$('templatedisplay_typeBox').addClassName('templatedisplay_hidden');
 							$('templatedisplay_configuationBox').addClassName('templatedisplay_hidden');
 							$('templatedisplay_configuration').value = '';
@@ -165,7 +169,7 @@ if (Prototype) {
             // Extract the table name's field
             var table = '';
 			
-            // Get a reference of the image
+            // Get a reference of the first image. (accept.png || exclamation.png)
             var image = $(element.nextSibling)
 				
             // Add a little mark in order to be able to split the content in the right place
@@ -195,16 +199,17 @@ if (Prototype) {
             }
 			
             // Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
-            var isFound = false;
+            var type = '';
             $(templatedisplay.records).each(function(record, index){
                 if(record.table == table && record.field == field){
-                    isFound = true;
+                    type = record.type;
                 }
             });
-			
-            // Put the right icon wheter a marker is defined or not
-            if(isFound){
+            // Puts the right icon wheter a marker is defined or not
+            if(type != ''){
                 image.src = infomodule_path + 'accept.png';
+				// Puts an other icon according to the type of the link
+				$(image.nextSibling).src = infomodule_path + type + '.png';
             }
             else{
                 image.src = infomodule_path + 'exclamation.png';

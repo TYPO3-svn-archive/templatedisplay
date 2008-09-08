@@ -9,6 +9,11 @@
 	color: gray;
 }
 
+.templatedisplay_loop{
+	background: #fff;
+	color: #333;
+}
+
 #templatedisplay_box{
 	width:650px;
 }
@@ -44,8 +49,20 @@
 	padding-left: 10px;
 }
 
-.mapping_pictograms{
+
+.mapping_pictogrammBox{
 	position: relative;
-	bottom: 10px;
-	right: 20px;
+	line-height: 2;
+}
+
+.mapping_pictogramm1{
+	position: absolute;
+	bottom: 12px;
+	right: 5px;
+}
+
+.mapping_pictogramm2{
+	position: absolute;
+	bottom: 12px;
+	right: -10px;
 }

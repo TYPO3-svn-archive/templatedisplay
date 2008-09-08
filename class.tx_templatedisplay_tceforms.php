@@ -67,14 +67,22 @@ class tx_templatedisplay_tceforms {
 					$templateFile = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
 					$templateContent = htmlspecialchars(file_get_contents($templateFile));
 					
-					# Wrap a few markers with a clickable href
+					# Replaces tabulations by spaces. It takes less room on the screen
+					$templateContent = str_replace('	', '  ',$templateContent);
+
+					# Wrap FIELD markers with a clickable href
 					$pattern = '/(#{3}FIELD[0-9a-zA-Z\_\-\.]+#{3})/m';
 					$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
-					$replacement = '<a href="#" onclick="return false">$1</a><img src="'.$path.'empty.png" alt="" class="mapping_pictograms"/>';
+					$replacement = '<span class="mapping_pictogrammBox">';
+					$replacement .= '<a href="#" onclick="return false">$1</a>';
+					$replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm1"/>';
+					$replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm2"/>';
+					$replacement .= '</span>';
 					$templateContent = preg_replace($pattern, $replacement, $templateContent);
 
+					# Wrap LOOP markers with a different background
 					$pattern = '/(&lt;!-- *#{3}LOOP[0-9a-zA-Z\_\-\.]+#{3} *[a-z]+ *--&gt;)/m';
-					$replacement = '<span style="background: #fff; color: #333">$1</span>';
+					$replacement = '<span class="templatedisplay_loop">$1</span>';
 					$templateContent = preg_replace($pattern, $replacement, $templateContent);
 					
 					# Initialize the select drop down which contains the fields
@@ -96,6 +104,7 @@ class tx_templatedisplay_tceforms {
 					$marker['###UID###'] = $row['uid'];
 					$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
 					$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
+					$marker['###LINK_TO_DETAIL###'] = $this->getLL('tx_templatedisplay_displays.link_to_detail');
 					$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.show_json');
 					$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.edit_json');
 					$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
