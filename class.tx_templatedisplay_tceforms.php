@@ -105,8 +105,9 @@ class tx_templatedisplay_tceforms {
 					$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
 					$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
 					$marker['###LINK_TO_DETAIL###'] = $this->getLL('tx_templatedisplay_displays.link_to_detail');
-					$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.show_json');
-					$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.edit_json');
+					$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.showJson');
+					$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.editJson');
+					$marker['###EDIT_HTML###'] = $this->getLL('tx_templatedisplay_displays.editHtml');
 					$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
 					$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
 					$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');

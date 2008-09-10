@@ -151,7 +151,7 @@ if (Prototype) {
 				
                 // Reinject the JSON in the textarea
                 //formatJson is a method from formatJson
-                $('templatedisplay_json').update(formatJson(records));
+                $('templatedisplay_json').value = formatJson(records);
 				
                 // Sends the content in an Ajax request
                 new Ajax.Request("ajax.php", {
@@ -259,6 +259,7 @@ if (Prototype) {
                     type = record.type;
                 }
             });
+			
             // Puts the right icon wheter a marker is defined or not
             if(type != ''){
                 image.src = infomodule_path + 'accept.png';
