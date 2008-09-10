@@ -6,7 +6,7 @@
  *
  *  Copyright notice
  *
- *  (c) 2006-2008	Benjamin Mack <www.xnos.org>
+ *  (c) 2006-2008	Fabien Udriot <fabien.udriot@ecodev.ch>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 t3lib/ library provided by
@@ -34,7 +34,7 @@ if (Prototype) {
     var Templatedisplay = Class.create({
 		
         /**
-         * Stores the datasource
+         * Stores the datasource for performance
          */
         records: '',
 
@@ -43,28 +43,77 @@ if (Prototype) {
 		 */
         initialize: function() {
 			
-            //Event.observe(document, 'dom:loaded', function(){
             Event.observe(document, 'dom:loaded', function(){
+
+				// these are clickable link on marker ###FIELD.xxx###
                 $$('#templatedisplay_templateBox a').each(function(element){
                     templatedisplay.initializeImages(element);
                     Event.observe(element, 'click', templatedisplay.selectField);
                 });
+				
+				// this is a checkbox "show json" -> displays the textarea that contains the json
                 Event.observe($('templatedisplay_showJson'),'click',templatedisplay.toggleJsonBoxVisibility);
+				
+				// this is a checkbox "edit json"
                 Event.observe($('templatedisplay_editJson'),'click',templatedisplay.toggleJsonBoxReadonly);
+				
+				// this is a the save configuration button
                 Event.observe($('templatedisplay_saveConfigurationBt'),'click',templatedisplay.saveConfiguration);
+
+				// this is a drop down menu that contains the different type (text - image - link)
+                Event.observe($('templatedisplay_type'),'change',templatedisplay.showSnippetBox);
+				
+                // Attaches event onto the snippet icon
+                $$('.templatedisplay_snippetBox a').each(function(record, index){
+                    Event.observe($(record),'click',function(){
+                        var parent = $(this).parentNode;
+                        var type = parent.id.replace('templatedisplay_snippet','');
+                        var position = '';
+                        var thisRef = this;
+                        $$('#' + parent.id + ' a').each(function(linkRef, index){
+                            if (thisRef == linkRef) {
+                                position = index + 1;
+                            }
+                        });
+                        if ($('snippet' + type + position) != null) {
+                            var code = $('snippet' + type + position).innerHTML
+                            code = code.replace('\n<![CDATA[\n','');
+                            code = code.replace(']]>\n','');
+							$('templatedisplay_configuration').value = code;
+                        }
+						else {
+							alert('No snippet found!')
+                        }
+							
+                    });
+                });
             });
 			
         },
 		
         /**
-         * Fetch the form informations and save them into the datasource.
+         * Shows the right snippet box, according to the value
+         */
+        showSnippetBox: function(type){
+			if (typeof(type) == 'object') {
+				type = this.value;
+            }
+		
+            $$('.templatedisplay_snippetBox').each(function(record, index){
+                record.addClassName('templatedisplay_hidden');
+            });
+            $('templatedisplay_snippet' + type).removeClassName('templatedisplay_hidden');
+        },
+		
+        /**
+         * Fetches the form informations and save them into the datasource.
          */
         saveConfiguration: function(){
 
             // Make sure the select drop down contains something... True when auto detection has worked correctly or the user has set manually a field.
             if($('templatedisplay_fields').value != ''){
-				// Cosmetic changes
-				$('loadingBox').removeClassName('templatedisplay_hidden');
+                // Cosmetic changes
+                $('loadingBox').removeClassName('templatedisplay_hidden');
 
                 var records = new Array();
 				
@@ -115,21 +164,24 @@ if (Prototype) {
                     onComplete: function(xhr) {
                         if(xhr.responseText == 1){
                             // Change the accept icon and the type icon
-							var image1 = $$('img[src="' + infomodule_path + 'pencil.png"]')[0];
-							var image2 = image1.nextSibling;
+                            var image1 = $$('img[src="' + infomodule_path + 'pencil.png"]')[0];
+                            var image2 = image1.nextSibling;
                             image1.src = infomodule_path + 'accept.png';
+                            image1.title = 'Status: OK';
                             image2.src = infomodule_path + type + '.png';
+                            image2.title = 'type: ' + type;
                             
-							$('templatedisplay_typeBox').addClassName('templatedisplay_hidden');
-							$('templatedisplay_configuationBox').addClassName('templatedisplay_hidden');
-							$('templatedisplay_configuration').value = '';
-							$('templatedisplay_fields').value = '';
-							$('loadingBox').addClassName('templatedisplay_hidden');
+                            $('templatedisplay_typeBox').addClassName('templatedisplay_hidden');
+                            $('templatedisplay_configuationBox').addClassName('templatedisplay_hidden');
+                            $('templatedisplay_configuration').value = '';
+                            $('templatedisplay_fields').value = '';
+							$('templatedisplay_fields').disabled = "disabled";
+                            $('loadingBox').addClassName('templatedisplay_hidden');
                         }
 						
                     }.bind(this),
                     onT3Error: function(xhr) {
-						alert(xhr);
+                        alert(xhr);
                     }.bind(this)
                 });
             }
@@ -160,7 +212,8 @@ if (Prototype) {
         },
 
         /**
-         * Define the images above the clickable markers. Can be exclamation.png or accept.png
+         * Defines the images above the clickable markers. Can be exclamation.png or accept.png.
+         * And defines the image type at the right site (text.png - image.png - link.png)
          */
         initializeImages: function(element){
             // Extract the field name
@@ -184,6 +237,7 @@ if (Prototype) {
             // True, when no JSON information is available -> put an empty icon
             if($('templatedisplay_json').value == ''){
                 image.src = infomodule_path + 'exclamation.png';
+				image.title = 'Status: not matched'
                 return;
             }
 			
@@ -208,8 +262,10 @@ if (Prototype) {
             // Puts the right icon wheter a marker is defined or not
             if(type != ''){
                 image.src = infomodule_path + 'accept.png';
-				// Puts an other icon according to the type of the link
-				$(image.nextSibling).src = infomodule_path + type + '.png';
+				image.title = 'Status: OK'
+                // Puts an other icon according to the type of the link
+                $(image.nextSibling).src = infomodule_path + type + '.png';
+                $(image.nextSibling).title = 'type: ' + type;
             }
             else{
                 image.src = infomodule_path + 'exclamation.png';
@@ -217,17 +273,23 @@ if (Prototype) {
         },
 		
         /**
-         * Try to guess an association between a field and a marker
+         * Try to guess an association between a field and a marker. When a field is found, do a few things
+         * 
+         * 1) Sets the correct value for dropdown menu templatedisplay_type
+         * 2) Changes the icon above the marker
+         * 3) Shows the right snippetbox
          */
         selectField: function(){
-			// Resets the local datasource
-			templatedisplay.records = '';
+
+            // Resets the local datasource
+            templatedisplay.records = '';
 			
             // Cosmetic: add an editing icon above the marker
             $$('#templatedisplay_templateBox a').each(function(element){
                 templatedisplay.initializeImages(element);
             });
             $(this).next().src = infomodule_path + 'pencil.png';
+			$(this).next().title = 'Status: editing';
 			
             // Extract the field name
             var field = this.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\_\-\.]+)#{3}/g,'$1');
@@ -249,7 +311,7 @@ if (Prototype) {
                 $$('#templatedisplay_fields')[0].value = '';
             }
 			
-            // Show the other boxes that was hidden
+            // Show the other boxes that were previously hidden (configuration box - dropdown menu type etc...)
             $('templatedisplay_fields').disabled = "";
             $('templatedisplay_typeBox').removeClassName('templatedisplay_hidden');
             $('templatedisplay_configuationBox').removeClassName('templatedisplay_hidden');
@@ -258,19 +320,22 @@ if (Prototype) {
             var currentRecord = '';
             records = $('templatedisplay_json').value.evalJSON(true);
 
-			// Tries to find out which field has been clicked
+            // Tries to find out which field has been clicked
             $(records).each(function(record, index){
                 if(record.table == table && record.field == field){
                     currentRecord = record;
                 }
             });
 			
-			// currentRecord is a reference to the ###FIELD.xxx###
+            // currentRecord is a reference to the ###FIELD.xxx###
             if(typeof(currentRecord) == 'object'){
                 $('templatedisplay_type').value = currentRecord.type;
                 $('templatedisplay_configuration').value = currentRecord.configuration;
+				
+				// (Cosmetic) Displays the right snippet Box
+				templatedisplay.showSnippetBox(currentRecord.type);				
             }
-			// means the field has not been found for some reasons
+            // means the field has not been found for some reasons
             else{
                 $('templatedisplay_type').value = 'text';
                 $('templatedisplay_configuration').value = '';

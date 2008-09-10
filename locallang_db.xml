@@ -15,6 +15,7 @@
 			<label index="tx_templatedisplay_displays.noTemplateFoundError2">Example can be found somewhere...</label>
 			<label index="tx_templatedisplay_displays.text">Text</label>
 			<label index="tx_templatedisplay_displays.image">Image</label>
+			<label index="tx_templatedisplay_displays.link_to_detail">Link to detail</label>
 			<label index="tx_templatedisplay_displays.show_json">Show JSON</label>
 			<label index="tx_templatedisplay_displays.edit_json">Edit JSON</label>
 			<label index="tx_templatedisplay_displays.fields">Fields</label>

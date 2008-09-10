@@ -15,18 +15,29 @@
 							###AVAILABLE_FIELDS###
 						</select>
 					</div>
-					<div id="templatedisplay_typeBox" class="templatedisplay_hidde">
+					<div id="templatedisplay_typeBox" class="templatedisplay_hidden">
 						<label for="templatedisplay_type" class="templatedisplay_block">###TYPES###</label>
 						<select id="templatedisplay_type" class="templatedisplay_component">
 							<option value="text">###TEXT###</option>
 							<option value="image">###IMAGE###</option>
-							<option value="image">###LINK_TO_DETAIL###</option>
+							<option value="link">###LINK_TO_DETAIL###</option>
 						</select>
 					</div>
-					<div id="templatedisplay_configuationBox" class="templatedisplay_hidde">
+					<div id="templatedisplay_configuationBox" class="templatedisplay_hidden">
 						<label for="templatedisplay_configuration" class="templatedisplay_block">###CONFIGURATION###</label>
-						<textarea id="templatedisplay_configuration" class="templatedisplay_component"></textarea>
-						
+						<textarea id="templatedisplay_configuration" class="templatedisplay_component" style="margin-bottom: 5px"></textarea>
+
+						<div id="templatedisplay_snippettext" class="templatedisplay_snippetBox templatedisplay_component">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" /></a>
+						</div>
+						<div id="templatedisplay_snippetimage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" /></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" /></a>
+						</div>
+						<div id="templatedisplay_snippetlink" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" /></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" /></a>
+						</div>
 						<button id="templatedisplay_saveConfigurationBt" onclick="return false">###SAVE_FIELD_CONFIGURATION###</button>
 						<!--
 						<button>###INSERT_DEFAULT_CONFIGURATION###</button>
@@ -52,4 +63,39 @@
 <script type="text/javascript">
 	var infomodule_path = '###INFOMODULE_PATH###';
 	var tx_templatedisplay_uid = '###UID###';
+</script>
+<script id="snippettexte1" type="text/plain">
+<![CDATA[
+wrap = <b>|</b>
+case = upper="adsf"
+]]>
+</script>
+<script id="snippetimage1" type="text/plain">
+<![CDATA[
+# width - height
+file.width = 100
+]]>
+</script>
+<script id="snippetimage2" type="text/plain">
+<![CDATA[
+# width / height
+file.width = 100
+# Default altText corresponds to the file name
+altText = logo
+titleText = logo
+]]>
+</script>
+<script id="snippetlink1" type="text/plain">
+<![CDATA[
+# width / height
+file.width = 100
+# Default altText corresponds to the file name
+altText = logo
+titleText = logo
+]]>
+</script>
+<script id="snippetlink2" type="text/plain">
+<![CDATA[
+# Other examples are welcome. Please report them.
+]]>
 </script>
