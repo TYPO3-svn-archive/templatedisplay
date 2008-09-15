@@ -16,9 +16,13 @@
 			<label index="tx_templatedisplay_displays.text">Text</label>
 			<label index="tx_templatedisplay_displays.image">Image</label>
 			<label index="tx_templatedisplay_displays.link_to_detail">Link to detail</label>
+			<label index="tx_templatedisplay_displays.link_to_page">Link to page</label>
+			<label index="tx_templatedisplay_displays.link_to_file">Link to file</label>
+			<label index="tx_templatedisplay_displays.email">Email</label>
 			<label index="tx_templatedisplay_displays.showJson">Show JSON</label>
 			<label index="tx_templatedisplay_displays.editJson">Edit JSON</label>
-			<label index="tx_templatedisplay_displays.editHtml">Edit HTML</label>
+			<label index="tx_templatedisplay_displays.editHtml">HTML</label>
+			<label index="tx_templatedisplay_displays.mapping">Mapping</label>
 			<label index="tx_templatedisplay_displays.fields">Fields</label>
 			<label index="tx_templatedisplay_displays.types">Types</label>
 			<label index="tx_templatedisplay_displays.configuration">Typoscript configuration</label>

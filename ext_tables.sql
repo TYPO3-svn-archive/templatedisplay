@@ -11,7 +11,7 @@ CREATE TABLE tx_templatedisplay_displays (
 	hidden tinyint(4) DEFAULT '0' NOT NULL,
 	title varchar(255) DEFAULT '' NOT NULL,
 	description text,
-	template tinytext,
+	template text,
 	mappings mediumtext,
 	
 	PRIMARY KEY (uid),

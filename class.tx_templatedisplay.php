@@ -53,8 +53,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 	protected $datasource = array();
 	protected $fieldsInDatasource = array();
-	protected $configurations = array();
-	protected $cObjTypes = array();
 
 	/**
 	 *
@@ -169,7 +167,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 
-
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
 
@@ -204,19 +201,31 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
-		$this->datasource = json_decode($record[0]['mappings'],true);
+		$datasource = json_decode($record[0]['mappings'],true);
 
 		// Transforms the configuration string into an array
 		$parseObj = t3lib_div::makeInstance('t3lib_TSparser');
-		foreach ($this->datasource as &$data) {
+		foreach ($datasource as $data) {
 			if(trim($data['configuration']) != ''){
+				// Clears the setup (to avoid typoscript incrementation)
+				$parseObj->setup = array();
 				$parseObj->parse($data['configuration']);
 				$data['configuration'] = $parseObj->setup;
 			}
 			else{
 				$data['configuration'] = array();
 			}
-			$this->fieldsInDatasource[$data['field']] = '';
+
+			// Concatains a new marker. Will look like: table.field
+			$_marker = $data['table'] . '.' . $data['field'];
+
+			// Replace the ###FIELD.xxx### by the value "table.field"
+			$pattern = '/###' . $data['marker'] . '###/isU';
+			$templateCode = preg_replace($pattern, '###' . $data['marker'] . '.' . $_marker . '###', $templateCode);
+			$this->fieldsInDatasource[$data['marker']] = $_marker;
+
+			// Build the datasource. This is an associative array
+			$this->datasource[$data['marker']] = $data;
 		}
 
 		// Get the content from sub template, typically LOOP part
@@ -235,14 +244,13 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 
-		// Merges together 2 label arrays for performance reasons.
+		// Merges together 2 labels arrays for performance reasons.
 		$this->labelMarkers = array_merge($this->labelMarkers[$this->structure['name']], $_labels);
 
 		// Substititutes label translation
 		$this->result = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers);
 
-
-		/* Hook that enables to post process the output) */
+		// Hook that enables to post process the output)
 		if (is_array($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'])) {
 			$_params = array(); // Associative array. In this case, $_params is empty.
 			foreach ($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'] as $_funcRef) {
@@ -250,7 +258,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 	}
-
 
 	/**
 	 * Recursive method. Gets the subpart template and substitutes content (label or field).
@@ -262,14 +269,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected function getSubContent(&$sds, $templateCode){
 
 		// Defines marker array according to $sds['name'] which contains a table name.
-		if (!isset($this->markers[$sds['name']])) {
-			$this->markers[$sds['name']] = '###LOOP.' . $sds['name'] . '###';
-		}
+		// This marker is used to extract a subtemplate
+		$this->markers[$sds['name']] = '###LOOP.' . $sds['name'] . '###';
 
 		// Defines subTemplateCode (template HTML) array according to $sds['name'] which contains a table name.
-		if (!isset($this->subTemplateCode[$sds['name']])) {
-			$this->subTemplateCode[$sds['name']] = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
-		}
+		$this->subTemplateCode[$sds['name']] = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
 
 		$templateContent = '';
 
@@ -286,62 +290,123 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		foreach ($sds['records'] as $records) {
 			$_fieldMarkers = array();
 
+			// initialize data
+			$this->localCObj->start($records);
+
 			// ... and stores them in an array.
 			foreach ($records as $field => $value) {
 				// Important control. Makes sure the field has been mapped.
 				// Furthermore, it avoids the field "sds:subtables" to enter in the test
-				if (isset($this->fieldsInDatasource[$field])) {
-					switch ($this->getCObjType($sds['name'],$field)) {
-						case 'text':
-						$configuration = $this->getConfiguration($sds['name'],$field);
-						$configuration['value'] = $value;
-						$_fieldMarkers['###FIELD.'.$field.'###'] = $this->localCObj->TEXT($configuration);
-						break;
-						case 'image':
-						$configuration = $this->getConfiguration($sds['name'],$field);
+				$marker = $sds['name'] . '.' . $field;
 
-						$configuration['file'] = $value;
-						#						$configuration['file'] = 'fileadmin/media/dewitt/le-night-chronographe/tesà t2.sal-_ut.jpeg';
-						
-						// Sets the alt attribute if no altText is defined
-						if (!isset($configuration['altText'])) {
-							// Gets the file name
-							$configuration['altText'] = $this->getFileName($configuration['file']);
+				if (in_array($marker, $this->fieldsInDatasource)) {
+
+					// A value can be used for many markers. Loop around them.
+					$keys = array_keys($this->fieldsInDatasource, $marker);
+
+					foreach	($keys as $key) {
+						switch ($this->datasource[$key]['type']) {
+							case 'text':
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['value'] = $value;
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
+								break;
+							case 'image':
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['file'] = $value;
+
+								// Sets the alt attribute if no altText is defined
+								if (!isset($configuration['altText'])) {
+									// Gets the file name
+									$configuration['altText'] = $this->getFileName($configuration['file']);
+
+								}
+
+								// Sets the title attribute if no title is defined
+								if (!isset($configuration['titleText'])) {
+									if ($configuration['altText'] != '') {
+										$configuration['titleText'] = $configuration['altText'];
+									}
+									else{
+										$configuration['titleText'] = $this->getFileName($configuration['file']);
+									}
+								}
+
+								// Makes sure the file exists
+								if (is_file($configuration['file'])) {
+									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->IMAGE($configuration);
+								}
+								else {
+									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="" class="templateDisplay_imageNotFound" alt="Image not found"/>';
+								}
+								break;
+							case 'linkToDetail':
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['useCacheHash'] = 1;
+								if (!isset($configuration['returnLast'])) {
+									$configuration['returnLast'] = 'url';
+                                }
+								$additionalParams = '&' . $this->pObj->prefixId . '[table]=' . $sds['name'] . '&' . $this->pObj->prefixId .'[showUid]=' . $value;
+								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+
+								// Generates the link
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
+							case 'linkToPage':
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['useCacheHash'] = 1;
+								if (!isset($configuration['returnLast'])) {
+									$configuration['returnLast'] = 'url';
+                                }
+								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+
+								// Generates the link
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
+							case 'linkToFile':
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['useCacheHash'] = 1;
+								if (!isset($configuration['returnLast'])) {
+									$configuration['returnLast'] = 'url';
+                                }
+								if (!isset($configuration['parameter'])) {
+									$configuration['parameter'] = $value;
+                                }
+								
+								// replaces white spaces in filename
+								$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
 							
-						}
-						
-						// Sets the title attribute if no title is defined
-						if (!isset($configuration['titleText'])) {
-							if ($configuration['altText'] != '') {
-								$configuration['titleText'] = $configuration['altText'];
-							}
-							else{
-								$configuration['titleText'] = $this->getFileName($configuration['file']);
-                            }
-						}
-
-						if (is_file($configuration['file'])) {
-							$_fieldMarkers['###FIELD.'.$field.'###'] = $this->localCObj->IMAGE($configuration);
-						}
-						else {
-							$_fieldMarkers['###FIELD.'.$field.'###'] = '<img src="" class="templateDisplay_imageNotFound" alt="Image not found"/>';
-						}
-
-						break;
-					}
-
-				}
+								// Generates the link
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
+							case 'email':
+								$configuration = $this->datasource[$key]['configuration'];
+								if (!isset($configuration['parameter'])) {
+									$configuration['parameter'] = $value;
+                                }
+								// Generates the email
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
+						} // end switch
+                    } // end foreach
+				} // end if
 			}
 
 			// Merges "field" with "label" and substitutes content
 			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
-			$templateContent .= t3lib_parsehtml::substituteMarkerArray($this->subTemplateCode[$sds['name']], $_fieldMarkers);
+
+			// $_templateContent contains the temporary HTML. Whenever getSubContent() is called recursively, the content is passed to the method
+			$_templateContent = t3lib_parsehtml::substituteMarkerArray($this->subTemplateCode[$sds['name']], $_fieldMarkers);
+			$templateContent .= $_templateContent;
 
 			// If the records contains subtables, recursively calls getSubContent()
 			// Else, removes a possible unwanted part <!-- ###LOOP.unsed ### begin -->.+<!-- ###LOOP.unsed ### end -->
 			if (isset($records['sds:subtables'])) {
 				foreach ($records['sds:subtables'] as $subSds) {
-					$subTemplateContent = $this->getSubContent($subSds,$this->subTemplateCode[$sds['name']]);
+					// get the subContent
+					$subTemplateContent = $this->getSubContent($subSds, $_templateContent);
+
+					// Substitutes the subcontent with the main content
 					$templateContent = t3lib_parsehtml::substituteSubpart($templateContent, $this->markers[$subSds['name']], $subTemplateContent);
 				}
 			}
@@ -353,7 +418,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$templateContent = preg_replace($pattern, '', $templateContent);
 			}
 		}
-
 		return $templateContent;
 	}
 
@@ -365,54 +429,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
      */
 	protected function getFileName($filepath) {
 		$filename = '';
-		#$pattern = '/([^\/]+)\.(.+)$/';
-		#preg_match($pattern, $filepath, $matches);
 		$fileInfo = t3lib_div::split_fileref($filepath);
 		if (isset($fileInfo['filebody'])) {
 			$filename = $fileInfo['filebody'];
 		}
 		return $filename;
 	}
-	/**
-	 * This method returns a configuration array. Furthermore, it stores the array for later use. (more performance)
-	 *
-	 * @return	mixed	TypoScript configuration array
-	 */
-	protected function getCObjType($table,$field){
-		if(!isset($this->cObjTypes[$table.$field])){
-			foreach($this->datasource as $data){
-				if($data['table'] == $table && $data['field'] == $field){
-					$this->cObjTypes[$table.$field] = $data['type'];
-				}
-			}
-			if(!isset($this->cObjTypes[$table.$field])){
-				$this->cObjTypes[$table.$field] = 'text';
-			}
-		}
-		return $this->cObjTypes[$table.$field];
-	}
-
-	/**
-	 * This method returns a configuration array. Furthermore, it stores the array for later use. (more performance)
-	 *
-	 * @return	mixed	TypoScript configuration array
-	 */
-	protected function getConfiguration($table,$field){
-		if(!isset($this->configurations[$table.$field])){
-			foreach($this->datasource as $data){
-				if($data['table'] == $table && $data['field'] == $field){
-					$this->configurations[$table.$field] = $data['configuration'];
-				}
-			}
-			if(!isset($this->configurations[$table.$field])){
-				$this->configurations[$table.$field] = array();
-			}
-		}
-		return $this->configurations[$table.$field];
-	}
-
-
-
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay.php']){

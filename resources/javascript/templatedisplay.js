@@ -45,22 +45,26 @@ if (Prototype) {
 			
             Event.observe(document, 'dom:loaded', function(){
 
-				// these are clickable link on marker ###FIELD.xxx###
+				// These are clickable link on marker ###FIELD.xxx###
                 $$('#templatedisplay_templateBox a').each(function(element){
                     templatedisplay.initializeImages(element);
                     Event.observe(element, 'click', templatedisplay.selectField);
                 });
 				
-				// this is a checkbox "show json" -> displays the textarea that contains the json
+				// These are the 2 tab buttons
+                Event.observe($('templatedisplay_tab1'),'click',templatedisplay.showTab1);
+                Event.observe($('templatedisplay_tab2'),'click',templatedisplay.showTab2);
+				
+				// This is a checkbox "show json" -> displays the textarea that contains the json
                 Event.observe($('templatedisplay_showJson'),'click',templatedisplay.toggleJsonBoxVisibility);
 				
-				// this is a checkbox "edit json"
+				// This is a checkbox "edit json"
                 Event.observe($('templatedisplay_editJson'),'click',templatedisplay.toggleJsonBoxReadonly);
 				
-				// this is a the save configuration button
+				// This is a the save configuration button
                 Event.observe($('templatedisplay_saveConfigurationBt'),'click',templatedisplay.saveConfiguration);
 
-				// this is a drop down menu that contains the different type (text - image - link)
+				// This is a drop down menu that contains the different type (text - image - link - email)
                 Event.observe($('templatedisplay_type'),'change',templatedisplay.showSnippetBox);
 				
                 // Attaches event onto the snippet icon
@@ -89,6 +93,24 @@ if (Prototype) {
                 });
             });
 			
+        },
+		
+        /**
+         * Whenever the user has clicked on tab "mapping"
+         */
+		showTab1: function() {
+			$('templatedisplay_tab2').parentNode.removeClassName('tabact');
+			this.parentNode.removeClassName('tab');
+			this.parentNode.addClassName('tabact');
+        },
+		
+        /**
+         * Whenever the user has clicked on tab "HTML"
+         */
+		showTab2: function() {
+			$('templatedisplay_tab1').parentNode.removeClassName('tabact');
+			this.parentNode.removeClassName('tab');
+			this.parentNode.addClassName('tabact');
         },
 		
         /**
@@ -133,19 +155,20 @@ if (Prototype) {
                 var content = $('templatedisplay_fields').value.split('.');
                 var type = $('templatedisplay_type').value;
                 var configuration = $('templatedisplay_configuration').value;
-                var newRecord = '{"table": "'+ content[0] +'", "field": "' + content[1] + '", "type": "' + type + '", "configuration": "' + protectJsonString(configuration) + '"}'
+				var marker = $('templatedisplay_marker').value;
+                var newRecord = '{"marker": "' + marker + '", "table": "' + content[0] + '", "field": "' + content[1] + '", "type": "' + type + '", "configuration": "' + protectJsonString(configuration) + '"}'
                 newRecord = newRecord.evalJSON(true);
 				
                 // Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
                 $(records).each(function(record, index){
-                    if(record.table == newRecord.table && record.field == newRecord.field){
+                    if(record.marker == newRecord.marker){
                         offset = index;
                     }
                 });
 				
                 // True, when this is a new record => new position in the datasource
-                if(typeof(offset) == 'string'){
-                    offset = records.length;
+                if (typeof(offset) == 'string') {
+					offset = records.length;
                 }
                 records[offset] = newRecord;
 				
@@ -166,16 +189,16 @@ if (Prototype) {
                             // Change the accept icon and the type icon
                             var image1 = $$('img[src="' + infomodule_path + 'pencil.png"]')[0];
                             var image2 = image1.nextSibling;
-                            image1.src = infomodule_path + 'accept.png';
-                            image1.title = 'Status: OK';
+                            //image1.src = infomodule_path + 'accept.png';
+                            //image1.title = 'Status: OK';
                             image2.src = infomodule_path + type + '.png';
-                            image2.title = 'type: ' + type;
+                            image2.title = 'Type: ' + type;
                             
-                            $('templatedisplay_typeBox').addClassName('templatedisplay_hidden');
-                            $('templatedisplay_configuationBox').addClassName('templatedisplay_hidden');
-                            $('templatedisplay_configuration').value = '';
-                            $('templatedisplay_fields').value = '';
-							$('templatedisplay_fields').disabled = "disabled";
+                            //$('templatedisplay_typeBox').addClassName('templatedisplay_hidden');
+                            //$('templatedisplay_configuationBox').addClassName('templatedisplay_hidden');
+                            //$('templatedisplay_configuration').value = '';
+                            //$('templatedisplay_fields').value = '';
+							//$('templatedisplay_fields').disabled = "disabled";
                             $('loadingBox').addClassName('templatedisplay_hidden');
                         }
 						
@@ -213,7 +236,7 @@ if (Prototype) {
 
         /**
          * Defines the images above the clickable markers. Can be exclamation.png or accept.png.
-         * And defines the image type at the right site (text.png - image.png - link.png)
+         * And defines the image type at the right site (text.png - image.png - linkToDetail.png - linkToFile.png - linkToPage.png - email.png)
          */
         initializeImages: function(element){
             // Extract the field name
@@ -254,8 +277,9 @@ if (Prototype) {
 			
             // Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
             var type = '';
+			var marker = 'FIELD.' + field;
             $(templatedisplay.records).each(function(record, index){
-                if(record.table == table && record.field == field){
+                if(record.marker == marker){
                     type = record.type;
                 }
             });
@@ -263,13 +287,15 @@ if (Prototype) {
             // Puts the right icon wheter a marker is defined or not
             if(type != ''){
                 image.src = infomodule_path + 'accept.png';
-				image.title = 'Status: OK'
+				image.title = 'Status: OK';
+				
                 // Puts an other icon according to the type of the link
                 $(image.nextSibling).src = infomodule_path + type + '.png';
-                $(image.nextSibling).title = 'type: ' + type;
+                $(image.nextSibling).title = 'Type: ' + type;
             }
             else{
                 image.src = infomodule_path + 'exclamation.png';
+				image.title = 'Status: not matched';
             }
         },
 		
@@ -298,35 +324,45 @@ if (Prototype) {
             // Extract the table name's field
             var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('templatedisplay/resources/images/pencil.png');
             content = content[0].split('###LOOP.');
+			
             var table = '';
             if(typeof(content[content.length - 1] == 'string')){
                 content = content[content.length - 1].split(/#{3}/);
                 table = content[0];
             }
 			
-            // Select the right entry in the select drop down
-            if(table != '' && field != ''){
+			var marker = 'FIELD.' + field;
+			$$('#templatedisplay_marker')[0].value = marker;
+
+			// Show the other boxes that were previously hidden (configuration box - dropdown menu type etc...)
+            $('templatedisplay_fields').disabled = "";
+            $('templatedisplay_typeBox').removeClassName('templatedisplay_hidden');
+            $('templatedisplay_configuationBox').removeClassName('templatedisplay_hidden');
+			
+            // Makes sure the JSON != null, otherwise it will generate an error
+			if ($('templatedisplay_json').value.length == 0) {
+				$('templatedisplay_json').value = '[]';
+            }
+			
+            var currentRecord = '';
+            records = $('templatedisplay_json').value.evalJSON(true);
+            // Tries to find out which field has been clicked
+            $(records).each(function(record, index){
+                if(record.marker == marker){
+                    currentRecord = record;
+                }
+            });
+
+			// Select the right entry in the select drop down
+			if(typeof(currentRecord) == 'object'){
+				$$('#templatedisplay_fields')[0].value = currentRecord.table + '.' + currentRecord.field;
+            }
+            else if(table != '' && field != ''){
                 $$('#templatedisplay_fields')[0].value = table + '.' + field;
             }
             else{
                 $$('#templatedisplay_fields')[0].value = '';
             }
-			
-            // Show the other boxes that were previously hidden (configuration box - dropdown menu type etc...)
-            $('templatedisplay_fields').disabled = "";
-            $('templatedisplay_typeBox').removeClassName('templatedisplay_hidden');
-            $('templatedisplay_configuationBox').removeClassName('templatedisplay_hidden');
-			
-            // Inject the value in the field
-            var currentRecord = '';
-            records = $('templatedisplay_json').value.evalJSON(true);
-
-            // Tries to find out which field has been clicked
-            $(records).each(function(record, index){
-                if(record.table == table && record.field == field){
-                    currentRecord = record;
-                }
-            });
 			
             // currentRecord is a reference to the ###FIELD.xxx###
             if(typeof(currentRecord) == 'object'){

@@ -1,6 +1,21 @@
-<div id="templatedisplay_box">
-	<input type="checkbox" name="" value="1" id="templatedisplay_editHtml"/>
-	<label for="templatedisplay_editHtml">###EDIT_HTML###</label>
+<table class="typo3-dyntabmenu" cellspacing="0" cellpadding="0" border="0">
+	<tbody>
+		<tr>
+			<td class="tabact" nowrap="nowrap">
+				<a id="templatedisplay_tab1" onclick="this.blur(); return false;" href="#">###MAPPING###</a>
+			</td>
+			<td class="tab" nowrap="nowrap">
+				<a id="templatedisplay_tab2" onclick="this.blur(); return false;" href="#">###EDIT_HTML###</a>
+			</td>
+		</tr>
+	</tbody
+</table>
+
+<div id="templatedisplay_html">
+	<textarea style="width: 99%; height: 300px">###TEMPLATE_CONTENT_SRC###</textarea>
+</div>
+
+<div id="templatedisplay_box" style="display:none">
 	<table border="0">
 		<tbody>
 			<tr>
@@ -22,23 +37,40 @@
 						<select id="templatedisplay_type" class="templatedisplay_component">
 							<option value="text">###TEXT###</option>
 							<option value="image">###IMAGE###</option>
-							<option value="link">###LINK_TO_DETAIL###</option>
+							<option value="linkToDetail">###LINK_TO_DETAIL###</option>
+							<option value="linkToPage">###LINK_TO_PAGE###</option>
+							<option value="linkToFile">###LINK_TO_FILE###</option>
+							<option value="email">###EMAIL###</option>
 						</select>
 					</div>
 					<div id="templatedisplay_configuationBox" class="templatedisplay_hidden">
 						<label for="templatedisplay_configuration" class="templatedisplay_block">###CONFIGURATION###</label>
-						<textarea id="templatedisplay_configuration" class="templatedisplay_component" style="margin-bottom: 5px"></textarea>
+						<textarea id="templatedisplay_configuration" class="templatedisplay_component" wrap="off" style="margin-bottom: 5px"></textarea>
 
 						<div id="templatedisplay_snippettext" class="templatedisplay_snippetBox templatedisplay_component">
-							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" /></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines some styling value"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: TODO"/></a>
 						</div>
 						<div id="templatedisplay_snippetimage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
-							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" /></a>
-							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" /></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines width"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines alt / title tag"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: wraps a link around the image"/></a>
 						</div>
-						<div id="templatedisplay_snippetlink" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
-							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" /></a>
-							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" /></a>
+						<div id="templatedisplay_snippetlinkToDetail" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines other paramaters which are dynamic"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: TODO"/></a>
+						</div>
+						<div id="templatedisplay_snippetlinkToPage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines other paramaters which are dynamic"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: TODO"/></a>
+						</div>
+						<div id="templatedisplay_snippetlinkToFile" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: TODO"/></a>
+						</div>
+						<div id="templatedisplay_snippetemail" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: TODO"/></a>
 						</div>
 						<button id="templatedisplay_saveConfigurationBt" onclick="return false">###SAVE_FIELD_CONFIGURATION###</button>
 						<!--
@@ -55,6 +87,7 @@
 		</tbody>
 	</table>
 	<div id="templatedisplay_jsonBox">
+		<input type="hidden" name="" value="" id="templatedisplay_marker"/> 
 		<input type="checkbox" name="" value="1" id="templatedisplay_showJson"/> 
 		<label for="templatedisplay_showJson">###SHOW_JSON###</label>
 		<input type="checkbox" name="" value="1" id="templatedisplay_editJson" class="templatedisplay_hidden"/> 
@@ -66,10 +99,15 @@
 	var infomodule_path = '###INFOMODULE_PATH###';
 	var tx_templatedisplay_uid = '###UID###';
 </script>
-<script id="snippettexte1" type="text/plain">
+<script id="snippettext1" type="text/plain">
 <![CDATA[
 wrap = <b>|</b>
 case = upper="adsf"
+]]>
+</script>
+<script id="snippettext2" type="text/plain">
+<![CDATA[
+# Other examples are welcome. Please report them.
 ]]>
 </script>
 <script id="snippetimage1" type="text/plain">
@@ -80,24 +118,76 @@ file.width = 100
 </script>
 <script id="snippetimage2" type="text/plain">
 <![CDATA[
-# width / height
+# width - height
 file.width = 100
-# Default altText corresponds to the file name
-altText = logo
-titleText = logo
+# The default value is the name of the file
+altText = some text
+titleText = some texte
 ]]>
 </script>
-<script id="snippetlink1" type="text/plain">
+<script id="snippetimage3" type="text/plain">
 <![CDATA[
-# width / height
 file.width = 100
-# Default altText corresponds to the file name
-altText = logo
-titleText = logo
+stdWrap.typolink{
+  parameter.field = media
+  target = blank
+  ATagParams = class="changeMe"
+  additionalParams = &test=2
+}
 ]]>
 </script>
-<script id="snippetlink2" type="text/plain">
+
+<script id="snippetlinkToDetail1" type="text/plain">
+<![CDATA[
+# parameter is mandatory value
+parameter = 1
+additionalParams = &tx_myext_pi1[param]=value
+]]>
+</script>
+<script id="snippetlinkToDetail2" type="text/plain">
+<![CDATA[
+# parameter is mandatory value	
+parameter = 1
+additionalParams = &tx_myext_pi1[uid]={field:uid}&tx_myext_pi1[title]={page:title}
+additionalParams.insertData = 1
+]]>
+</script>
+<script id="snippetlinkToDetail3" type="text/plain">
 <![CDATA[
 # Other examples are welcome. Please report them.
+]]>
+</script>
+<script id="snippetlinkToPage1" type="text/plain">
+<![CDATA[
+# parameter is mandatory value
+parameter = 1
+additionalParams = &tx_myext_pi1[param]=value
+]]>
+</script>
+<script id="snippetlinkToPage2" type="text/plain">
+<![CDATA[
+# parameter is mandatory value
+parameter = 1
+additionalParams = &tx_myext_pi1[uid]={field:uid}&tx_myext_pi1[title]={page:title}
+additionalParams.insertData = 1
+]]>
+</script>
+<script id="snippetlinkToPage3" type="text/plain">
+<![CDATA[
+# Other examples are welcome. Please report them.
+]]>
+</script>
+<script id="snippetlinkToFile1" type="text/plain">
+<![CDATA[
+# Other examples are welcome. Please report them.
+]]>
+</script>
+<script id="snippetemail1" type="text/plain">
+<![CDATA[
+# Define an email
+parameter = email@domain.tld
+# gernerates the href attribute only.
+# the email can be encrypted with some global configuration settings
+returnLast = url
 ]]>
 </script>

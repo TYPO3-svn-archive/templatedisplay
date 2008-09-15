@@ -69,6 +69,7 @@ class tx_templatedisplay_tceforms {
 					
 					# Replaces tabulations by spaces. It takes less room on the screen
 					$templateContent = str_replace('	', '  ',$templateContent);
+					$marker['###TEMPLATE_CONTENT_SRC###'] = $templateContent;
 
 					# Wrap FIELD markers with a clickable href
 					$pattern = '/(#{3}FIELD[0-9a-zA-Z\_\-\.]+#{3})/m';
@@ -105,9 +106,13 @@ class tx_templatedisplay_tceforms {
 					$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
 					$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
 					$marker['###LINK_TO_DETAIL###'] = $this->getLL('tx_templatedisplay_displays.link_to_detail');
+					$marker['###LINK_TO_PAGE###'] = $this->getLL('tx_templatedisplay_displays.link_to_page');
+					$marker['###LINK_TO_FILE###'] = $this->getLL('tx_templatedisplay_displays.link_to_file');
+					$marker['###EMAIL###'] = $this->getLL('tx_templatedisplay_displays.email');
 					$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.showJson');
 					$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.editJson');
 					$marker['###EDIT_HTML###'] = $this->getLL('tx_templatedisplay_displays.editHtml');
+					$marker['###MAPPING###'] = $this->getLL('tx_templatedisplay_displays.mapping');
 					$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
 					$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
 					$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');
