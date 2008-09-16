@@ -25,9 +25,6 @@
 	width: 99%;
 	height: 400px;
 }
-#templatedisplay_mapping{
-	width:650px;
-}
 
 #templatedisplay_mapping label.templatedisplay_block{
 	display: block;
@@ -52,14 +49,8 @@
 }
 
 #templatedisplay_cellLeft{
-	width: 400px;
 	border-right: 1px dotted black;
 }
-
-#templatedisplay_cellLeft{
-	padding-left: 10px;
-}
-
 
 .mapping_pictogrammBox{
 	position: relative;
