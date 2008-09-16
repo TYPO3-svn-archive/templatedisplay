@@ -30,14 +30,15 @@
  *
  * @author	Fabien Udriot <fabien.udriot@ecodev.ch>
  * @package	TYPO3
- * @subpackage	tx_externalimport
+ * @subpackage	tx_templatedisplay
  */
 class tx_templatedisplay_ajax {
 
 	/**
-	 * This method answers to the AJAX call and starts the synchronisation of a given table
+	 * This method answers to the AJAX call and saves the mappings configuration
 	 *
-	 * @return	array	list of messages ordered by status (error, warning, success)
+	 * @param	array	$params
+	 * @param	Object	$ajaxObj
 	 * @return	void	(with 4.2)
 	 */
 	public function saveConfiguration($params, $ajaxObj) {
@@ -55,10 +56,35 @@ class tx_templatedisplay_ajax {
 				$result = 1;
 			}
 		}
-
 		echo $result;
-		
+	}
 
+	/**
+	 * This method answers to the AJAX call and saves the template
+	 *
+	 * @param	array	$params
+	 * @param	Object	$ajaxObj
+	 * @return	void	(with 4.2)
+	 */
+	public function saveTemplate($params, $ajaxObj) {
+		$uid = t3lib_div::_GP('uid');
+		$template = t3lib_div::_GP('template');
+		$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid','tx_templatedisplay_displays','uid = '. $uid);
+
+		$result = 0;
+		$tceforms = t3lib_div::makeInstance('tx_templatedisplay_tceforms');
+		
+		if (!empty($record)) {
+			# Replaces tabulations by spaces. It takes less room on the screen
+			$template = str_replace('	', '  ',$template);
+			$updateArray['template'] = $template;
+			$msg = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_templatedisplay_displays', 'uid = '. $uid, $updateArray);
+
+			if ($msg == 1) {
+				$result = $tceforms->transformTemplateContent($template);
+			}
+		}
+		echo $result;
 	}
 }
 ?>

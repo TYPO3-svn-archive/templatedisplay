@@ -11,8 +11,7 @@
 			<label index="tx_templatedisplay_displays.description">Description</label>
 			<label index="tx_templatedisplay_displays.mappings">Mappings</label>
 			<label index="tx_templatedisplay_displays.template">HTML Template</label>
-			<label index="tx_templatedisplay_displays.noTemplateFoundError1">No template has been loaded. Please upload one.</label>
-			<label index="tx_templatedisplay_displays.noTemplateFoundError2">Example can be found somewhere...</label>
+			<label index="tx_templatedisplay_displays.noTemplateFoundError">Please add some content in the HTML tabs</label>
 			<label index="tx_templatedisplay_displays.text">Text</label>
 			<label index="tx_templatedisplay_displays.image">Image</label>
 			<label index="tx_templatedisplay_displays.link_to_detail">Link to detail</label>

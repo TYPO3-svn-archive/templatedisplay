@@ -1,6 +1,13 @@
 #loadingBox{
 	text-align: center;
 }
+
+#loadingBoxHtml{
+	text-align: center;
+	position: relative;
+	bottom: 150px;
+}
+
 .templatedisplay_hidden{
 	display: none;
 }
@@ -14,11 +21,15 @@
 	color: #333;
 }
 
-#templatedisplay_box{
+#templatedisplay_html textarea{
+	width: 99%;
+	height: 400px;
+}
+#templatedisplay_mapping{
 	width:650px;
 }
 
-#templatedisplay_box label.templatedisplay_block{
+#templatedisplay_mapping label.templatedisplay_block{
 	display: block;
 }
 

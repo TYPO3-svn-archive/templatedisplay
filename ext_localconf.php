@@ -10,6 +10,7 @@ t3lib_extMgm::addUserTSConfig('
 // (as from TYPO3 4.2)
 
 $TYPO3_CONF_VARS['BE']['AJAX']['templatedisplay::saveConfiguration'] = 'typo3conf/ext/templatedisplay/class.tx_temlatedisplay_ajax.php:tx_templatedisplay_ajax->saveConfiguration';
+$TYPO3_CONF_VARS['BE']['AJAX']['templatedisplay::saveTemplate'] = 'typo3conf/ext/templatedisplay/class.tx_temlatedisplay_ajax.php:tx_templatedisplay_ajax->saveTemplate';
 /*
  * Hook for loading Javascript and CSS in the backend
  */
@@ -19,10 +20,10 @@ if (TYPO3_MODE == 'BE')	{
 $TYPO3_CONF_VARS['SC_OPTIONS']['typo3/template.php']['preStartPageHook'][] = 'user_addBackendLibrary'; 
 
 // Register templatedisplay with the Display Controller as a Data Consumer
-if (TYPO3_MODE == 'BE')	{
-	require_once(t3lib_extMgm::extPath('templatedisplay').'hook/class.tx_infomodule_mappings.php');
-}
-$TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = 'tx_infomodule_mappings'; 
+#if (TYPO3_MODE == 'BE')	{
+#	require_once(t3lib_extMgm::extPath('templatedisplay').'hook/class.tx_infomodule_mappings.php');
+#}
+#$TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = 'tx_infomodule_mappings'; 
 
 // Register as Data Consumer service
 // Note that the subtype corresponds to the name of the database table

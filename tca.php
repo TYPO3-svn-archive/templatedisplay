@@ -38,13 +38,9 @@ $TCA['tx_templatedisplay_displays'] = array(
 			'exclude' => 0,
 			'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.template',
 			'config' => array(
-				'type' => 'group',
-				'internal_type' => 'file',
-				'allowed' => 'htm,html,tmpl',
-				'max_size' => 1028,
-				'uploadfolder' => 'uploads/tx_templatedisplay',
-				'size' => 1,
-				'maxitems' => 1,
+				'type' => 'text',
+				'cols' => '40',
+				'rows' => '4',
 			)
 		),
 		'mappings' => array(
@@ -57,7 +53,7 @@ $TCA['tx_templatedisplay_displays'] = array(
 		),
 	),
 	'types' => array(
-		'0' => array('showitem' => 'hidden;;1;;1-1-1, title;;;;2-2-2, description, template;;;;3-3-3, mappings')
+		'0' => array('showitem' => 'hidden;;1;;1-1-1, title;;;;2-2-2, mappings, description')
 	),
 	'palettes' => array(
 		'1' => array('showitem' => '')

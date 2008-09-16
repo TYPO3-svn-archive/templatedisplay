@@ -38,17 +38,15 @@ class tx_templatedisplay_tceforms {
 
 	/**
 	 * This method renders the user-defined mapping field,
-     * i.e. the screen where data is mapped to the template markers
-     *
-     * @param	array			$PA: information related to the field
-     * @param	t3lib_tceform	$fobj: reference to calling TCEforms object
+	 * i.e. the screen where data is mapped to the template markers
+	 *
+	 * @param	array			$PA: information related to the field
+	 * @param	t3lib_tceform	$fobj: reference to calling TCEforms object
 	 *
 	 * @return	string	The HTML for the form field
 	 */
 	public function mappingField($PA, $fobj) {
 		$formField = '';
-//		$formField .= t3lib_div::view_array($PA);
-//		$formField .= t3lib_div::view_array($GLOBALS['TYPO3_CONF_VARS']);
 
 		try {
 			// Get the related (primary) provider
@@ -57,79 +55,58 @@ class tx_templatedisplay_tceforms {
 				$fieldsArray = $provider->getTablesAndFields();
 
 				#$GLOBALS['TBE_TEMPLATE']->loadJavascriptLib('js/common.js');
-
 				$row = $PA['row'];
+
 				// true when the user has defined a template.
-				if($row['template'] != ''){
-					# Retrieve the template string and init the path
-					$temporaryArray = explode('|', $row['template']);
-					$row['template'] = $temporaryArray[0];
-					$templateFile = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
-					$templateContent = htmlspecialchars(file_get_contents($templateFile));
-					
-					# Replaces tabulations by spaces. It takes less room on the screen
-					$templateContent = str_replace('	', '  ',$templateContent);
-					$marker['###TEMPLATE_CONTENT_SRC###'] = $templateContent;
+				if($row['template'] == ''){
+					$row['template'] = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError');
+                }
+				# Retrieve the template string and init the path
+				#$temporaryArray = explode('|', $row['template']);
+				#$row['template'] = $temporaryArray[0];
+				#$templateFile = t3lib_div::getFileAbsFileName('uploads/tx_templatedisplay/' . $row['template']);
+				#$templateContent = file_get_contents($templateFile);
+				$templateContent = $row['template'];
 
-					# Wrap FIELD markers with a clickable href
-					$pattern = '/(#{3}FIELD[0-9a-zA-Z\_\-\.]+#{3})/m';
-					$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
-					$replacement = '<span class="mapping_pictogrammBox">';
-					$replacement .= '<a href="#" onclick="return false">$1</a>';
-					$replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm1"/>';
-					$replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm2"/>';
-					$replacement .= '</span>';
-					$templateContent = preg_replace($pattern, $replacement, $templateContent);
-
-					# Wrap LOOP markers with a different background
-					$pattern = '/(&lt;!-- *#{3}LOOP[0-9a-zA-Z\_\-\.]+#{3} *[a-z]+ *--&gt;)/m';
-					$replacement = '<span class="templatedisplay_loop">$1</span>';
-					$templateContent = preg_replace($pattern, $replacement, $templateContent);
-					
-					# Initialize the select drop down which contains the fields
-					$options = '';
-					foreach($fieldsArray as $keyTable => $fields){
-						$options .= '<optgroup label="'. $keyTable .'" class="c-divider">';
-						foreach($fields['fields'] as $keyField => $field){
-							$options .= '<option value="'.$keyTable.'.'.$keyField.'">'.$keyField.'</option>';
-						}
-						$options .= '</optgroup>';
+				# Initialize the select drop down which contains the fields
+				$options = '';
+				foreach($fieldsArray as $keyTable => $fields){
+					$options .= '<optgroup label="'. $keyTable .'" class="c-divider">';
+					foreach($fields['fields'] as $keyField => $field){
+						$options .= '<option value="'.$keyTable.'.'.$keyField.'">'.$keyField.'</option>';
 					}
-					$marker['###AVAILABLE_FIELDS###'] = $options;
-
-					# Initialize some template variable
-					$marker['###STORED_FIELD_NAME###'] = $PA['itemFormElName'];
-					$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
-					$marker['###TEMPLATE_CONTENT###'] = $templateContent;
-					$marker['###INFOMODULE_PATH###'] = $path;
-					$marker['###UID###'] = $row['uid'];
-					$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
-					$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
-					$marker['###LINK_TO_DETAIL###'] = $this->getLL('tx_templatedisplay_displays.link_to_detail');
-					$marker['###LINK_TO_PAGE###'] = $this->getLL('tx_templatedisplay_displays.link_to_page');
-					$marker['###LINK_TO_FILE###'] = $this->getLL('tx_templatedisplay_displays.link_to_file');
-					$marker['###EMAIL###'] = $this->getLL('tx_templatedisplay_displays.email');
-					$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.showJson');
-					$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.editJson');
-					$marker['###EDIT_HTML###'] = $this->getLL('tx_templatedisplay_displays.editHtml');
-					$marker['###MAPPING###'] = $this->getLL('tx_templatedisplay_displays.mapping');
-					$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
-					$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
-					$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');
-					$marker['###SAVE_FIELD_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.saveFieldConfiguration');
-
-					# Parse the template and render it.
-					$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
-					$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
+					$options .= '</optgroup>';
 				}
-				else{
-					$file = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templateMissing.html');
+				$marker['###AVAILABLE_FIELDS###'] = $options;
+					
+					
 
-					$marker['###noTemplateFoundError1###'] = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError1');
-					$marker['###noTemplateFoundError2###'] = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError2');
-					$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($file), $marker);
-				}
-            }
+				# Initialize some template variable
+				$marker['###TEMPLATE_CONTENT_SRC###'] = $templateContent;
+				$marker['###TEMPLATE_CONTENT###'] = $this->transformTemplateContent($templateContent);
+				$marker['###STORED_FIELD_NAME###'] = $PA['itemFormElName'];
+				$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
+				$marker['###INFOMODULE_PATH###'] = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
+				$marker['###UID###'] = $row['uid'];
+				$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
+				$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
+				$marker['###LINK_TO_DETAIL###'] = $this->getLL('tx_templatedisplay_displays.link_to_detail');
+				$marker['###LINK_TO_PAGE###'] = $this->getLL('tx_templatedisplay_displays.link_to_page');
+				$marker['###LINK_TO_FILE###'] = $this->getLL('tx_templatedisplay_displays.link_to_file');
+				$marker['###EMAIL###'] = $this->getLL('tx_templatedisplay_displays.email');
+				$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.showJson');
+				$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.editJson');
+				$marker['###EDIT_HTML###'] = $this->getLL('tx_templatedisplay_displays.editHtml');
+				$marker['###MAPPING###'] = $this->getLL('tx_templatedisplay_displays.mapping');
+				$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
+				$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
+				$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');
+				$marker['###SAVE_FIELD_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.saveFieldConfiguration');
+
+				# Parse the template and render it.
+				$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
+				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
+			}
 			catch (Exception $e) {
 				$formField .= tx_basecontroller_div::wrapMessage($e->getMessage());
 			}
@@ -137,39 +114,65 @@ class tx_templatedisplay_tceforms {
 		}
 		catch (Exception $e) {
 			$formField .= tx_basecontroller_div::wrapMessage($e->getMessage());
-        }
+		}
 		return $formField;
 	}
+	
+	/**
+	 * Transformes $templateContent
+	 * 1) wrap FIELD markers with a clickable href
+	 * 2) wrap LOOP markers with a different background
+	 *
+	 * @param	string	$templateContent
+	 * @return	string	$templateContent, the content transformed
+	 */
+	public function transformTemplateContent($templateContent) {
+		$templateContent = htmlspecialchars($templateContent);
+		# Wrap FIELD markers with a clickable href
+		$pattern = '/(#{3}FIELD[0-9a-zA-Z\_\-\.]+#{3})/m';
+		$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
+		$replacement = '<span class="mapping_pictogrammBox">';
+		$replacement .= '<a href="#" onclick="return false">$1</a>';
+		$replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm1"/>';
+		$replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm2"/>';
+		$replacement .= '</span>';
+		$templateContent = preg_replace($pattern, $replacement, $templateContent);
 
+		# Wrap LOOP markers with a different background
+		$pattern = '/(&lt;!-- *#{3}LOOP[0-9a-zA-Z\_\-\.]+#{3} *[a-z]+ *--&gt;)/m';
+		$replacement = '<span class="templatedisplay_loop">$1</span>';
+		$templateContent = preg_replace($pattern, $replacement, $templateContent);
+		return $templateContent;
+	}
 
 	/**
 	 * Return the translated string according to the key
 	 *
 	 * @param string key of label
 	 */
-	function getLL($key){
+	private function getLL($key){
 		$langReference = 'LLL:EXT:templatedisplay/locallang_db.xml:';
 		return $GLOBALS['LANG']->sL($langReference . $key);
-    }
+	}
 
 	/**
-     * This method returns the name of the table where the relations between
-     * Data Providers and Controllers are saved
-     * (this has been abstracted in a method in case the was of retrieving this table mame is changed in the future
-     * e.g. by defining a bidirection MM-relation to the display controller, in which case the name
-     * would be retrieved from the TCA instead)
-     *
-     * @return	string	Name of the table
-     */
+	 * This method returns the name of the table where the relations between
+	 * Data Providers and Controllers are saved
+	 * (this has been abstracted in a method in case the was of retrieving this table mame is changed in the future
+	 * e.g. by defining a bidirection MM-relation to the display controller, in which case the name
+	 * would be retrieved from the TCA instead)
+	 *
+	 * @return	string	Name of the table
+	 */
 	protected function getMMTableName() {
 		return $GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extKey]['mm_table'];
-    }
+	}
 
 	/**
-     * This method retrieves the controller which calls this specific instance of template display
-     *
-     * @param	array	$row: database record corresponding the instance of template display
-     */
+	 * This method retrieves the controller which calls this specific instance of template display
+	 *
+	 * @param	array	$row: database record corresponding the instance of template display
+	 */
 	protected function getRelatedProvider($row) {
 		// Get the tt_content record(s) the template display instance is related to
 		$mmTable = $this->getMMTableName();
@@ -179,7 +182,7 @@ class tx_templatedisplay_tceforms {
 		// The template display instance is not related yet
 		if ($numRows == 0) {
 			throw new Exception('No controller found');
-        }
+		}
 
 		// The template display instance is related to exactly one tt_content record (easy case)
 		elseif ($numRows == 1) {
@@ -188,17 +191,15 @@ class tx_templatedisplay_tceforms {
 			$controller->loadControllerData($rows[0]['uid_local']);
 			$provider = $controller->getPrimaryProvider();
 			return $provider;
-       }
+		}
 
 		// The template display instance is related to more than one tt_content records
 		// Some additional checks must be performed
 		else {
 			throw new Exception('More than one controller found');
-        }
-    }
+		}
+	}
 }
-
-
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay_tceforms.php'])	{
 	include_once($TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay_tceforms.php']);
