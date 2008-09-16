@@ -156,6 +156,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	void
 	 */
 	public function startProcess() {
+
+		#$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_templatedisplay_pi2.'];
+		#print_r($conf);
+
 		// Declares global objects
 		global $TYPO3_CONF_VARS;
 
@@ -194,10 +198,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		// Loads the template file
-		$templatePath = 'uploads/tx_templatedisplay/'.$record[0]['template'];
-		if(is_file($templatePath)){
-			$templateCode = file_get_contents($templatePath);
-		}
+		#$templatePath = 'uploads/tx_templatedisplay/'.$record[0]['template'];
+		#if(is_file($templatePath)){
+	#		$templateCode = file_get_contents($templatePath);
+		#}
+		$templateCode = $record[0]['template'];
 
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
