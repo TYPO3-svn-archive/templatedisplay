@@ -157,11 +157,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 */
 	public function startProcess() {
 
-		#$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_templatedisplay_pi2.'];
-		#$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_pagebrowse_pi1.'];
-		#$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
-		#print_r($this->localCObj->cObjGetSingle('USER',$conf));
-
 		// Declares global objects
 		global $TYPO3_CONF_VARS;
 
@@ -249,6 +244,18 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			foreach($matches[1] as $label){
 				$_labels['###' . $label . '###'] = $LANG->sL($label);
 			}
+		}
+
+		$pattern = '/#{3}PAGEBROWSER#{3}|#{3}PAGE_BROWSER#{3}/isU';
+		if (preg_match($pattern,$templateContent)) {
+			$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_pagebrowse_pi1.'];
+			if ($conf != null) {
+				$pageBrowser = $this->localCObj->cObjGetSingle('USER',$conf);
+			}
+			else {
+				$pageBrowser = '<span style="color:red; font-weight: bold">Error: tx_pagebrowse_pi1 not loaded</span>';
+            }
+			$templateContent = preg_replace($pattern, $pageBrowser, $templateContent);
 		}
 
 		// Merges together 2 labels arrays for performance reasons.
