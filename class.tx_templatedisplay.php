@@ -246,15 +246,42 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 
+		// Handles the page browser
 		$pattern = '/#{3}PAGEBROWSER#{3}|#{3}PAGE_BROWSER#{3}/isU';
 		if (preg_match($pattern,$templateContent)) {
+
+			// Fetches the configuration
 			$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_pagebrowse_pi1.'];
+
+			// Gets the limit value.
+			// 1) checks if a limit is given in the URL
+			// 2) if not, check if limit has a default value in TS
+			// 3) Finally, defines the limit manually to avoid a division by 0.
+			$parameters = t3lib_div::GPvar('tx_dataquery_pi1');
+			if (is_array($parameters) && isset($parameters['limit'])) {
+				$limit = $parameters['limit'];
+			}
+			else if (isset($conf['limit'])) {
+				$limit = $conf['limit'];
+            }
+			else {
+				$limit = 10;
+            }
+			
+			// Calculates numPage, the number of pages
+			$conf['numPages'] = ceil($this->structure['count'] / $limit);
+			
+			// adds limit to the query
+			$conf['extraQueryString'] .= '&tx_dataquery_pi1[limit]=' . $limit;
+
 			if ($conf != null) {
 				$pageBrowser = $this->localCObj->cObjGetSingle('USER',$conf);
 			}
 			else {
-				$pageBrowser = '<span style="color:red; font-weight: bold">Error: tx_pagebrowse_pi1 not loaded</span>';
+				$pageBrowser = '<span style="color:red; font-weight: bold">Error: extension pagebrowse not loaded</span>';
             }
+			
+			// Replaces the marker by some HTML content
 			$templateContent = preg_replace($pattern, $pageBrowser, $templateContent);
 		}
 

@@ -53,6 +53,7 @@ class tx_templatedisplay_tceforms {
 			$provider = $this->getRelatedProvider($PA['row']);
 			try {
 				$fieldsArray = $provider->getTablesAndFields();
+				
 
 				#$GLOBALS['TBE_TEMPLATE']->loadJavascriptLib('js/common.js');
 				$row = $PA['row'];
@@ -79,9 +80,11 @@ class tx_templatedisplay_tceforms {
 				}
 				$marker['###AVAILABLE_FIELDS###'] = $options;
 					
-					
-
+				// Reinitializes the array pointer
+				reset($fieldsArray);
+				
 				# Initialize some template variable
+				$marker['###DEFAULT_TABLE###'] = key($fieldsArray);;
 				$marker['###TEMPLATE_CONTENT_SRC###'] = $templateContent;
 				$marker['###TEMPLATE_CONTENT###'] = $this->transformTemplateContent($templateContent);
 				$marker['###STORED_FIELD_NAME###'] = $PA['itemFormElName'];
@@ -119,7 +122,7 @@ class tx_templatedisplay_tceforms {
 	}
 	
 	/**
-	 * Transformes $templateContent
+	 * Transformes $templateContent, this method is also util for Ajax called. In this case, the method is called externally.
 	 * 1) wrap FIELD markers with a clickable href
 	 * 2) wrap LOOP markers with a different background
 	 *

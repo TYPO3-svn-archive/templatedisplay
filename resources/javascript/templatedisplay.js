@@ -374,6 +374,11 @@ if (Prototype) {
                 table = content[0];
             }
 
+			// means the table was not successfully guessed
+			if (table == '' || table.search(' ') != -1) {
+				table = tx_templatedisplay_defaultTable;
+            }
+
 			var marker = 'FIELD.' + field;
 			$$('#templatedisplay_marker')[0].value = marker;
 
