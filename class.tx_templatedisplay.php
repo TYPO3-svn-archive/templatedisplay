@@ -234,7 +234,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$subTemplateContent = $this->getSubContent($this->structure,$templateCode);
 
 		// Substitutes subpart
-		$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[$this->structure['name']], $subTemplateContent);
+		if ($this->markers[$this->structure['name']] != '') {
+			$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[$this->structure['name']], $subTemplateContent);
+		}
+		else {
+			$templateContent = $subTemplateContent;
+        }
 
 		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###
 		$pattern = '/#{3}(LLL:EXT:.+)#{3}/isU';
@@ -309,12 +314,19 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 */
 	protected function getSubContent(&$sds, $templateCode){
 
-		// Defines marker array according to $sds['name'] which contains a table name.
-		// This marker is used to extract a subtemplate
-		$this->markers[$sds['name']] = '###LOOP.' . $sds['name'] . '###';
+		
+		if (preg_match('/#{3}LOOP./',$templateCode)) {
+			// Defines marker array according to $sds['name'] which contains a table name.
+			// This marker is used to extract a subtemplate
+			$this->markers[$sds['name']] = '###LOOP.' . $sds['name'] . '###';
+			
 
-		// Defines subTemplateCode (template HTML) array according to $sds['name'] which contains a table name.
-		$this->subTemplateCode[$sds['name']] = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
+			// Defines subTemplateCode (template HTML) array according to $sds['name'] which contains a table name.
+			$this->subTemplateCode[$sds['name']] = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
+		}
+		else {
+			$this->subTemplateCode[$sds['name']] = $templateCode;
+        }
 
 		$templateContent = '';
 
@@ -432,7 +444,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
                     } // end foreach
 				} // end if
 			}
-
+			
 			// Merges "field" with "label" and substitutes content
 			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
 
