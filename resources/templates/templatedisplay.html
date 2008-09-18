@@ -27,7 +27,7 @@
 ###TEMPLATE_CONTENT###
 </pre>
 				</td>
-				<td id="templatedisplay_cellLeft" valign="top">
+				<td valign="top">
 					<div id="templatedisplay_fieldBox">
 						<label for="templatedisplay_fields" class="templatedisplay_block">###FIELDS###</label>
 						<select id="templatedisplay_fields" class="templatedisplay_component" disabled="disabled">
@@ -58,6 +58,7 @@
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines width"/></a>
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines alt / title tag"/></a>
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: wraps a link around the image"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_yellow.png" alt="snippet" title="snippet 4: wraps a link around the image and remove white spaces from the URL"/></a>
 						</div>
 						<div id="templatedisplay_snippetlinkToDetail" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
@@ -136,6 +137,25 @@ stdWrap.typolink{
   target = blank
   ATagParams = class="changeMe"
   additionalParams = &test=2
+}
+]]>
+</script>
+</script>
+<script id="snippetimage4" type="text/plain">
+<![CDATA[
+file.width = 100
+stdWrap.typolink{
+  parameter.field = media
+  target = blank
+  # Remove white spaces in the URL
+  parameter.split{
+    token = /
+    cObjNum = 1
+    1 = TEXT
+    1.current = 1
+    1.rawUrlEncode = 1
+    1.wrap = /|
+  }
 }
 ]]>
 </script>

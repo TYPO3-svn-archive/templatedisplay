@@ -158,7 +158,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	public function startProcess() {
 
 		#$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_templatedisplay_pi2.'];
-		#print_r($conf);
+		#$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_pagebrowse_pi1.'];
+		#$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
+		#print_r($this->localCObj->cObjGetSingle('USER',$conf));
 
 		// Declares global objects
 		global $TYPO3_CONF_VARS;
