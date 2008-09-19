@@ -91,18 +91,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-	 * This method is used to load the details about the Data Consumer passing it whatever data it needs
-	 * This will generally be a table name and a primary key value
-	 *
-	 * @param	array	$data: Data for the Data Consumer
-	 * @return	void
-	 */
-	public function loadData($data) {
-		$this->table = $data['table'];
-		$this->uid = $data['uid'];
-	}
-
-	/**
 	 * This method is used to pass a data structure to the Data Consumer
 	 *
 	 * @param 	array	$structure: standardised data structure
