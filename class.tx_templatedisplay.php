@@ -172,10 +172,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		// Fetches mappings + template file
-		$whereClause = "uid = '".$this->uid."'";
-		$whereClause .= $GLOBALS['TSFE']->sys_page->enableFields($this->table, $GLOBALS['TSFE']->showHiddenRecords);
+//		$whereClause = "uid = '".$this->uid."'";
+//		$whereClause .= $GLOBALS['TSFE']->sys_page->enableFields($this->table, $GLOBALS['TSFE']->showHiddenRecords);
 
-		$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('mappings,template',$this->table,$whereClause);
+//		$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('mappings,template',$this->table,$whereClause);
+		$record = $this->consumerData;
 		if(!isset($record[0]['mappings'])){
 			$this->result .= '<div style="color :red; font-weight: bold">No templatedisplay has been found for uid = '.$this->uid . '.</div>';
 			$this->result .= '<div style="color :red; font-weight: bold; margin-top: 10px;">Templatedisplay\'s record may be deleted or hidden.</div>';
