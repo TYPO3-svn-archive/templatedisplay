@@ -192,6 +192,7 @@ class tx_templatedisplay_tceforms {
 			$tt_contentRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('CType', 'tt_content', "uid = '".$rows[0]['uid_local']."'");
 			$controller = t3lib_div::makeInstanceService('datacontroller', $tt_contentRecord[0]['CType']);
 			$controller->loadControllerData($rows[0]['uid_local']);
+				// NOTE: getPrimaryProvider() may throw an exception, but we just let it pass at this point
 			$provider = $controller->getPrimaryProvider();
 			return $provider;
 		}
