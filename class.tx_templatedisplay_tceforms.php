@@ -145,6 +145,11 @@ class tx_templatedisplay_tceforms {
 		$pattern = '/(&lt;!-- *#{3}LOOP[0-9a-zA-Z\_\-\.]+#{3} *[a-z]+ *--&gt;)/m';
 		$replacement = '<span class="templatedisplay_loop">$1</span>';
 		$templateContent = preg_replace($pattern, $replacement, $templateContent);
+		
+		# Wrap IF markers with a different background
+		$pattern = '/(&lt;!-- *IF( *#{3}[0-9a-zA-Z\_\-\.]+#{3} .+--&gt;)/m';
+		$replacement = '<span class="templatedisplay_loop">$1</span>';
+#		$templateContent = preg_replace($pattern, $replacement, $templateContent);
 		return $templateContent;
 	}
 

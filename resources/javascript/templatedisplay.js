@@ -6,7 +6,7 @@
  *
  *  Copyright notice
  *
- *  (c) 2006-2008	Fabien Udriot <fabien.udriot@ecodev.ch>
+ *  (c) 2006-2008	Fabien Udriot <typo3@omic.ch>
  *  All rights reserved
  *
  *  This script is part of the TYPO3 t3lib/ library provided by
@@ -45,27 +45,32 @@ if (Prototype) {
 
             Event.observe(document, 'dom:loaded', function(){
 
-				// These are clickable link on marker ###FIELD.xxx###
+                // These are clickable link on marker ###FIELD.xxx###
                 $$('#templatedisplay_templateBox a').each(function(element){
                     templatedisplay.initializeImages(element);
                     Event.observe(element, 'click', templatedisplay.selectField);
                 });
 
-				// These are the 2 tab buttons
-                Event.observe($('templatedisplay_tab1'),'click',templatedisplay.showTab1);
-                Event.observe($('templatedisplay_tab2'),'click',templatedisplay.showTab2);
+                // These are the 2 tab buttons
+                Event.observe($('templatedisplay_tab1'), 'click', templatedisplay.showTab1);
+                Event.observe($('templatedisplay_tab2'), 'click', templatedisplay.showTab2);
 
-				// This is a checkbox "show json" -> displays the textarea that contains the json
-                Event.observe($('templatedisplay_showJson'),'click',templatedisplay.toggleJsonBoxVisibility);
+                // This is a checkbox "show json" -> displays the textarea that contains the json
+                Event.observe($('templatedisplay_showJson'), 'click', templatedisplay.toggleJsonBoxVisibility);
 
-				// This is a checkbox "edit json"
-                Event.observe($('templatedisplay_editJson'),'click',templatedisplay.toggleJsonBoxReadonly);
+                // This is a checkbox "edit json"
+                Event.observe($('templatedisplay_editJson'), 'click', templatedisplay.toggleJsonBoxReadonly);
 
-				// This is a the save configuration button
-                Event.observe($('templatedisplay_saveConfigurationBt'),'click',templatedisplay.saveConfiguration);
+                // This is a the save configuration button
+                Event.observe($('templatedisplay_saveConfigurationBt'), 'click', templatedisplay.saveConfiguration);
 
-				// This is a drop down menu that contains the different type (text - image - link - email)
-                Event.observe($('templatedisplay_type'),'change',templatedisplay.showSnippetBox);
+                // This is a drop down menu that contains the different type (text - image - link - email)
+                Event.observe($('templatedisplay_type'), 'change', templatedisplay.showSnippetBox);
+
+                // This is a textarea that content the HTML template.
+                Event.observe($('templatedisplay_htmlContent'), 'keyup', function(){
+					tx_templatedisplay_hasChanged = true;
+                });
 
                 // Attaches event onto the snippet icon
                 $$('.templatedisplay_snippetBox a').each(function(record, index){
@@ -83,10 +88,10 @@ if (Prototype) {
                             var code = $('snippet' + type + position).innerHTML
                             code = code.replace('\n<![CDATA[\n','');
                             code = code.replace(']]>\n','');
-							$('templatedisplay_configuration').value = code;
+                            $('templatedisplay_configuration').value = code;
                         }
-						else {
-							alert('No snippet found!')
+                        else {
+                            alert('No snippet found!')
                         }
 
                     });
@@ -98,70 +103,83 @@ if (Prototype) {
         /**
          * Whenever the user has clicked on tab "mapping"
          */
-		showTab1: function() {
-			// Makes sure there is content to send
-			if ($$('#templatedisplay_html textarea')[0].value != '') {
-
-				// GUI changes
-				$$('#templatedisplay_html textarea')[0].setStyle("opacity: 0.5");
-				$$('#templatedisplay_html div')[0].removeClassName('templatedisplay_hidden');
+        showTab1: function() {
+            // Makes sure there is content to send
+            if ($('templatedisplay_htmlContent').value != '') {
 			
-				// Sends the content in an Ajax request
-				new Ajax.Request("ajax.php", {
-					method: "post",
-					parameters: {
-						"ajaxID": "templatedisplay::saveTemplate",
-						"uid" : tx_templatedisplay_uid,
-						"template" : $$('#templatedisplay_html textarea')[0].value
-					},
-					onComplete: function(xhr) {
-						if (xhr.responseText != 0) {
-							$('templatedisplay_tab2').parentNode.removeClassName('tabact');
-							$('templatedisplay_tab1').parentNode.removeClassName('tab');
-							$('templatedisplay_tab1').parentNode.addClassName('tabact');
-							$('templatedisplay_mapping').removeClassName('templatedisplay_hidden');
-							$('templatedisplay_html').addClassName('templatedisplay_hidden');
-							$$('#templatedisplay_html textarea')[0].setStyle("opacity: 1");
-							$$('#templatedisplay_html div')[0].addClassName('templatedisplay_hidden');
+                // If content has changed, sends an ajax request
+                if (tx_templatedisplay_hasChanged) {
 
-							// Reinject the new HTML
-							$('templatedisplay_templateBox').innerHTML = xhr.responseText;
+                    // GUI changes
+                    $('templatedisplay_htmlContent').setStyle("opacity: 0.5");
+                    $$('#templatedisplay_html div')[0].removeClassName('templatedisplay_hidden');
+				
+                    // Sends the content in an Ajax request
+                    new Ajax.Request("ajax.php", {
+                        method: "post",
+                        parameters: {
+                            "ajaxID": "templatedisplay::saveTemplate",
+                            "uid" : tx_templatedisplay_uid,
+                            "template" : $('templatedisplay_htmlContent').value
+                        },
+                        onComplete: function(xhr) {
+                            if (xhr.responseText != 0) {
+                                $('templatedisplay_tab2').parentNode.removeClassName('tabact');
+                                $('templatedisplay_tab1').parentNode.removeClassName('tab');
+                                $('templatedisplay_tab1').parentNode.addClassName('tabact');
+                                $('templatedisplay_mapping').removeClassName('templatedisplay_hidden');
+                                $('templatedisplay_html').addClassName('templatedisplay_hidden');
+                                $('templatedisplay_htmlContent').setStyle("opacity: 1");
+                                $$('#templatedisplay_html div')[0].addClassName('templatedisplay_hidden');
 
-							// These are clickable link on marker ###FIELD.xxx###
-							$$('#templatedisplay_templateBox a').each(function(element){
-								templatedisplay.initializeImages(element);
-								Event.observe(element, 'click', templatedisplay.selectField);
-							});
-						}
+                                // Reinject the new HTML
+                                $('templatedisplay_templateBox').innerHTML = xhr.responseText;
 
-					}.bind(this),
-					onT3Error: function(xhr) {
-						alert(xhr);
-					}.bind(this)
-				});
+                                // These are clickable link on marker ###FIELD.xxx###
+                                $$('#templatedisplay_templateBox a').each(function(element){
+                                    templatedisplay.initializeImages(element);
+                                    Event.observe(element, 'click', templatedisplay.selectField);
+                                });
+                                tx_templatedisplay_hasChanged = false;
+                            }
+
+                        }.bind(this),
+                        onT3Error: function(xhr) {
+                            alert(xhr);
+                        }.bind(this)
+                    });
+                }
+                else {
+					// Swith to the other tab
+                    $('templatedisplay_tab2').parentNode.removeClassName('tabact');
+                    $('templatedisplay_tab1').parentNode.removeClassName('tab');
+                    $('templatedisplay_tab1').parentNode.addClassName('tabact');
+                    $('templatedisplay_mapping').removeClassName('templatedisplay_hidden');
+                    $('templatedisplay_html').addClassName('templatedisplay_hidden');
+                }
             }
-			else {
-				alert('No HTML content defined! Please add some one.')
+            else {
+                alert('No HTML content defined! Please add some one.')
             }
         },
 
         /**
          * Whenever the user has clicked on tab "HTML"
          */
-		showTab2: function() {
-			$('templatedisplay_tab1').parentNode.removeClassName('tabact');
-			this.parentNode.removeClassName('tab');
-			this.parentNode.addClassName('tabact');
-			$('templatedisplay_mapping').addClassName('templatedisplay_hidden');
-			$('templatedisplay_html').removeClassName('templatedisplay_hidden');
+        showTab2: function() {
+            $('templatedisplay_tab1').parentNode.removeClassName('tabact');
+            this.parentNode.removeClassName('tab');
+            this.parentNode.addClassName('tabact');
+            $('templatedisplay_mapping').addClassName('templatedisplay_hidden');
+            $('templatedisplay_html').removeClassName('templatedisplay_hidden');
         },
 
         /**
          * Shows the right snippet box, according to the value
          */
         showSnippetBox: function(type){
-			if (typeof(type) == 'object') {
-				type = this.value;
+            if (typeof(type) == 'object') {
+                type = this.value;
             }
 
             $$('.templatedisplay_snippetBox').each(function(record, index){
@@ -198,7 +216,7 @@ if (Prototype) {
                 var content = $('templatedisplay_fields').value.split('.');
                 var type = $('templatedisplay_type').value;
                 var configuration = $('templatedisplay_configuration').value;
-				var marker = $('templatedisplay_marker').value;
+                var marker = $('templatedisplay_marker').value;
                 var newRecord = '{"marker": "' + marker + '", "table": "' + content[0] + '", "field": "' + content[1] + '", "type": "' + type + '", "configuration": "' + protectJsonString(configuration) + '"}'
                 newRecord = newRecord.evalJSON(true);
 
@@ -211,7 +229,7 @@ if (Prototype) {
 
                 // True, when this is a new record => new position in the datasource
                 if (typeof(offset) == 'string') {
-					offset = records.length;
+                    offset = records.length;
                 }
                 records[offset] = newRecord;
 
@@ -241,7 +259,7 @@ if (Prototype) {
                             //$('templatedisplay_configuationBox').addClassName('templatedisplay_hidden');
                             //$('templatedisplay_configuration').value = '';
                             //$('templatedisplay_fields').value = '';
-							//$('templatedisplay_fields').disabled = "disabled";
+                            //$('templatedisplay_fields').disabled = "disabled";
                             $('loadingBox').addClassName('templatedisplay_hidden');
                         }
 
@@ -303,7 +321,7 @@ if (Prototype) {
             // True, when no JSON information is available -> put an empty icon
             if($('templatedisplay_json').value == ''){
                 image.src = infomodule_path + 'exclamation.png';
-				image.title = 'Status: not matched'
+                image.title = 'Status: not matched'
                 return;
             }
 
@@ -320,7 +338,7 @@ if (Prototype) {
 
             // Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
             var type = '';
-			var marker = 'FIELD.' + field;
+            var marker = 'FIELD.' + field;
             $(templatedisplay.records).each(function(record, index){
                 if(record.marker == marker){
                     type = record.type;
@@ -330,7 +348,7 @@ if (Prototype) {
             // Puts the right icon wheter a marker is defined or not
             if(type != ''){
                 image.src = infomodule_path + 'accept.png';
-				image.title = 'Status: OK';
+                image.title = 'Status: OK';
 
                 // Puts an other icon according to the type of the link
                 $(image.nextSibling).src = infomodule_path + type + '.png';
@@ -338,7 +356,7 @@ if (Prototype) {
             }
             else{
                 image.src = infomodule_path + 'exclamation.png';
-				image.title = 'Status: not matched';
+                image.title = 'Status: not matched';
             }
         },
 
@@ -359,7 +377,7 @@ if (Prototype) {
                 templatedisplay.initializeImages(element);
             });
             $(this).next().src = infomodule_path + 'pencil.png';
-			$(this).next().title = 'Status: editing';
+            $(this).next().title = 'Status: editing';
 
             // Extract the field name
             var field = this.innerHTML.replace(/#{3}FIELD\.([0-9a-zA-Z\_\-\.]+)#{3}/g,'$1');
@@ -374,22 +392,22 @@ if (Prototype) {
                 table = content[0];
             }
 
-			// means the table was not successfully guessed
-			if (table == '' || table.search(' ') != -1) {
-				table = tx_templatedisplay_defaultTable;
+            // means the table was not successfully guessed
+            if (table == '' || table.search(' ') != -1) {
+                table = tx_templatedisplay_defaultTable;
             }
 
-			var marker = 'FIELD.' + field;
-			$$('#templatedisplay_marker')[0].value = marker;
+            var marker = 'FIELD.' + field;
+            $$('#templatedisplay_marker')[0].value = marker;
 
-			// Show the other boxes that were previously hidden (configuration box - dropdown menu type etc...)
+            // Show the other boxes that were previously hidden (configuration box - dropdown menu type etc...)
             $('templatedisplay_fields').disabled = "";
             $('templatedisplay_typeBox').removeClassName('templatedisplay_hidden');
             $('templatedisplay_configuationBox').removeClassName('templatedisplay_hidden');
 
             // Makes sure the JSON != null, otherwise it will generate an error
-			if ($('templatedisplay_json').value.length == 0) {
-				$('templatedisplay_json').value = '[]';
+            if ($('templatedisplay_json').value.length == 0) {
+                $('templatedisplay_json').value = '[]';
             }
 
             var currentRecord = '';
@@ -401,9 +419,9 @@ if (Prototype) {
                 }
             });
 
-			// Select the right entry in the select drop down
-			if(typeof(currentRecord) == 'object'){
-				$$('#templatedisplay_fields')[0].value = currentRecord.table + '.' + currentRecord.field;
+            // Select the right entry in the select drop down
+            if(typeof(currentRecord) == 'object'){
+                $$('#templatedisplay_fields')[0].value = currentRecord.table + '.' + currentRecord.field;
             }
             else if(table != '' && field != ''){
                 $$('#templatedisplay_fields')[0].value = table + '.' + field;
@@ -417,8 +435,8 @@ if (Prototype) {
                 $('templatedisplay_type').value = currentRecord.type;
                 $('templatedisplay_configuration').value = currentRecord.configuration;
 
-				// (Cosmetic) Displays the right snippet Box
-				templatedisplay.showSnippetBox(currentRecord.type);
+                // (Cosmetic) Displays the right snippet Box
+                templatedisplay.showSnippetBox(currentRecord.type);
             }
             // means the field has not been found for some reasons
             else{

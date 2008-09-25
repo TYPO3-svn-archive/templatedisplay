@@ -12,7 +12,7 @@
 </table>
 
 <div id="templatedisplay_html" class="templatedisplay_hidden">
-	<textarea>###TEMPLATE_CONTENT_SRC###</textarea>
+	<textarea id="templatedisplay_htmlContent">###TEMPLATE_CONTENT_SRC###</textarea>
 	<div id="loadingBoxHtml" class="templatedisplay_hidden">
 		<img src="###INFOMODULE_PATH###loading.gif" alt="loading" />
 	</div>
@@ -91,10 +91,10 @@
 		</tbody>
 	</table>
 	<div id="templatedisplay_jsonBox">
-		<input type="hidden" name="" value="" id="templatedisplay_marker"/> 
-		<input type="checkbox" name="" value="1" id="templatedisplay_showJson"/> 
+		<input type="hidden" name="" value="" id="templatedisplay_marker"/>
+		<input type="checkbox" name="" value="1" id="templatedisplay_showJson"/>
 		<label for="templatedisplay_showJson">###SHOW_JSON###</label>
-		<input type="checkbox" name="" value="1" id="templatedisplay_editJson" class="templatedisplay_hidden"/> 
+		<input type="checkbox" name="" value="1" id="templatedisplay_editJson" class="templatedisplay_hidden"/>
 		<label for="templatedisplay_editJson" id="templatedisplay_labelEditJson"  class="templatedisplay_hidden">###EDIT_JSON###</label>
 		<textarea id="templatedisplay_json" class="templatedisplay_hidden" readonly="readonly" name="###STORED_FIELD_NAME###">###STORED_FIELD_VALUE###</textarea>
 	</div>
@@ -103,6 +103,7 @@
 	var infomodule_path = '###INFOMODULE_PATH###';
 	var tx_templatedisplay_uid = '###UID###';
 	var tx_templatedisplay_defaultTable = '###DEFAULT_TABLE###';
+	var tx_templatedisplay_hasChanged = false;
 </script>
 <script id="snippettext1" type="text/plain">
 <![CDATA[
@@ -170,7 +171,7 @@ additionalParams = &tx_myext_pi1[param]=value
 </script>
 <script id="snippetlinkToDetail2" type="text/plain">
 <![CDATA[
-# parameter is mandatory value	
+# parameter is mandatory value
 parameter = 1
 additionalParams = &tx_myext_pi1[uid]={field:uid}&tx_myext_pi1[title]={page:title}
 additionalParams.insertData = 1
