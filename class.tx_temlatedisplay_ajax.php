@@ -42,6 +42,7 @@ class tx_templatedisplay_ajax {
 	 * @return	void	(with 4.2)
 	 */
 	public function saveConfiguration($params, $ajaxObj) {
+		ini_set('display_errors',0);
 		$uid = t3lib_div::_GP('uid');
 		$mappings = t3lib_div::_GP('mappings');
 		$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid','tx_templatedisplay_displays','uid = '. $uid);
@@ -67,6 +68,7 @@ class tx_templatedisplay_ajax {
 	 * @return	void	(with 4.2)
 	 */
 	public function saveTemplate($params, $ajaxObj) {
+		ini_set('display_errors',0);
 		$uid = t3lib_div::_GP('uid');
 		$template = t3lib_div::_GP('template');
 		$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid','tx_templatedisplay_displays','uid = '. $uid);
