@@ -88,6 +88,7 @@ class tx_templatedisplay_tceforms {
 				$marker['###TEMPLATE_CONTENT_SRC###'] = $templateContent;
 				$marker['###TEMPLATE_CONTENT###'] = $this->transformTemplateContent($templateContent);
 				$marker['###STORED_FIELD_NAME###'] = $PA['itemFormElName'];
+				$marker['###STORED_FIELD_NAME_TEMPLATE###'] = str_replace('mappings','template',$PA['itemFormElName']);
 				$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
 				$marker['###INFOMODULE_PATH###'] = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
 				$marker['###UID###'] = $row['uid'];
