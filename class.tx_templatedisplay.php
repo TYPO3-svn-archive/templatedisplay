@@ -201,7 +201,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
 		$datasource = json_decode($this->consumerData['mappings'],true);
-
+		
 		// Transforms the configuration string into an array
 		$parseObj = t3lib_div::makeInstance('t3lib_TSparser');
 		foreach ($datasource as $data) {
@@ -232,7 +232,14 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		// Substitutes subpart
 		if ($this->markers[$this->structure['name']] != '') {
-			$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[$this->structure['name']], $subTemplateContent);
+			// But makes sure the LOOP is present in the templateCode.
+			// It not, it might mean, there is a LOOP level2 without a LOOP level1
+			if (preg_match('/#{3}LOOP.' . $this->structure['name'] . '#{3}/',$templateCode)) {
+				$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[$this->structure['name']], $subTemplateContent);
+            }
+			else {
+				$templateContent = $subTemplateContent;
+            }
 		}
 		else {
 			$templateContent = $subTemplateContent;
@@ -273,7 +280,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 
 			// Calculates numPage, the number of pages
-			$conf['numPages'] = ceil($this->structure['count'] / $limit);
+			$conf['numberOfPages'] = ceil($this->structure['count'] / $limit);
 
 			// adds limit to the query
 			$conf['extraQueryString'] .= '&tx_dataquery_pi1[limit]=' . $limit;
@@ -302,7 +309,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 			// count number of IF
 			$numberOfElements = count($matches[0]);
-			
+
 			// Evaluates the condition
 			for ($index = 0; $index < $numberOfElements; $index++) {
 				$condition = $matches[2][$index];
@@ -352,18 +359,18 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-     * Makes sure the operand does not contain the symbol "'".
-     * 
-     * @param string	$operand
-     * @return string 
-     */
+	 * Makes sure the operand does not contain the symbol "'".
+	 *
+	 * @param string	$operand
+	 * @return string
+	 */
 	private function sanitizeOperand($operand) {
 		$operand = substr(trim($operand), 1);
 		$operand = substr($operand, 0, strlen($operand) - 1);
 		$operand = str_replace("'","\'",$operand);
 		return "'" . $operand . "'";
 	}
-	
+
 	/**
 	 * Recursive method. Gets the subpart template and substitutes content (label or field).
 	 *
@@ -380,7 +387,17 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$this->counter[$sds['name']] = 0;
 
 			// Defines subTemplateCode (template HTML) array according to $sds['name'] which contains a table name.
-			$this->subTemplateCode[$sds['name']] = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
+			$subTemplateCode = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
+
+			// If nothing is found, it means there are no LOOP defined for the this table name
+			// This case can be faced whenever a template defined with the LOOP level2 without a LOOP level1
+			// This code code could be compacted. However, for understanding the logic, is is clearer to let it like it.
+			if ($subTemplateCode != '') {
+				$this->subTemplateCode[$sds['name']] = $subTemplateCode;
+			}
+			else {
+				$this->subTemplateCode[$sds['name']] = $templateCode;
+			}
 		}
 		else {
 			$this->subTemplateCode[$sds['name']] = $templateCode;
@@ -403,7 +420,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 			// initialize data
 			$this->localCObj->start($records);
-				
+
 			// ... and traverses the fields of the current record (associative array)
 			foreach ($records as $field => $value) {
 				// Important control. Makes sure the field has been mapped.
@@ -418,86 +435,86 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					foreach	($keys as $key) {
 						switch ($this->datasource[$key]['type']) {
 							case 'text':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['value'] = $value;
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
-							break;
-							case 'image':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['file'] = $value;
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['value'] = $value;
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
+								break;
+								case 'image':
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['file'] = $value;
 
-							// Sets the alt attribute if no altText is defined
-							if (!isset($configuration['altText'])) {
-								// Gets the file name
-								$configuration['altText'] = $this->getFileName($configuration['file']);
+								// Sets the alt attribute if no altText is defined
+								if (!isset($configuration['altText'])) {
+									// Gets the file name
+									$configuration['altText'] = $this->getFileName($configuration['file']);
 
-							}
-
-							// Sets the title attribute if no title is defined
-							if (!isset($configuration['titleText'])) {
-								if ($configuration['altText'] != '') {
-									$configuration['titleText'] = $configuration['altText'];
 								}
-								else{
-									$configuration['titleText'] = $this->getFileName($configuration['file']);
-								}
-							}
 
-							// Makes sure the file exists
-							if (is_file($configuration['file'])) {
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->IMAGE($configuration);
-							}
-							else {
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="" class="templateDisplay_imageNotFound" alt="Image not found"/>';
-							}
-							break;
+								// Sets the title attribute if no title is defined
+								if (!isset($configuration['titleText'])) {
+									if ($configuration['altText'] != '') {
+										$configuration['titleText'] = $configuration['altText'];
+									}
+									else{
+										$configuration['titleText'] = $this->getFileName($configuration['file']);
+									}
+								}
+
+								// Makes sure the file exists
+								if (is_file($configuration['file'])) {
+									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->IMAGE($configuration);
+								}
+								else {
+									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="" class="templateDisplay_imageNotFound" alt="Image not found"/>';
+								}
+								break;
 							case 'linkToDetail':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['useCacheHash'] = 1;
-							if (!isset($configuration['returnLast'])) {
-								$configuration['returnLast'] = 'url';
-							}
-							$additionalParams = '&' . $this->pObj->prefixId . '[table]=' . $sds['name'] . '&' . $this->pObj->prefixId .'[showUid]=' . $value;
-							$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['useCacheHash'] = 1;
+								if (!isset($configuration['returnLast'])) {
+									$configuration['returnLast'] = 'url';
+								}
+								$additionalParams = '&' . $this->pObj->prefixId . '[table]=' . $sds['name'] . '&' . $this->pObj->prefixId .'[showUid]=' . $value;
+								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
 
-							// Generates the link
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-							break;
+								// Generates the link
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
 							case 'linkToPage':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['useCacheHash'] = 1;
-							if (!isset($configuration['returnLast'])) {
-								$configuration['returnLast'] = 'url';
-							}
-							$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['useCacheHash'] = 1;
+								if (!isset($configuration['returnLast'])) {
+									$configuration['returnLast'] = 'url';
+								}
+								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
 
-							// Generates the link
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-							break;
+								// Generates the link
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
 							case 'linkToFile':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['useCacheHash'] = 1;
-							if (!isset($configuration['returnLast'])) {
-								$configuration['returnLast'] = 'url';
-							}
-							if (!isset($configuration['parameter'])) {
-								$configuration['parameter'] = $value;
-							}
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['useCacheHash'] = 1;
+								if (!isset($configuration['returnLast'])) {
+									$configuration['returnLast'] = 'url';
+								}
+								if (!isset($configuration['parameter'])) {
+									$configuration['parameter'] = $value;
+								}
 
-							// replaces white spaces in filename
-							$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
+								// replaces white spaces in filename
+								$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
 
-							// Generates the link
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-							break;
+								// Generates the link
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
 							case 'email':
-							$configuration = $this->datasource[$key]['configuration'];
-							if (!isset($configuration['parameter'])) {
-								$configuration['parameter'] = $value;
-							}
-							// Generates the email
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-							break;
+								$configuration = $this->datasource[$key]['configuration'];
+								if (!isset($configuration['parameter'])) {
+									$configuration['parameter'] = $value;
+								}
+								// Generates the email
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
 						} // end switch
 					} // end foreach
 				} // end if
@@ -508,16 +525,17 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			if (isset($this->counter[$sds['name']])) {
 				$_temp['###COUNTER###'] = $this->counter[$sds['name']];
 				$_fieldMarkers = array_merge($_fieldMarkers, $_temp);
-            }
+			}
 
 			// $_templateContent contains the temporary HTML. Whenever getSubContent() is called recursively, the content is passed to the method
 			$_templateContent = t3lib_parsehtml::substituteMarkerArray($this->subTemplateCode[$sds['name']], $_fieldMarkers);
 			$templateContent .= $_templateContent;
-#echo $_templateContent;
+			# Debug:
+			#echo $_templateContent;
 
 			$this->counter[$sds['name']] = $this->counter[$sds['name']] + 1;
-#			echo $this->counter[$sds['name']];
-#exit();
+			# Debug:
+			#echo $this->counter[$sds['name']];
 
 			// If the records contains subtables, recursively calls getSubContent()
 			// Else, removes a possible unwanted part <!-- ###LOOP.unsed ### begin -->.+<!-- ###LOOP.unsed ### end -->
