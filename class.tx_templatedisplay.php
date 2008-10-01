@@ -265,7 +265,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			if ($conf != null) {
 
 				// Adds limit to the query and calculates the number of pages.
-				if ($this->filter['limit']['max'] != '') {
+				if ($this->filter['limit']['max'] != '' && $this->filter['limit']['max'] != '0') {
 					$conf['extraQueryString'] .= '&' . $this->pObj->prefixId . '[limit]=' . $this->filter['limit']['max'];
 					$conf['numberOfPages'] = ceil($this->structure['totalCount'] / $this->filter['limit']['max']);
 				}
@@ -275,7 +275,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 				// Can be tx_displaycontroller_pi1 OR tx_displaycontroller_pi1
 				$conf['pageParameterName'] = $this->pObj->prefixId . '|page';
-
+				
+				$this->localCObj->start(array(), '');
 				$pageBrowser = $this->localCObj->cObjGetSingle('USER',$conf);
 			}
 			else {
