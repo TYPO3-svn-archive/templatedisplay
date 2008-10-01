@@ -44,58 +44,63 @@ if (Prototype) {
         initialize: function() {
 
             Event.observe(document, 'dom:loaded', function(){
-
-                // These are clickable link on marker ###FIELD.xxx###
-                $$('#templatedisplay_templateBox a').each(function(element){
-                    templatedisplay.initializeImages(element);
-                    Event.observe(element, 'click', templatedisplay.selectField);
-                });
-
-                // These are the 2 tab buttons
-                Event.observe($('templatedisplay_tab1'), 'click', templatedisplay.showTab1);
-                Event.observe($('templatedisplay_tab2'), 'click', templatedisplay.showTab2);
-
-                // This is a checkbox "show json" -> displays the textarea that contains the json
-                Event.observe($('templatedisplay_showJson'), 'click', templatedisplay.toggleJsonBoxVisibility);
-
-                // This is a checkbox "edit json"
-                Event.observe($('templatedisplay_editJson'), 'click', templatedisplay.toggleJsonBoxReadonly);
-
-                // This is a the save configuration button
-                Event.observe($('templatedisplay_saveConfigurationBt'), 'click', templatedisplay.saveConfiguration);
-
-                // This is a drop down menu that contains the different type (text - image - link - email)
-                Event.observe($('templatedisplay_type'), 'change', templatedisplay.showSnippetBox);
-
-                // This is a textarea that content the HTML template.
-                Event.observe($('templatedisplay_htmlContent'), 'keyup', function(){
-					tx_templatedisplay_hasChanged = true;
-                });
-
-                // Attaches event onto the snippet icon
-                $$('.templatedisplay_snippetBox a').each(function(record, index){
-                    Event.observe($(record),'click',function(){
-                        var parent = $(this).parentNode;
-                        var type = parent.id.replace('templatedisplay_snippet','');
-                        var position = '';
-                        var thisRef = this;
-                        $$('#' + parent.id + ' a').each(function(linkRef, index){
-                            if (thisRef == linkRef) {
-                                position = index + 1;
-                            }
-                        });
-                        if ($('snippet' + type + position) != null) {
-                            var code = $('snippet' + type + position).innerHTML
-                            code = code.replace('\n<![CDATA[\n','');
-                            code = code.replace(']]>\n','');
-                            $('templatedisplay_configuration').value = code;
-                        }
-                        else {
-                            alert('No snippet found!')
-                        }
-
+				// Things may happen wrong
+                try {
+                    // These are clickable link on marker ###FIELD.xxx###
+                    $$('#templatedisplay_templateBox a').each(function(element){
+                        templatedisplay.initializeImages(element);
+                        Event.observe(element, 'click', templatedisplay.selectField);
                     });
-                });
+
+                    // These are the 2 tab buttons
+                    Event.observe($('templatedisplay_tab1'), 'click', templatedisplay.showTab1);
+                    Event.observe($('templatedisplay_tab2'), 'click', templatedisplay.showTab2);
+
+                    // This is a checkbox "show json" -> displays the textarea that contains the json
+                    Event.observe($('templatedisplay_showJson'), 'click', templatedisplay.toggleJsonBoxVisibility);
+
+                    // This is a checkbox "edit json"
+                    Event.observe($('templatedisplay_editJson'), 'click', templatedisplay.toggleJsonBoxReadonly);
+
+                    // This is a the save configuration button
+                    Event.observe($('templatedisplay_saveConfigurationBt'), 'click', templatedisplay.saveConfiguration);
+
+                    // This is a drop down menu that contains the different type (text - image - link - email)
+                    Event.observe($('templatedisplay_type'), 'change', templatedisplay.showSnippetBox);
+
+                    // This is a textarea that content the HTML template.
+                    Event.observe($('templatedisplay_htmlContent'), 'keyup', function(){
+                        tx_templatedisplay_hasChanged = true;
+                    });
+
+                    // Attaches event onto the snippet icon
+                    $$('.templatedisplay_snippetBox a').each(function(record, index){
+                        Event.observe($(record),'click',function(){
+                            var parent = $(this).parentNode;
+                            var type = parent.id.replace('templatedisplay_snippet','');
+                            var position = '';
+                            var thisRef = this;
+                            $$('#' + parent.id + ' a').each(function(linkRef, index){
+                                if (thisRef == linkRef) {
+                                    position = index + 1;
+                                }
+                            });
+                            if ($('snippet' + type + position) != null) {
+                                var code = $('snippet' + type + position).innerHTML
+                                code = code.replace('\n<![CDATA[\n','');
+                                code = code.replace(']]>\n','');
+                                $('templatedisplay_configuration').value = code;
+                            }
+                            else {
+                                alert('No snippet found!')
+                            }
+
+                        });
+                    });
+                }
+                catch(e) {
+                    return;
+                }
             });
 
         },
@@ -150,7 +155,7 @@ if (Prototype) {
                     });
                 }
                 else {
-					// Swith to the other tab
+                    // Switch to the other tab
                     $('templatedisplay_tab2').parentNode.removeClassName('tabact');
                     $('templatedisplay_tab1').parentNode.removeClassName('tab');
                     $('templatedisplay_tab1').parentNode.addClassName('tabact');

@@ -36,10 +36,15 @@ function user_addBackendLibrary($parameters, $pObj) {
 	if (isset($parameters['title'])) {
 		if($parameters['title'] == 'TYPO3 Edit Document'){
 
+			// Gets the edit parameter...
 			$_editArray = t3lib_div::GPvar('edit');
 			if (is_array($_editArray)) {
+
+				// ... and checks the key...
 				$table = key($_editArray);
 				if ($table == 'tx_templatedisplay_displays') {
+					
+					//... before injected some javascript
 					$pObj->loadJavascriptLib('js/common.js');
 					$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/formatJson.js');
 					$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/templatedisplay.js');
