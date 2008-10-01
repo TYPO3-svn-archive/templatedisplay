@@ -262,30 +262,20 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			// Fetches the configuration
 			$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_pagebrowse_pi1.'];
 
-			// Gets the limit value.
-			// 1) checks if a limit is given in the URL
-			// 2) if not, check if limit has a default value in TS
-			// 3) Finally, defines the limit manually to avoid a division by 0.
-			$parameters = t3lib_div::GPvar('tx_dataquery_pi1');
-			#$this->filter['limit']['max'];
-			#$this->filter['limit']['offset'];
-			if (is_array($parameters) && isset($parameters['limit'])) {
-				$limit = $parameters['limit'];
-			}
-			else if (isset($conf['limit'])) {
-				$limit = $conf['limit'];
-			}
-			else {
-				$limit = 10;
-			}
-
-			// Calculates numPage, the number of pages
-			$conf['numberOfPages'] = ceil($this->structure['count'] / $limit);
-
-			// adds limit to the query
-			$conf['extraQueryString'] .= '&tx_dataquery_pi1[limit]=' . $limit;
-
 			if ($conf != null) {
+
+				// Adds limit to the query and calculates the number of pages.
+				if ($this->filter['limit']['max'] != '') {
+					$conf['extraQueryString'] .= '&' . $this->pObj->prefixId . '[limit]=' . $this->filter['limit']['max'];
+					$conf['numberOfPages'] = ceil($this->structure['totalCount'] / $this->filter['limit']['max']);
+				}
+				else {
+					$conf['numberOfPages'] = 1;
+				}
+
+				// Can be tx_displaycontroller_pi1 OR tx_displaycontroller_pi1
+				$conf['pageParameterName'] = $this->pObj->prefixId . '|page';
+
 				$pageBrowser = $this->localCObj->cObjGetSingle('USER',$conf);
 			}
 			else {
