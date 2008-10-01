@@ -27,18 +27,26 @@
 
 /**
  * Add a javascript library under certain conditions
- * 
+ *
  * @param array $parameters
  * @param object $pObj (template object)
  */
 function user_addBackendLibrary($parameters, $pObj) {
-	if(isset($parameters['title'])){
+
+	if (isset($parameters['title'])) {
 		if($parameters['title'] == 'TYPO3 Edit Document'){
-			$pObj->loadJavascriptLib('js/common.js');
-			$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/formatJson.js');
-			$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/templatedisplay.js');
-			$pObj->inDocStylesArray['templatedisplay'] = file_get_contents(t3lib_extMgm::extPath('templatedisplay').'resources/css/templatedisplay.css');
-        }
-    }
+
+			$_editArray = t3lib_div::GPvar('edit');
+			if (is_array($_editArray)) {
+				$table = key($_editArray);
+				if ($table == 'tx_templatedisplay_displays') {
+					$pObj->loadJavascriptLib('js/common.js');
+					$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/formatJson.js');
+					$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/templatedisplay.js');
+					$pObj->inDocStylesArray['templatedisplay'] = file_get_contents(t3lib_extMgm::extPath('templatedisplay').'resources/css/templatedisplay.css');
+				}
+			}
+		}
+	}
 }
 ?>
