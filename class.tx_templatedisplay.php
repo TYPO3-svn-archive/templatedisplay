@@ -50,7 +50,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected $labelMarkers = array();
 	protected $fieldMarker = array();
 	protected $markers = array();
-	private $counter = array();
+	protected $counter = array();
 
 	protected $datasource = array();
 	protected $fieldsInDatasource = array();
@@ -182,21 +182,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// Loads the template file
 		$templateCode = $this->consumerData['template'];
 
-		// Handles the <!--IF(###MARKER### == '')-->, puts a '' around the marker
-		if (preg_match('/<!-- *IF/',$templateCode)) {
-			$pattern = '/<!-- *IF.+-->/isU';
-			preg_match_all($pattern, $templateCode, $matches);
+		// Start transformation
+		$templateCode = $this->preProcessIf($templateCode);
 
-			foreach	($matches[0] as $match){
-				$pattern = '/#{3}.+#{3}/isU';
-				preg_match_all($pattern, $match, $_matches);
-				$replaceString = $match;
-				foreach ($_matches[0] as $_match) {
-					$replaceString = str_replace($_match,'\'' . $_match . '\'',$replaceString);
-				}
-				$templateCode = str_replace($match,$replaceString,$templateCode);
-			}
-		}
 
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
@@ -228,7 +216,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		// Get the content from sub template, typically LOOP part
-		$subTemplateContent = $this->getSubContent($this->structure,$templateCode);
+		$subTemplateContent = $this->getSubContent($this->structure, $templateCode);
 
 		// Substitutes subpart
 		if ($this->markers[$this->structure['name']] != '') {
@@ -236,10 +224,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			// It not, it might mean, there is a LOOP level2 without a LOOP level1
 			if (preg_match('/#{3}LOOP.' . $this->structure['name'] . '#{3}/',$templateCode)) {
 				$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[$this->structure['name']], $subTemplateContent);
-            }
+			}
 			else {
 				$templateContent = $subTemplateContent;
-            }
+			}
 		}
 		else {
 			$templateContent = $subTemplateContent;
@@ -256,8 +244,49 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		// Handles the page browser
+		$templateContent = $this->processPageBrowser($templateContent);
+		
+		// Merges together 2 labels arrays for performance reasons.
+		$this->labelMarkers = array_merge($this->labelMarkers[$this->structure['name']], $_labels);
+
+		// Substititutes label translation
+		$this->result = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers);
+		
+		// Handles the <!--IF(###MARKER### == '')-->
+		// Evaluates the condition and replaces the content wether it is necessary
+		$this->result = $this->postProcessIf($this->result);
+		
+		// Hook that enables to post process the output)
+		if (is_array($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'])) {
+			$_params = array(); // Associative array. In this case, $_params is empty.
+			foreach ($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'] as $_funcRef) {
+				t3lib_div::callUserFunction($_funcRef, $_params, $this);
+			}
+		}
+	}
+
+	/**
+	 * Makes sure the operand does not contain the symbol "'".
+	 *
+	 * @param string	$operand
+	 * @return string
+	 */
+	protected function sanitizeOperand($operand) {
+		$operand = substr(trim($operand), 1);
+		$operand = substr($operand, 0, strlen($operand) - 1);
+		$operand = str_replace("'","\'",$operand);
+		return "'" . $operand . "'";
+	}
+	
+	/**
+	 * Handles the page browser
+	 * 
+	 * @param	string	$content HTML code
+	 * @return	string	$content transformed HTML code
+	 */
+	protected function processPageBrowser($content) {
 		$pattern = '/#{3}PAGE_BROWSER#{3}/isU';
-		if (preg_match($pattern,$templateContent)) {
+		if (preg_match($pattern,$content)) {
 
 			// Fetches the configuration
 			$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_pagebrowse_pi1.'];
@@ -284,19 +313,47 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 
 			// Replaces the marker by some HTML content
-			$templateContent = preg_replace($pattern, $pageBrowser, $templateContent);
+			$content = preg_replace($pattern, $pageBrowser, $content);
 		}
+		return $content;
+    }
+	
+	/**
+	 * Pre process the <!--IF(###MARKER### == '')-->, puts a '' around the marker
+	 * 
+	 * @param	string	$content HTML code
+	 * @return	string	$content transformed HTML code
+	 */
+	protected function preProcessIf($content) {
+		// Preprocesses the <!--IF(###MARKER### == '')-->, puts a '' around the marker
+		if (preg_match('/<!-- *IF/',$content)) {
+			$pattern = '/<!-- *IF.+-->/isU';
+			preg_match_all($pattern, $content, $matches);
 
-		// Merges together 2 labels arrays for performance reasons.
-		$this->labelMarkers = array_merge($this->labelMarkers[$this->structure['name']], $_labels);
-
-		// Substititutes label translation
-		$this->result = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers);
-		// Handles the <!--IF(###MARKER### == '')-->
-		// Evaluates the condition and replace the content wether it is necessary
-		if (preg_match('/<!-- *IF/',$this->result)) {
+			foreach	($matches[0] as $match){
+				$pattern = '/#{3}.+#{3}/isU';
+				preg_match_all($pattern, $match, $_matches);
+				$replaceString = $match;
+				foreach ($_matches[0] as $_match) {
+					$replaceString = str_replace($_match,'\'' . $_match . '\'',$replaceString);
+				}
+				$content = str_replace($match,$replaceString,$content);
+			}
+		}
+		return $content;
+	}
+	
+	/**
+	 * Post process the <!--IF(###MARKER### == '')-->
+	 * Evaluates the condition and replaces the content wether it is necessary
+     * 
+	 * @param	string	$content HTML code
+	 * @return	string	$content transformed HTML code
+	 */
+	protected function postProcessIf($content) {
+		if (preg_match('/<!-- *IF/',$content)) {
 			$pattern = '/(<!-- *IF *\( *([0-9a-zA-Z\-\.\'_!=%" ]+)\) *-->)(.+)(<!-- *ENDIF *-->)/isU';
-			preg_match_all($pattern, $this->result, $matches);
+			preg_match_all($pattern, $content, $matches);
 
 			// count number of IF
 			$numberOfElements = count($matches[0]);
@@ -320,6 +377,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 				$searchContent = $matches[0][$index];
 				$replaceContent = $matches[3][$index];
+
+				// Tests the result
 				if ($result) {
 					// checks if $replaceContent contains a <!-- ELSE -->
 					if (preg_match('/(.+)(<!-- *ELSE *-->)(.+)/is', $replaceContent, $_matches)) {
@@ -336,30 +395,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 						$replaceContent = '';
 					}
 				}
-				$this->result = str_replace($searchContent, trim($replaceContent), $this->result);
+				$content = str_replace($searchContent, trim($replaceContent), $content);
 			}
 		}
-
-		// Hook that enables to post process the output)
-		if (is_array($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'])) {
-			$_params = array(); // Associative array. In this case, $_params is empty.
-			foreach ($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'] as $_funcRef) {
-				t3lib_div::callUserFunction($_funcRef, $_params, $this);
-			}
-		}
-	}
-
-	/**
-	 * Makes sure the operand does not contain the symbol "'".
-	 *
-	 * @param string	$operand
-	 * @return string
-	 */
-	private function sanitizeOperand($operand) {
-		$operand = substr(trim($operand), 1);
-		$operand = substr($operand, 0, strlen($operand) - 1);
-		$operand = str_replace("'","\'",$operand);
-		return "'" . $operand . "'";
+		return $content;
 	}
 
 	/**
@@ -426,86 +465,86 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					foreach	($keys as $key) {
 						switch ($this->datasource[$key]['type']) {
 							case 'text':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['value'] = $value;
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
-								break;
-								case 'image':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['file'] = $value;
+							$configuration = $this->datasource[$key]['configuration'];
+							$configuration['value'] = $value;
+							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
+							break;
+							case 'image':
+							$configuration = $this->datasource[$key]['configuration'];
+							$configuration['file'] = $value;
 
-								// Sets the alt attribute if no altText is defined
-								if (!isset($configuration['altText'])) {
-									// Gets the file name
-									$configuration['altText'] = $this->getFileName($configuration['file']);
+							// Sets the alt attribute if no altText is defined
+							if (!isset($configuration['altText'])) {
+								// Gets the file name
+								$configuration['altText'] = $this->getFileName($configuration['file']);
 
-								}
+							}
 
-								// Sets the title attribute if no title is defined
-								if (!isset($configuration['titleText'])) {
-									if ($configuration['altText'] != '') {
-										$configuration['titleText'] = $configuration['altText'];
-									}
-									else{
-										$configuration['titleText'] = $this->getFileName($configuration['file']);
-									}
+							// Sets the title attribute if no title is defined
+							if (!isset($configuration['titleText'])) {
+								if ($configuration['altText'] != '') {
+									$configuration['titleText'] = $configuration['altText'];
 								}
+								else{
+									$configuration['titleText'] = $this->getFileName($configuration['file']);
+								}
+							}
 
-								// Makes sure the file exists
-								if (is_file($configuration['file'])) {
-									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->IMAGE($configuration);
-								}
-								else {
-									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="" class="templateDisplay_imageNotFound" alt="Image not found"/>';
-								}
-								break;
+							// Makes sure the file exists
+							if (is_file($configuration['file'])) {
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->IMAGE($configuration);
+							}
+							else {
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="" class="templateDisplay_imageNotFound" alt="Image not found"/>';
+							}
+							break;
 							case 'linkToDetail':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['useCacheHash'] = 1;
-								if (!isset($configuration['returnLast'])) {
-									$configuration['returnLast'] = 'url';
-								}
-								$additionalParams = '&' . $this->pObj->prefixId . '[table]=' . $sds['name'] . '&' . $this->pObj->prefixId .'[showUid]=' . $value;
-								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+							$configuration = $this->datasource[$key]['configuration'];
+							$configuration['useCacheHash'] = 1;
+							if (!isset($configuration['returnLast'])) {
+								$configuration['returnLast'] = 'url';
+							}
+							$additionalParams = '&' . $this->pObj->prefixId . '[table]=' . $sds['name'] . '&' . $this->pObj->prefixId .'[showUid]=' . $value;
+							$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
 
-								// Generates the link
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-								break;
+							// Generates the link
+							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+							break;
 							case 'linkToPage':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['useCacheHash'] = 1;
-								if (!isset($configuration['returnLast'])) {
-									$configuration['returnLast'] = 'url';
-								}
-								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+							$configuration = $this->datasource[$key]['configuration'];
+							$configuration['useCacheHash'] = 1;
+							if (!isset($configuration['returnLast'])) {
+								$configuration['returnLast'] = 'url';
+							}
+							$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
 
-								// Generates the link
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-								break;
+							// Generates the link
+							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+							break;
 							case 'linkToFile':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['useCacheHash'] = 1;
-								if (!isset($configuration['returnLast'])) {
-									$configuration['returnLast'] = 'url';
-								}
-								if (!isset($configuration['parameter'])) {
-									$configuration['parameter'] = $value;
-								}
+							$configuration = $this->datasource[$key]['configuration'];
+							$configuration['useCacheHash'] = 1;
+							if (!isset($configuration['returnLast'])) {
+								$configuration['returnLast'] = 'url';
+							}
+							if (!isset($configuration['parameter'])) {
+								$configuration['parameter'] = $value;
+							}
 
-								// replaces white spaces in filename
-								$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
+							// replaces white spaces in filename
+							$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
 
-								// Generates the link
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-								break;
+							// Generates the link
+							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+							break;
 							case 'email':
-								$configuration = $this->datasource[$key]['configuration'];
-								if (!isset($configuration['parameter'])) {
-									$configuration['parameter'] = $value;
-								}
-								// Generates the email
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-								break;
+							$configuration = $this->datasource[$key]['configuration'];
+							if (!isset($configuration['parameter'])) {
+								$configuration['parameter'] = $value;
+							}
+							// Generates the email
+							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+							break;
 						} // end switch
 					} // end foreach
 				} // end if
