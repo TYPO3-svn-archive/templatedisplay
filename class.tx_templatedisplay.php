@@ -146,8 +146,13 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 */
 	public function startProcess() {
 
+		// ************************************
+		// ********** INITIALISATION **********
+        // ************************************
+
 		// Declares global objects
 		global $TYPO3_CONF_VARS;
+		global $LANG;
 
 		/* Hook that enables to pre process the output) */
 		if (is_array($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PreProcessingProc'])) {
@@ -157,11 +162,18 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 
+		// Makes sure mapping exists, otherwise stops
+		if(!isset($this->consumerData['mappings'])){
+			$this->result .= '<div style="color :red; font-weight: bold">No templatedisplay has been found for uid = '.$this->uid . '.</div>';
+			$this->result .= '<div style="color :red; font-weight: bold; margin-top: 10px;">Templatedisplay\'s record may be deleted or hidden.</div>';
+			#throw new Exception('No mappings found for uid = ' . $this->uid);
+			return false;
+		}
+
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
 
-		// Initializes LANG Object. The object does'not exist in the frontend
-		global $LANG;
+		// Initializes LANG Object whether the object does not exist. (for example in the frontend)
 		if($LANG == null){
 
 			if (isset($GLOBALS['TSFE']->tmpl->setup['config.']['language'])) {
@@ -172,28 +184,38 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$LANG->init('default');
 		}
 
-		// Fetches mappings + template file
-		if(!isset($this->consumerData['mappings'])){
-			$this->result .= '<div style="color :red; font-weight: bold">No templatedisplay has been found for uid = '.$this->uid . '.</div>';
-			$this->result .= '<div style="color :red; font-weight: bold; margin-top: 10px;">Templatedisplay\'s record may be deleted or hidden.</div>';
-			return false;
-		}
+		// **************************************
+		// ********** BEGIN PROCESSING **********
+        // **************************************
+
+		// LOCAL DOCUMENTATION:
+		// $templateCode -> HTML template roughly extracted from the database
+		// $subTemplateContent -> sub HTML transformed (temporary variable)
+		// $templateContent -> HTML that is going to be outputed
 
 		// Loads the template file
 		$templateCode = $this->consumerData['template'];
 
-		// Start transformation
+		// Start transformation of $templateCode.
+		// Must be at the beginning of startProcess()
 		$templateCode = $this->preProcessIf($templateCode);
 
+		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###
+		$templateCode = $this->processLLL($templateCode);
+		$templateCode = $this->processExpression('GP', array_merge(t3lib_div::_GET(), t3lib_div::_POST()), $templateCode);
+		$templateCode = $this->processExpression('TSFE', $GLOBALS['TSFE'], $templateCode);
+		$templateCode = $this->processExpression('page', $GLOBALS['TSFE']->page, $templateCode);
+		$templateCode = $this->processGlobalTemplateVariables($templateCode); // Global template variable can be ###TOTAL_OF_RECORDS### ###SUBTOTAL_OF_RECORDS###
 
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
 		$datasource = json_decode($this->consumerData['mappings'],true);
-		
-		// Transforms the configuration string into an array
+
+		// Transforms the typoScript configuration into an array.
 		$parseObj = t3lib_div::makeInstance('t3lib_TSparser');
 		foreach ($datasource as $data) {
 			if(trim($data['configuration']) != ''){
+
 				// Clears the setup (to avoid typoscript incrementation)
 				$parseObj->setup = array();
 				$parseObj->parse($data['configuration']);
@@ -203,27 +225,37 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$data['configuration'] = array();
 			}
 
-			// Concatains a new marker. Will look like: table.field
+			// Concatains some data to create a new marker. Will look like: table.field
 			$_marker = $data['table'] . '.' . $data['field'];
 
-			// Replace the ###FIELD.xxx### by the value "table.field"
+			// IMPORTANT NOTICE:
+			// The idea is to make the field unique
+			// Replaces the ###FIELD.xxx### by the value "table.field"
 			$pattern = '/###' . $data['marker'] . '###/isU';
 			$templateCode = preg_replace($pattern, '###' . $data['marker'] . '.' . $_marker . '###', $templateCode);
 			$this->fieldsInDatasource[$data['marker']] = $_marker;
 
-			// Build the datasource. This is an associative array
+			// Builds the datasource as an associative array
 			$this->datasource[$data['marker']] = $data;
 		}
 
-		// Get the content from sub template, typically LOOP part
+		// Gets the content from sub template, typically LOOP part
 		$subTemplateContent = $this->getSubContent($this->structure, $templateCode);
 
-		// Substitutes subpart
+		// Defines the $templateContent (@see variable explanation).
+		// Content can be "simply" $subTemplateContent
+		// but can be something more if the $templateCode contains ###LOOP.myTableLevel1###
+
+		// Whenever some markers are found, substitutes content
 		if ($this->markers[$this->structure['name']] != '') {
-			// But makes sure the LOOP is present in the templateCode.
+
+			// Makes sure the LOOP is present in the templateCode.
 			// It not, it might mean, there is a LOOP level2 without a LOOP level1
 			if (preg_match('/#{3}LOOP.' . $this->structure['name'] . '#{3}/',$templateCode)) {
 				$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[$this->structure['name']], $subTemplateContent);
+
+				// Substititutes the ramaining label
+				$templateContent = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers[$this->structure['name']]);
 			}
 			else {
 				$templateContent = $subTemplateContent;
@@ -233,29 +265,14 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$templateContent = $subTemplateContent;
 		}
 
-		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###
-		$pattern = '/#{3}(LLL:EXT:.+)#{3}/isU';
-		preg_match_all($pattern,$templateCode,$matches);
-		$_labels = array();
-		if(isset($matches[1])){
-			foreach($matches[1] as $label){
-				$_labels['###' . $label . '###'] = $LANG->sL($label);
-			}
-		}
-
 		// Handles the page browser
 		$templateContent = $this->processPageBrowser($templateContent);
-		
-		// Merges together 2 labels arrays for performance reasons.
-		$this->labelMarkers = array_merge($this->labelMarkers[$this->structure['name']], $_labels);
 
-		// Substititutes label translation
-		$this->result = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers);
-		
 		// Handles the <!--IF(###MARKER### == '')-->
 		// Evaluates the condition and replaces the content wether it is necessary
-		$this->result = $this->postProcessIf($this->result);
-		
+		// Must be at the end of startProcess()
+		$this->result = $this->postProcessIf($templateContent);
+
 		// Hook that enables to post process the output)
 		if (is_array($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'])) {
 			$_params = array(); // Associative array. In this case, $_params is empty.
@@ -277,10 +294,103 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$operand = str_replace("'","\'",$operand);
 		return "'" . $operand . "'";
 	}
-	
+
+	protected function processGlobalTemplateVariables($content) {
+		$markers['###TOTAL_OF_RECORDS###']  = $this->structure['totalCount'];
+		$markers['###SUBTOTAL_OF_RECORDS###']  = $this->structure['count'];
+		$content = t3lib_parsehtml::substituteMarkerArray($content, $markers);
+		return $content;
+	}
+
+	/**
+	 * Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###
+	 *
+	 * @param	string	$content HTML code
+	 * @return	string	$content transformed HTML code
+	 */
+	protected function processLLL($content) {
+		$pattern = '/#{3}(LLL:EXT:.+)#{3}/isU';
+		if (preg_match($pattern,$content)) {
+			global $LANG;
+			preg_match_all($pattern, $content, $matches);
+			$markers = array();
+			if(isset($matches[1])){
+				foreach($matches[1] as $marker){
+					$markers['###' . $marker . '###'] = $LANG->sL($marker);
+				}
+			}
+			$content = t3lib_parsehtml::substituteMarkerArray($content, $markers);
+		}
+		return $content;
+	}
+
+	/**
+	 * Handles possible marker: ###GP:tx_displaycontroller_pi2|parameter###
+	 *
+	 * @param	string	$key: Maybe, tsfe, page, gp
+	 * @param	key		$content HTML code
+	 * @return	string	$content transformed HTML code
+	 */
+	protected function processExpression($key, &$source, $content) {
+		// Makes sure $expression has a value
+		if (empty($key)){
+			throw new Exception('No key given to processExpression()');
+		}
+
+		// Tests if some $expressions are found
+        // Does it worth to get into the process of evaluation?
+		$pattern = '/#{3}(' . $key . ':)(.+)#{3}/isU';
+		if (preg_match($pattern,$content)) {
+			preg_match_all($pattern, $content, $matches);
+			$markers = array();
+			if(isset($matches[2])){
+				$numberOfRecords = count($matches[0]);
+				for($index = 0; $index < $numberOfRecords; $index ++) {
+					$markers[$matches[0][$index]] = $this->getValue($source, $matches[2][$index]);
+				}
+			}
+			
+			// Substitutes content
+			$content = t3lib_parsehtml::substituteMarkerArray($content, $markers);
+		}
+		return $content;
+	}
+
+
+	/**
+	 * This method is used to get a value from inside a multi-dimensional array or object
+	 * NOTE: this code is largely inspired by tslib_content::getGlobal()
+	 *
+	 * @param	mixed	$source: array or object to look into
+	 * @param	string	$indices: "path" of indinces inside the multi-dimensional array, of the form index1|index2|...
+	 * @return	mixed	Whatever value was found in the array
+     * @author  François Suter (Cobweb)
+	 */
+	protected function getValue($source, $indices) {
+		if (empty($indices)) {
+			throw new Exception('No key given for source');
+		}
+		else {
+			$indexList = t3lib_div::trimExplode('|', $indices);
+			$value = $source;
+			foreach ($indexList as $key) {
+				if (is_object($value) && isset($value->$key)) {
+					$value = $value->$key;
+				}
+				elseif (is_array($value) && isset($value[$key])) {
+					$value = $value[$key];
+				}
+				else {
+					throw new Exception('Key '.$indices.' not found in source');
+				}
+			}
+		}
+		return $value;
+	}
+
 	/**
 	 * Handles the page browser
-	 * 
+	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
@@ -304,7 +414,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 				// Can be tx_displaycontroller_pi1 OR tx_displaycontroller_pi1
 				$conf['pageParameterName'] = $this->pObj->prefixId . '|page';
-				
+
 				$this->localCObj->start(array(), '');
 				$pageBrowser = $this->localCObj->cObjGetSingle('USER',$conf);
 			}
@@ -316,11 +426,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$content = preg_replace($pattern, $pageBrowser, $content);
 		}
 		return $content;
-    }
-	
+	}
+
 	/**
 	 * Pre process the <!--IF(###MARKER### == '')-->, puts a '' around the marker
-	 * 
+	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
@@ -342,11 +452,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 		return $content;
 	}
-	
+
 	/**
 	 * Post process the <!--IF(###MARKER### == '')-->
 	 * Evaluates the condition and replaces the content wether it is necessary
-     * 
+	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
