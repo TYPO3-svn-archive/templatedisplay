@@ -24,7 +24,7 @@
 * $Id: class.tx_datadisplay_pi1.php 3938 2008-06-04 08:39:01Z fsuter $
 ***************************************************************/
 
-require_once(t3lib_extMgm::extPath('basecontroller', 'class.tx_basecontroller_div.php'));
+require_once(t3lib_extMgm::extPath('basecontroller', 'lib/class.tx_basecontroller_utilities.php'));
 
 /**
  * TCEform custom field for template mapping
@@ -112,12 +112,12 @@ class tx_templatedisplay_tceforms {
 				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
 			}
 			catch (Exception $e) {
-				$formField .= tx_basecontroller_div::wrapMessage($e->getMessage());
+				$formField .= tx_basecontroller_utilities::wrapMessage($e->getMessage());
 			}
 
 		}
 		catch (Exception $e) {
-			$formField .= tx_basecontroller_div::wrapMessage($e->getMessage());
+			$formField .= tx_basecontroller_utilities::wrapMessage($e->getMessage());
 		}
 		return $formField;
 	}
