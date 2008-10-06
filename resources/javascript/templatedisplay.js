@@ -46,29 +46,29 @@ if (Prototype) {
             Event.observe(document, 'dom:loaded', function(){
 				// Things may happen wrong
                 try {
-                    // These are clickable link on marker ###FIELD.xxx###
+                    // Clickable links wrapping marker ###FIELD.xxx###
                     $$('#templatedisplay_templateBox a').each(function(element){
                         templatedisplay.initializeImages(element);
                         Event.observe(element, 'click', templatedisplay.selectField);
                     });
 
-                    // These are the 2 tab buttons
+                    // The 2 tab buttons
                     Event.observe($('templatedisplay_tab1'), 'click', templatedisplay.showTab1);
                     Event.observe($('templatedisplay_tab2'), 'click', templatedisplay.showTab2);
 
-                    // This is a checkbox "show json" -> displays the textarea that contains the json
+                    // Checkbox "show json" -> displays the textarea that contains the json
                     Event.observe($('templatedisplay_showJson'), 'click', templatedisplay.toggleJsonBoxVisibility);
 
-                    // This is a checkbox "edit json"
+                    // Checkbox "edit json"
                     Event.observe($('templatedisplay_editJson'), 'click', templatedisplay.toggleJsonBoxReadonly);
 
-                    // This is a the save configuration button
+                    // The save configuration button
                     Event.observe($('templatedisplay_saveConfigurationBt'), 'click', templatedisplay.saveConfiguration);
 
-                    // This is a drop down menu that contains the different type (text - image - link - email)
+                    // Drop down menu that contains the different type (text - image - link - email)
                     Event.observe($('templatedisplay_type'), 'change', templatedisplay.showSnippetBox);
 
-                    // This is a textarea that content the HTML template.
+                    // Textarea that content the HTML template.
                     Event.observe($('templatedisplay_htmlContent'), 'keyup', function(){
                         tx_templatedisplay_hasChanged = true;
                     });
@@ -140,7 +140,7 @@ if (Prototype) {
                                 // Reinject the new HTML
                                 $('templatedisplay_templateBox').innerHTML = xhr.responseText;
 
-                                // These are clickable link on marker ###FIELD.xxx###
+                                // clickable link on marker ###FIELD.xxx###
                                 $$('#templatedisplay_templateBox a').each(function(element){
                                     templatedisplay.initializeImages(element);
                                     Event.observe(element, 'click', templatedisplay.selectField);
@@ -232,7 +232,7 @@ if (Prototype) {
                     }
                 });
 
-                // True, when this is a new record => new position in the datasource
+                // True, when new record => new position in the datasource
                 if (typeof(offset) == 'string') {
                     offset = records.length;
                 }
@@ -447,6 +447,27 @@ if (Prototype) {
             else{
                 $('templatedisplay_type').value = 'text';
                 $('templatedisplay_configuration').value = '';
+            }
+			
+			// Makes the control panel facing the marker. (position control panel at the same line)
+			if (typeof(templatedisplay.topHeight) == 'undefined') {
+				templatedisplay.topHeight = $('templatedisplay_cellLeft').getHeight() - $('templatedisplay_controlPanel').getHeight();
+            }
+
+			console.log($('templatedisplay_templateBox').cumulativeScrollOffset().top);
+
+			// Calculates margin-top
+			var margin = Math.abs(this.cumulativeOffset().top - $('templatedisplay_templateBox').cumulativeOffset().top);
+			margin = $('templatedisplay_templateBox').cumulativeScrollOffset().top;
+			//console.log(margin);
+			//$(window).getHeight();
+
+			// Prevents the control box to push down the column
+			if (margin < templatedisplay.topHeight) {
+				$('templatedisplay_fieldBox').setStyle({'marginTop': margin + 'px'});
+            }
+			else {
+				$('templatedisplay_fieldBox').setStyle({'marginTop': templatedisplay.topHeight + 'px'});
             }
         }
 
