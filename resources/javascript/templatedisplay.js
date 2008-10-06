@@ -450,24 +450,19 @@ if (Prototype) {
             }
 			
 			// Makes the control panel facing the marker. (position control panel at the same line)
-			if (typeof(templatedisplay.topHeight) == 'undefined') {
-				templatedisplay.topHeight = $('templatedisplay_cellLeft').getHeight() - $('templatedisplay_controlPanel').getHeight();
-            }
+			// Calculates some values
+			var heightDocHeader = $('typo3-docheader').getHeight();
+			var controlPanelOffset = $('templatedisplay_cellLeft').cumulativeOffset().top;
+			var heightScroll = $('templatedisplay_templateBox').cumulativeScrollOffset().top - 0 + heightDocHeader;
 
-			console.log($('templatedisplay_templateBox').cumulativeScrollOffset().top);
-
-			// Calculates margin-top
-			var margin = Math.abs(this.cumulativeOffset().top - $('templatedisplay_templateBox').cumulativeOffset().top);
-			margin = $('templatedisplay_templateBox').cumulativeScrollOffset().top;
-			//console.log(margin);
-			//$(window).getHeight();
-
-			// Prevents the control box to push down the column
-			if (margin < templatedisplay.topHeight) {
+			// Moves when necessary
+			if (heightScroll > controlPanelOffset) {
+				var margin = heightScroll - controlPanelOffset;
+				console.log(margin);
 				$('templatedisplay_fieldBox').setStyle({'marginTop': margin + 'px'});
             }
 			else {
-				$('templatedisplay_fieldBox').setStyle({'marginTop': templatedisplay.topHeight + 'px'});
+				$('templatedisplay_fieldBox').setStyle({'marginTop': '0px'});
             }
         }
 

@@ -27,66 +27,63 @@
 ###TEMPLATE_CONTENT###
 </pre>
 				</td>
-				<td  id="templatedisplay_cellRight" valign="top">
-					<div id="templatedisplay_controlPanel">
-						<div id="templatedisplay_fieldBox">
-							<label for="templatedisplay_fields" class="templatedisplay_block">###FIELDS###</label>
-							<select id="templatedisplay_fields" class="templatedisplay_component" disabled="disabled">
-								<option value=""></option>
-								###AVAILABLE_FIELDS###
-							</select>
-						</div>
-						<div id="templatedisplay_typeBox" class="templatedisplay_hidden">
-							<label for="templatedisplay_type" class="templatedisplay_block">###TYPES###</label>
-							<select id="templatedisplay_type" class="templatedisplay_component">
-								<option value="text">###TEXT###</option>
-								<option value="image">###IMAGE###</option>
-								<option value="linkToDetail">###LINK_TO_DETAIL###</option>
-								<option value="linkToPage">###LINK_TO_PAGE###</option>
-								<option value="linkToFile">###LINK_TO_FILE###</option>
-								<option value="email">###EMAIL###</option>
-							</select>
-						</div>
-						<div id="templatedisplay_configuationBox" class="templatedisplay_hidden">
-							<label for="templatedisplay_configuration" class="templatedisplay_block">###CONFIGURATION###</label>
-							<textarea id="templatedisplay_configuration" class="templatedisplay_component" wrap="off" style="margin-bottom: 5px"></textarea>
-
-							<div id="templatedisplay_snippettext" class="templatedisplay_snippetBox templatedisplay_component">
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines some styling value"/></a>
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: TODO"/></a>
-							</div>
-							<div id="templatedisplay_snippetimage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines width"/></a>
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines alt / title tag"/></a>
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: wraps a link around the image"/></a>
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_yellow.png" alt="snippet" title="snippet 4: wraps a link around the image and remove white spaces from the URL"/></a>
-							</div>
-							<div id="templatedisplay_snippetlinkToDetail" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines other paramaters which are dynamic"/></a>
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: TODO"/></a>
-							</div>
-							<div id="templatedisplay_snippetlinkToPage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines other paramaters which are dynamic"/></a>
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: TODO"/></a>
-							</div>
-							<div id="templatedisplay_snippetlinkToFile" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: TODO"/></a>
-							</div>
-							<div id="templatedisplay_snippetemail" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
-								<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: TODO"/></a>
-							</div>
-							<button id="templatedisplay_saveConfigurationBt" onclick="return false">###SAVE_FIELD_CONFIGURATION###</button>
-							<!--
-							<button>###INSERT_DEFAULT_CONFIGURATION###</button>
-							-->
-						</div>
-						<div id="loadingBox" class="templatedisplay_hidden">
-							<img src="###INFOMODULE_PATH###loading.gif" alt="loading" />
-						</div>
+				<td id="templatedisplay_cellRight" valign="top">
+					<div id="templatedisplay_fieldBox">
+						<label for="templatedisplay_fields" class="templatedisplay_block">###FIELDS###</label>
+						<select id="templatedisplay_fields" class="templatedisplay_component" disabled="disabled">
+							<option value=""></option>
+							###AVAILABLE_FIELDS###
+						</select>
 					</div>
+					<div id="templatedisplay_typeBox" class="templatedisplay_hidden">
+						<label for="templatedisplay_type" class="templatedisplay_block">###TYPES###</label>
+						<select id="templatedisplay_type" class="templatedisplay_component">
+							<option value="text">###TEXT###</option>
+							<option value="image">###IMAGE###</option>
+							<option value="linkToDetail">###LINK_TO_DETAIL###</option>
+							<option value="linkToPage">###LINK_TO_PAGE###</option>
+							<option value="linkToFile">###LINK_TO_FILE###</option>
+							<option value="email">###EMAIL###</option>
+						</select>
+					</div>
+					<div id="templatedisplay_configuationBox" class="templatedisplay_hidden">
+						<label for="templatedisplay_configuration" class="templatedisplay_block">###CONFIGURATION###</label>
+						<textarea id="templatedisplay_configuration" class="templatedisplay_component" wrap="off" style="margin-bottom: 5px"></textarea>
 
+						<div id="templatedisplay_snippettext" class="templatedisplay_snippetBox templatedisplay_component">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines some styling value"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: TODO"/></a>
+						</div>
+						<div id="templatedisplay_snippetimage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines width"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines alt / title tag"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: wraps a link around the image"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_yellow.png" alt="snippet" title="snippet 4: wraps a link around the image and remove white spaces from the URL"/></a>
+						</div>
+						<div id="templatedisplay_snippetlinkToDetail" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines other paramaters which are dynamic"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: TODO"/></a>
+						</div>
+						<div id="templatedisplay_snippetlinkToPage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines other paramaters which are dynamic"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: TODO"/></a>
+						</div>
+						<div id="templatedisplay_snippetlinkToFile" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: TODO"/></a>
+						</div>
+						<div id="templatedisplay_snippetemail" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: TODO"/></a>
+						</div>
+						<button id="templatedisplay_saveConfigurationBt" onclick="return false">###SAVE_FIELD_CONFIGURATION###</button>
+						<!--
+						<button>###INSERT_DEFAULT_CONFIGURATION###</button>
+						-->
+					</div>
+					<div id="loadingBox" class="templatedisplay_hidden">
+						<img src="###INFOMODULE_PATH###loading.gif" alt="loading" />
+					</div>
 				</td>
 			</tr>
 		</tbody>
