@@ -184,33 +184,15 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$LANG->init('default');
 		}
 
-		// **************************************
-		// ********** BEGIN PROCESSING **********
-        // **************************************
-
-		// LOCAL DOCUMENTATION:
-		// $templateCode -> HTML template roughly extracted from the database
-		// $subTemplateContent -> sub HTML transformed (temporary variable)
-		// $templateContent -> HTML that is going to be outputed
-
-		// Loads the template file
-		$templateCode = $this->consumerData['template'];
-
-		// Start transformation of $templateCode.
-		// Must be at the beginning of startProcess()
-		$templateCode = $this->preProcessIf($templateCode);
-
-		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###
-		$templateCode = $this->processLLL($templateCode);
-		$templateCode = $this->processExpression('GP', array_merge(t3lib_div::_GET(), t3lib_div::_POST()), $templateCode);
-		$templateCode = $this->processExpression('TSFE', $GLOBALS['TSFE'], $templateCode);
-		$templateCode = $this->processExpression('page', $GLOBALS['TSFE']->page, $templateCode);
-		$templateCode = $this->processGlobalTemplateVariables($templateCode); // Global template variable can be ###TOTAL_OF_RECORDS### ###SUBTOTAL_OF_RECORDS###
-
+		// ****************************************
+		// ********** FETCHES DATASOURCE **********
+        // ****************************************
+		
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
 		$datasource = json_decode($this->consumerData['mappings'],true);
-
+		$uniqueMarkers = array();
+		
 		// Transforms the typoScript configuration into an array.
 		$parseObj = t3lib_div::makeInstance('t3lib_TSparser');
 		foreach ($datasource as $data) {
@@ -231,22 +213,55 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			// IMPORTANT NOTICE:
 			// The idea is to make the field unique
 			// Replaces the ###FIELD.xxx### by the value "table.field"
-			$pattern = '/###' . $data['marker'] . '###/isU';
-			$templateCode = preg_replace($pattern, '###' . $data['marker'] . '.' . $_marker . '###', $templateCode);
+            // Ex: [###FIELD.title###] => ###FIELD.title.pages.title###
+			$uniqueMarkers['###' . $data['marker'] . '###'] = '###' . $data['marker'] . '.' . $_marker . '###';
+
+			// Stores which markers are going to be substitued to what fields
+			// Ex: [FIELD.title] => pages.title
 			$this->fieldsInDatasource[$data['marker']] = $_marker;
 
-			// Builds the datasource as an associative array
+			// Builds the datasource as an associative array.
+			// $data contains the complete record [marker], [table], [field], [type], [configuration]
 			$this->datasource[$data['marker']] = $data;
 		}
+		
+		// ***************************************
+		// ********** BEGINS PROCESSING **********
+        // ***************************************
+
+		// LOCAL DOCUMENTATION:
+		// $templateCode -> HTML template roughly extracted from the database
+		// $subTemplateContent -> sub HTML transformed (temporary variable)
+		// $templateContent -> HTML that is going to be outputed
+
+		// Loads the template file
+		$templateCode = $this->consumerData['template'];
+
+		// Starts transformation of $templateCode.
+		// Must be at the beginning of startProcess()
+		$templateCode = $this->preProcessIf($templateCode);
+
+		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###, ###GP:###, ###TSFE:### etc...
+		$LLLMarkers = $this->getLLLMarkers($templateCode);
+		$GPMarkers = $this->getExpressionMarkers('GP', array_merge(t3lib_div::_GET(), t3lib_div::_POST()), $templateCode);
+		$TSFEMarkers = $this->getExpressionMarkers('TSFE', $GLOBALS['TSFE'], $templateCode);
+		$pageMarkers = $this->getExpressionMarkers('page', $GLOBALS['TSFE']->page, $templateCode);
+		$globalVariablesMarkers = $this->getGlobalVariablesMarkers($templateCode); // Global template variable can be ###TOTAL_OF_RECORDS### ###SUBTOTAL_OF_RECORDS###
+
+		// Merges array, in order to have only one array (performance!)
+		$markers = array_merge($uniqueMarkers, $LLLMarkers, $GPMarkers, $TSFEMarkers, $pageMarkers, $globalVariablesMarkers);
+
+		// We want a convenient $templateCode. Substitutes $markers
+		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
 
 		// Gets the content from sub template, typically LOOP part
 		$subTemplateContent = $this->getSubContent($this->structure, $templateCode);
 
 		// Defines the $templateContent (@see variable explanation).
-		// Content can be "simply" $subTemplateContent
-		// but can be something more if the $templateCode contains ###LOOP.myTableLevel1###
+		// Content can be "simply" $subTemplateContent...
+		// ...but can be something more if the $templateCode contains ###LOOP.myTableLevel1###
 
-		// Whenever some markers are found, substitutes content
+		// Wherever markers are found, substitutes them!
 		if ($this->markers[$this->structure['name']] != '') {
 
 			// Makes sure the LOOP is present in the templateCode.
@@ -269,7 +284,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$templateContent = $this->processPageBrowser($templateContent);
 
 		// Handles the <!--IF(###MARKER### == '')-->
-		// Evaluates the condition and replaces the content wether it is necessary
+		// Evaluates the condition and replaces the content whether it is necessary
 		// Must be at the end of startProcess()
 		$this->result = $this->postProcessIf($templateContent);
 
@@ -295,22 +310,18 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		return "'" . $operand . "'";
 	}
 
-	protected function processGlobalTemplateVariables($content) {
-		$markers['###TOTAL_OF_RECORDS###']  = $this->structure['totalCount'];
-		$markers['###SUBTOTAL_OF_RECORDS###']  = $this->structure['count'];
-		$content = t3lib_parsehtml::substituteMarkerArray($content, $markers);
-		return $content;
-	}
-
 	/**
-	 * Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###
+     * If found, returns markers, of type LLL
+     * 
+	 * Example of marker: ###LLL:EXT:myextension/localang.xml:myLable###
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
-	protected function processLLL($content) {
+	protected function getLLLMarkers($content) {
+		$markers = array();
 		$pattern = '/#{3}(LLL:EXT:.+)#{3}/isU';
-		if (preg_match($pattern,$content)) {
+		if (preg_match($pattern, $content)) {
 			global $LANG;
 			preg_match_all($pattern, $content, $matches);
 			$markers = array();
@@ -319,28 +330,32 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					$markers['###' . $marker . '###'] = $LANG->sL($marker);
 				}
 			}
-			$content = t3lib_parsehtml::substituteMarkerArray($content, $markers);
 		}
-		return $content;
+		return $markers;
 	}
 
 	/**
-	 * Handles possible marker: ###GP:tx_displaycontroller_pi2|parameter###
+     * If found, returns markers, of type $key (GP, TSFE, page)
+     *
+	 * Example of GP marker: ###GP:tx_displaycontroller_pi2|parameter###
 	 *
 	 * @param	string	$key: Maybe, tsfe, page, gp
 	 * @param	key		$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
-	protected function processExpression($key, &$source, $content) {
+	protected function getExpressionMarkers($key, &$source, $content) {
+		
 		// Makes sure $expression has a value
 		if (empty($key)){
-			throw new Exception('No key given to processExpression()');
+			throw new Exception('No key given to getExpressionMarkers()');
 		}
+
+		$markers = array();
 
 		// Tests if some $expressions are found
         // Does it worth to get into the process of evaluation?
 		$pattern = '/#{3}(' . $key . ':)(.+)#{3}/isU';
-		if (preg_match($pattern,$content)) {
+		if (preg_match($pattern, $content)) {
 			preg_match_all($pattern, $content, $matches);
 			$markers = array();
 			if(isset($matches[2])){
@@ -349,13 +364,27 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					$markers[$matches[0][$index]] = $this->getValue($source, $matches[2][$index]);
 				}
 			}
-			
-			// Substitutes content
-			$content = t3lib_parsehtml::substituteMarkerArray($content, $markers);
 		}
-		return $content;
+		return $markers;
 	}
 
+	/**
+     * If found, returns markers, of type global template variable
+     * Global template variable can be ###TOTAL_OF_RECORDS### ###SUBTOTAL_OF_RECORDS###
+     *
+     * @param	string	$content: HTML content
+     * @return  string	$content: transformed HTML content
+     */
+	protected function getGlobalVariablesMarkers($content) {
+		$markers = array();
+		if (preg_match('/#{3}TOTAL_OF_RECORDS#{3}/isU', $content)) {
+			$markers['###TOTAL_OF_RECORDS###']  = $this->structure['totalCount'];
+        }
+		if (preg_match('/#{3}SUBTOTAL_OF_RECORDS#{3}/isU', $content)) {
+			$markers['###SUBTOTAL_OF_RECORDS###']  = $this->structure['count'];
+        }
+		return $markers;
+	}
 
 	/**
 	 * This method is used to get a value from inside a multi-dimensional array or object
@@ -396,7 +425,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 */
 	protected function processPageBrowser($content) {
 		$pattern = '/#{3}PAGE_BROWSER#{3}/isU';
-		if (preg_match($pattern,$content)) {
+		if (preg_match($pattern, $content)) {
 
 			// Fetches the configuration
 			$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.']['tx_pagebrowse_pi1.'];
@@ -429,7 +458,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-	 * Pre process the <!--IF(###MARKER### == '')-->, puts a '' around the marker
+	 * Pre processes the <!--IF(###MARKER### == '')-->, puts a '' around the marker
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
@@ -454,8 +483,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-	 * Post process the <!--IF(###MARKER### == '')-->
-	 * Evaluates the condition and replaces the content wether it is necessary
+	 * Post processes the <!--IF(###MARKER### == '')-->
+	 * Evaluates the condition and replaces the content when necessary
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
