@@ -148,7 +148,10 @@ if (Prototype) {
                                 tx_templatedisplay_hasChanged = false;
                             }
 
-                        }.bind(this)
+                        }.bind(this),
+						onT3Error: function(xhr) {
+							console.log(xhr);
+						}.bind(this)
                     });
                 }
                 else {
