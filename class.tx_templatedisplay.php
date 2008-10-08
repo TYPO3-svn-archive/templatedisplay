@@ -701,7 +701,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 			// If the records contains subtables, recursively calls getSubContent()
 			// Else, removes a possible unwanted part <!-- ###LOOP.unsed ### begin -->.+<!-- ###LOOP.unsed ### end -->
-			if (isset($records['sds:subtables'])) {
+			if (!empty($records['sds:subtables'])) {
 				foreach ($records['sds:subtables'] as $subSds) {
 					// get the subContent
 					$subTemplateContent = $this->getSubContent($subSds, $_templateContent);
