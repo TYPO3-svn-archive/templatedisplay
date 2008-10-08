@@ -270,7 +270,7 @@ if (Prototype) {
 
                     }.bind(this),
                     onT3Error: function(xhr) {
-                        alert(xhr);
+                        console.log(xhr);
                     }.bind(this)
                 });
             }
