@@ -17,8 +17,13 @@
 }
 
 .templatedisplay_loop{
-	background: #fff;
+	background-color: #ccffcc;
 	color: #333;
+}
+
+.templatedisplay_if{
+	color: #333;
+    background-color: #ffffcc;
 }
 
 #templatedisplay_html textarea{

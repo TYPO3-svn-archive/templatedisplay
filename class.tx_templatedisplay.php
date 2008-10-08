@@ -247,6 +247,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// We want a convenient $templateCode. Substitutes $markers
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
 
+		// Handles LOOP tag. Transforms whenever necessary <!-- LOOP(table) --> into <!-- ###LOOP.table### begin -->
+		$templateCode = $this->processLOOP($templateCode);
+
 		// Gets the content from sub template, typically LOOP part
 		$subTemplateContent = $this->getSubContent($this->structure, $templateCode);
 
@@ -345,7 +348,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		$markers = array();
 
-		// Tests if some $expressions are found
+		// Tests if $expressions are found
         // Does it worth to get into the process of evaluation?
 		$pattern = '/#{3}(' . $key . ':)(.+)#{3}/isU';
 		if (preg_match($pattern, $content)) {
@@ -403,7 +406,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					$value = $value[$key];
 				}
 				else {
-					throw new Exception('Key '.$indices.' not found in source');
+					$value = ''; // no value found
 				}
 			}
 		}
@@ -474,6 +477,33 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 		return $content;
 	}
+	
+	/**
+     * Handles LOOP tag.
+     * Transforms whenever necessary <!-- LOOP(table) --> into <!-- ###LOOP.table### begin -->.
+     * 
+     * @param	string	$content: the HTML code.
+     * @return	string	$content: the HTML code transformed
+     */
+	protected function processLOOP($content) {
+		$pattern = '/<!-- *LOOP *\((.+)\) *-->/isU';
+		preg_match_all($pattern, $content, $matches);
+
+		if (isset($matches[0])) {
+			$numberOfMatches = count($matches[0]);
+			// Reverse loop. The last <!--ENDLOOP--> becomes the first one
+			for ($index = $numberOfMatches; $index > 0; $index --) {
+				$search = $matches[0][$index - 1];
+				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### begin -->';
+				$content = str_replace($search, $replacement , $content);
+				
+				$pattern = '/<!-- *ENDLOOP *-->/isU';
+				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### end -->';
+				$content = preg_replace($pattern, $replacement, $content, 1);
+            }
+        }
+		return $content;
+    }
 
 	/**
 	 * Post processes the <!--IF(###MARKER### == '')-->

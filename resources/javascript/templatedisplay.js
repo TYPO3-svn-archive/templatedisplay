@@ -317,7 +317,7 @@ if (Prototype) {
 			// Add a little mark in order to be able to split the content in the right place
 			image.src = '';
 			var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('src=""');
-			content = content[0].split('###LOOP.');
+			content = content[0].split(/LOOP *\(/);
 			if(typeof(content[content.length - 1] == 'string')){
 				content = content[content.length - 1].split(/#{3}/);
 				table = content[0];
@@ -389,11 +389,11 @@ if (Prototype) {
 
 			// Extract the table name's field
 			var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('templatedisplay/resources/images/pencil.png');
-			content = content[0].split('###LOOP.');
+			content = content[0].split(/LOOP *\(/);
 
 			var table = '';
 			if(typeof(content[content.length - 1] == 'string')){
-				content = content[content.length - 1].split(/#{3}/);
+				content = content[content.length - 1].split(/\) *--&gt;/);
 				table = content[0];
 			}
 

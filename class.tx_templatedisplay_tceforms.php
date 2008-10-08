@@ -124,34 +124,42 @@ class tx_templatedisplay_tceforms {
 	
 	/**
 	 * Transformes $templateContent, this method is also util for Ajax called. In this case, the method is called externally.
-	 * 1) wrap FIELD markers with a clickable href
+	 * 2) wrap IF markers with a different background
 	 * 2) wrap LOOP markers with a different background
+	 * 1) wrap FIELD markers with a clickable href
 	 *
 	 * @param	string	$templateContent
 	 * @return	string	$templateContent, the content transformed
 	 */
 	public function transformTemplateContent($templateContent) {
 		$templateContent = htmlspecialchars($templateContent);
-		# Wrap FIELD markers with a clickable href
-		$pattern = '/(#{3}FIELD[0-9a-zA-Z\_\-\.]+#{3})/m';
-		$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
-		$replacement = '<span class="mapping_pictogrammBox">';
-		$replacement .= '<a href="#" onclick="return false">$1</a>';
-		$replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm1"/>';
-		$replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm2"/>';
-		$replacement .= '</span>';
-		$templateContent = preg_replace($pattern, $replacement, $templateContent);
+
+		# Wrap IF markers with a different background
+		$pattern = $replacement = array();
+		$pattern[] = "/(&lt;!-- *IF *\(.+--&gt;)/isU";
+		$replacement[] = '<span class="templatedisplay_if">$1</span>';
+
+		$pattern[] = "/(&lt;!-- *ENDIF *--&gt;)/isU";
+		$replacement[] = '<span class="templatedisplay_if">$1</span>';
 
 		# Wrap LOOP markers with a different background
-		$pattern = '/(&lt;!-- *#{3}LOOP[0-9a-zA-Z\_\-\.]+#{3} *[a-z]+ *--&gt;)/m';
-		$replacement = '<span class="templatedisplay_loop">$1</span>';
-		$templateContent = preg_replace($pattern, $replacement, $templateContent);
+		$pattern[] = "/(&lt;!-- *LOOP *\(.+--&gt;)/isU";
+		$replacement[] = '<span class="templatedisplay_loop">$1</span>';
+
+		$pattern[] = "/(&lt;!-- *ENDLOOP *--&gt;)/isU";
+		$replacement[] = '<span class="templatedisplay_loop">$1</span>';
+
+		# Wrap FIELD markers with a clickable href
+		$pattern[] = '/(#{3}FIELD.+#{3})/isU';
+		$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
+		$_replacement = '<span class="mapping_pictogrammBox">';
+		$_replacement .= '<a href="#" onclick="return false">$1</a>';
+		$_replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm1"/>';
+		$_replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm2"/>';
+		$_replacement .= '</span>';
+		$replacement[] = $_replacement;
 		
-		# Wrap IF markers with a different background
-		$pattern = '/(&lt;!-- *IF( *#{3}[0-9a-zA-Z\_\-\.]+#{3} .+--&gt;)/m';
-		$replacement = '<span class="templatedisplay_loop">$1</span>';
-#		$templateContent = preg_replace($pattern, $replacement, $templateContent);
-		return $templateContent;
+		return preg_replace($pattern, $replacement, $templateContent);
 	}
 
 	/**
