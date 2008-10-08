@@ -269,9 +269,9 @@ if (Prototype) {
                         }
 
                     }.bind(this),
-                    onT3Error: function(xhr) {
-                        console.log(xhr);
-                    }.bind(this)
+					onT3Error: function(xhr) {
+						console.log(xhr);
+					}.bind(this)
                 });
             }
 
