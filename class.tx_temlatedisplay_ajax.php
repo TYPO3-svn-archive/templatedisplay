@@ -57,7 +57,7 @@ class tx_templatedisplay_ajax {
 				$result = 1;
 			}
 		}
-		echo $result;
+		$ajaxObj->addContent('templatedisplay', $result);
 	}
 
 	/**
@@ -86,7 +86,7 @@ class tx_templatedisplay_ajax {
 				$result = $tceforms->transformTemplateContent($template);
 			}
 		}
-		echo $result;
+		$ajaxObj->addContent('templatedisplay', $result);
 	}
 }
 ?>

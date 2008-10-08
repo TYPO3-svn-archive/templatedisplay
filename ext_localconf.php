@@ -17,17 +17,10 @@ $TYPO3_CONF_VARS['BE']['AJAX']['templatedisplay::saveTemplate'] = 'typo3conf/ext
 if (TYPO3_MODE == 'BE')	{
 	require_once(t3lib_extMgm::extPath('templatedisplay').'hook/user_addBackendLibrary.php');
 }
-$TYPO3_CONF_VARS['SC_OPTIONS']['typo3/template.php']['preStartPageHook'][] = 'user_addBackendLibrary'; 
-
-// Register templatedisplay with the Display Controller as a Data Consumer
-#if (TYPO3_MODE == 'BE')	{
-#	require_once(t3lib_extMgm::extPath('templatedisplay').'hook/class.tx_infomodule_mappings.php');
-#}
-#$TYPO3_CONF_VARS['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass'][] = 'tx_infomodule_mappings'; 
+$TYPO3_CONF_VARS['SC_OPTIONS']['typo3/template.php']['preStartPageHook'][] = 'user_addBackendLibrary';
 
 // Register as Data Consumer service
 // Note that the subtype corresponds to the name of the database table
-
 t3lib_extMgm::addService($_EXTKEY,  'dataconsumer' /* sv type */,  'tx_templatedisplay_dataconsumer' /* sv key */,
 	array(
 
