@@ -39,7 +39,8 @@ require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecont
  */
 class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
-	public $tsKey = 'tx_templatedisplay';	// The key to find the TypoScript in "plugin."
+	
+	public $extKey = 'tx_templatedisplay';
 	protected $conf;
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
@@ -153,14 +154,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// Declares global objects
 		global $TYPO3_CONF_VARS;
 		global $LANG;
-
-		/* Hook that enables to pre process the output) */
-		if (is_array($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PreProcessingProc'])) {
-			$_params = array(); // Associative array. In this case, $_params is empty.
-			foreach ($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PreProcessingProc'] as $_funcRef) {
-				t3lib_div::callUserFunction($_funcRef, $_params, $this);
-			}
-		}
 
 		// Makes sure mapping exists, otherwise stops
 		if(!isset($this->consumerData['mappings'])){
@@ -289,10 +282,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$this->result = $this->postProcessIf($templateContent);
 
 		// Hook that enables to post process the output)
-		if (is_array($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'])) {
-			$_params = array(); // Associative array. In this case, $_params is empty.
-			foreach ($TYPO3_CONF_VARS['EXTCONF']['templatedisplay']['PostProcessingProc'] as $_funcRef) {
-				t3lib_div::callUserFunction($_funcRef, $_params, $this);
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extKey]['postProcessResult'])) {
+			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extKey]['postProcessResult'] as $className) {
+				$postProcessor = &t3lib_div::getUserObj($className);
+				$this->result = $postProcessor->postProcessResult($this->result, $this);
 			}
 		}
 	}
@@ -434,7 +427,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 				// Adds limit to the query and calculates the number of pages.
 				if ($this->filter['limit']['max'] != '' && $this->filter['limit']['max'] != '0') {
-					$conf['extraQueryString'] .= '&' . $this->pObj->prefixId . '[max]=' . $this->filter['limit']['max'];
+					//$conf['extraQueryString'] .= '&' . $this->pObj->getPrefixId() . '[max]=' . $this->filter['limit']['max'];
 					$conf['numberOfPages'] = ceil($this->structure['totalCount'] / $this->filter['limit']['max']);
 				}
 				else {
@@ -442,7 +435,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				}
 
 				// Can be tx_displaycontroller_pi1 OR tx_displaycontroller_pi1
-				$conf['pageParameterName'] = $this->pObj->prefixId . '|page';
+				$conf['pageParameterName'] = $this->pObj->getPrefixId() . '|page';
 
 				$this->localCObj->start(array(), '');
 				$pageBrowser = $this->localCObj->cObjGetSingle('USER',$conf);
@@ -643,7 +636,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 							if (!isset($configuration['returnLast'])) {
 								$configuration['returnLast'] = 'url';
 							}
-							$additionalParams = '&' . $this->pObj->prefixId . '[table]=' . $sds['name'] . '&' . $this->pObj->prefixId .'[showUid]=' . $value;
+							$additionalParams = '&' . $this->pObj->getPrefixId() . '[table]=' . $sds['name'] . '&' . $this->pObj->getPrefixId() .'[showUid]=' . $value;
 							$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
 
 							// Generates the link
