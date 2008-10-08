@@ -150,7 +150,7 @@ if (Prototype) {
 
                         }.bind(this),
                         onT3Error: function(xhr) {
-                            alert(xhr);
+                            console.log(xhr);
                         }.bind(this)
                     });
                 }
@@ -458,7 +458,6 @@ if (Prototype) {
 			// Moves when necessary
 			if (heightScroll > controlPanelOffset) {
 				var margin = heightScroll - controlPanelOffset;
-				console.log(margin);
 				$('templatedisplay_fieldBox').setStyle({'marginTop': margin + 'px'});
             }
 			else {
