@@ -40,7 +40,7 @@ require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecont
 class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 	
-	public $extKey = 'tx_templatedisplay';
+	public $extKey = 'templatedisplay';
 	protected $conf;
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
@@ -265,7 +265,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			if (preg_match('/#{3}LOOP.' . $this->structure['name'] . '#{3}/',$templateCode)) {
 				$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[$this->structure['name']], $subTemplateContent);
 
-				// Substititutes the ramaining label
+				// Substititutes the remaining label
 				$templateContent = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers[$this->structure['name']]);
 			}
 			else {
@@ -627,85 +627,84 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					foreach	($keys as $key) {
 						switch ($this->datasource[$key]['type']) {
 							case 'text':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['value'] = $value;
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['value'] = $value;
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
 							break;
 							case 'image':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['file'] = $value;
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['file'] = $value;
 
-							// Sets the alt attribute if no altText is defined
-							if (!isset($configuration['altText'])) {
-								// Gets the file name
-								$configuration['altText'] = $this->getFileName($configuration['file']);
-
-							}
-
-							// Sets the title attribute if no title is defined
-							if (!isset($configuration['titleText'])) {
-								if ($configuration['altText'] != '') {
-									$configuration['titleText'] = $configuration['altText'];
+								// Sets the alt attribute if no altText is defined
+								if (!isset($configuration['altText'])) {
+									// Gets the file name
+									$configuration['altText'] = $this->getFileName($configuration['file']);
 								}
-								else{
-									$configuration['titleText'] = $this->getFileName($configuration['file']);
-								}
-							}
 
-							// Makes sure the file exists
-							if (is_file($configuration['file'])) {
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->IMAGE($configuration);
-							}
-							else {
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="" class="templateDisplay_imageNotFound" alt="Image not found"/>';
-							}
-							break;
+								// Sets the title attribute if no title is defined
+								if (!isset($configuration['titleText'])) {
+									if ($configuration['altText'] != '') {
+										$configuration['titleText'] = $configuration['altText'];
+									}
+									else{
+										$configuration['titleText'] = $this->getFileName($configuration['file']);
+									}
+								}
+
+								$image = $this->localCObj->IMAGE($configuration);
+								if (empty($image)) {
+									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'resources/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
+								}
+								else {
+									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $image;
+								}
+								break;
 							case 'linkToDetail':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['useCacheHash'] = 1;
-							if (!isset($configuration['returnLast'])) {
-								$configuration['returnLast'] = 'url';
-							}
-							$additionalParams = '&' . $this->pObj->getPrefixId() . '[table]=' . $sds['name'] . '&' . $this->pObj->getPrefixId() .'[showUid]=' . $value;
-							$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
-
-							// Generates the link
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-							break;
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['useCacheHash'] = 1;
+								if (!isset($configuration['returnLast'])) {
+									$configuration['returnLast'] = 'url';
+								}
+								$additionalParams = '&' . $this->pObj->getPrefixId() . '[table]=' . $sds['name'] . '&' . $this->pObj->getPrefixId() .'[showUid]=' . $value;
+								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+	
+								// Generates the link
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
 							case 'linkToPage':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['useCacheHash'] = 1;
-							if (!isset($configuration['returnLast'])) {
-								$configuration['returnLast'] = 'url';
-							}
-							$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
-
-							// Generates the link
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-							break;
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['useCacheHash'] = 1;
+								if (!isset($configuration['returnLast'])) {
+									$configuration['returnLast'] = 'url';
+								}
+								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+	
+								// Generates the link
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
 							case 'linkToFile':
-							$configuration = $this->datasource[$key]['configuration'];
-							$configuration['useCacheHash'] = 1;
-							if (!isset($configuration['returnLast'])) {
-								$configuration['returnLast'] = 'url';
-							}
-							if (!isset($configuration['parameter'])) {
-								$configuration['parameter'] = $value;
-							}
-
-							// replaces white spaces in filename
-							$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
-
-							// Generates the link
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-							break;
+								$configuration = $this->datasource[$key]['configuration'];
+								$configuration['useCacheHash'] = 1;
+								if (!isset($configuration['returnLast'])) {
+									$configuration['returnLast'] = 'url';
+								}
+								if (!isset($configuration['parameter'])) {
+									$configuration['parameter'] = $value;
+								}
+	
+								// replaces white spaces in filename
+								$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
+	
+								// Generates the link
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								break;
 							case 'email':
-							$configuration = $this->datasource[$key]['configuration'];
-							if (!isset($configuration['parameter'])) {
-								$configuration['parameter'] = $value;
-							}
-							// Generates the email
-							$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+								$configuration = $this->datasource[$key]['configuration'];
+								if (!isset($configuration['parameter'])) {
+									$configuration['parameter'] = $value;
+								}
+								// Generates the email
+								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
 							break;
 						} // end switch
 					} // end foreach
