@@ -202,7 +202,9 @@ class tx_templatedisplay_tceforms {
 		}
 
 		// The template display instance is related to exactly one tt_content record (easy case)
-		elseif ($numRows == 1) {
+		// TODO: check back that situation. It must be possible for a provider to be related to more than one controller
+		else {
+//		elseif ($numRows == 1) {
 			$tt_contentRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('CType', 'tt_content', "uid = '".$rows[0]['uid_local']."'");
 			$controller = t3lib_div::makeInstanceService('datacontroller', $tt_contentRecord[0]['CType']);
 			$controller->loadControllerData($rows[0]['uid_local']);
@@ -210,12 +212,13 @@ class tx_templatedisplay_tceforms {
 			$provider = $controller->getPrimaryProvider();
 			return $provider;
 		}
-
+/*
 		// The template display instance is related to more than one tt_content records
 		// Some additional checks must be performed
 		else {
 			throw new Exception('More than one controller found');
 		}
+*/
 	}
 }
 
