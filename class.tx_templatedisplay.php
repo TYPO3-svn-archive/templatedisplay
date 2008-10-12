@@ -57,6 +57,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected $fieldsInDatasource = array();
 
 	/**
+     *
+     * @var	array	$functions: list of function handled by templatedisplay 'LIMIT_TEXT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
+     */
+	protected $functions = array('LIMIT_TEXT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST');
+	/**
 	 *
 	 * @var tslib_cObj
 	 */
@@ -233,6 +238,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// Starts transformation of $templateCode.
 		// Must be at the beginning of startProcess()
 		$templateCode = $this->preProcessIf($templateCode);
+		$templateCode = $this->preProcessFunctions($templateCode);
 
 		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###, ###GP:###, ###TSFE:### etc...
 		$LLLMarkers = $this->getLLLMarkers($templateCode);
@@ -244,6 +250,17 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// Merges array, in order to have only one array (performance!)
 		$markers = array_merge($uniqueMarkers, $LLLMarkers, $GPMarkers, $TSFEMarkers, $pageMarkers, $globalVariablesMarkers);
 
+		#$this->displayDebug('markers', __LINE__);
+		if (isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['BE_USER']) {
+			t3lib_div::debug('content of $markers, line ' . __LINE__);
+			t3lib_div::debug($markers);
+		}
+
+		if (isset($GLOBALS['_GET']['debug']['structure']) && $GLOBALS['BE_USER']) {
+			t3lib_div::debug('content of $this->structure');
+			t3lib_div::debug($this->structure);
+		}
+		
 		// We want a convenient $templateCode. Substitutes $markers
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
 
@@ -282,7 +299,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// Handles the <!--IF(###MARKER### == '')-->
 		// Evaluates the condition and replaces the content whether it is necessary
 		// Must be at the end of startProcess()
-		$this->result = $this->postProcessIf($templateContent);
+		$templateContent = $this->postProcessIf($templateContent);
+		$this->result = $this->postProcessFunctions($templateContent);
 
 		// Hook that enables to post process the output)
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extKey]['postProcessResult'])) {
@@ -317,10 +335,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected function getLLLMarkers($content) {
 		$markers = array();
 		$pattern = '/#{3}(LLL:EXT:.+)#{3}/isU';
-		if (preg_match($pattern, $content)) {
+		if (preg_match_all($pattern, $content, $matches)) {
 			global $LANG;
-			preg_match_all($pattern, $content, $matches);
-			$markers = array();
 			if(isset($matches[1])){
 				foreach($matches[1] as $marker){
 					$markers['###' . $marker . '###'] = $LANG->sL($marker);
@@ -346,14 +362,13 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			throw new Exception('No key given to getExpressionMarkers()');
 		}
 
+		// Defines empty array.
 		$markers = array();
 
 		// Tests if $expressions are found
         // Does it worth to get into the process of evaluation?
 		$pattern = '/#{3}(' . $key . ':)(.+)#{3}/isU';
-		if (preg_match($pattern, $content)) {
-			preg_match_all($pattern, $content, $matches);
-			$markers = array();
+		if (preg_match_all($pattern, $content, $matches)) {
 			if(isset($matches[2])){
 				$numberOfRecords = count($matches[0]);
 				for($index = 0; $index < $numberOfRecords; $index ++) {
@@ -460,11 +475,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	string	$content transformed HTML code
 	 */
 	protected function preProcessIf($content) {
-		// Preprocesses the <!--IF(###MARKER### == '')-->, puts a '' around the marker
-		if (preg_match('/<!-- *IF/',$content)) {
-			$pattern = '/<!-- *IF.+-->/isU';
-			preg_match_all($pattern, $content, $matches);
 
+		// Preprocesses the <!--IF(###MARKER### == '')-->, puts a '' around the marker
+		$pattern = '/<!-- *IF.+-->/isU';
+		if (preg_match_all($pattern, $content, $matches)) {
+
+			// Loop around the matches
 			foreach	($matches[0] as $match){
 				$pattern = '/#{3}.+#{3}/isU';
 				preg_match_all($pattern, $match, $_matches);
@@ -479,6 +495,25 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 	
 	/**
+	 * Pre processes the template function LIMIT_TEXT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
+     * Makes them recognizable by wrapping them with !--### ###--
+	 *
+	 * @param	string	$content HTML code
+	 * @return	string	$content transformed HTML code
+	 */
+	protected function preProcessFunctions($content) {
+		foreach ($this->functions as $function) {
+			$pattern = '/' . $function . '\(.+\)/isU';
+			if (preg_match_all($pattern, $content, $matches)) {
+				foreach ($matches[0] as $match) {
+					$content = str_replace($match,'!--###' . $match . '###--',$content);
+                }
+			}
+        }
+		return $content;
+	}
+	
+	/**
      * Handles LOOP tag.
      * Transforms whenever necessary <!-- LOOP(table) --> into <!-- ###LOOP.table### begin -->.
      * 
@@ -487,11 +522,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
      */
 	protected function processLOOP($content) {
 		$pattern = '/<!-- *LOOP *\((.+)\) *-->/isU';
-		preg_match_all($pattern, $content, $matches);
-
-		if (isset($matches[0])) {
+		if (preg_match_all($pattern, $content, $matches)) {
 			$numberOfMatches = count($matches[0]);
-			// Reverse loop. The last <!--ENDLOOP--> becomes the first one
+
+			// Reverses loop. The last <!--ENDLOOP--> becomes the first one
 			for ($index = $numberOfMatches; $index > 0; $index --) {
 				$search = $matches[0][$index - 1];
 				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### begin -->';
@@ -513,9 +547,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	string	$content transformed HTML code
 	 */
 	protected function postProcessIf($content) {
-		if (preg_match('/<!-- *IF/',$content)) {
-			$pattern = '/(<!-- *IF *\( *([0-9a-zA-Z\-\.\'_!=%" ]+)\) *-->)(.+)(<!-- *ENDIF *-->)/isU';
-			preg_match_all($pattern, $content, $matches);
+		$pattern = '/(<!-- *IF *\( *(.+)\) *-->)(.+)(<!-- *ENDIF *-->)/isU';
+		if (preg_match_all($pattern, $content, $matches)) {
 
 			// count number of IF
 			$numberOfElements = count($matches[0]);
@@ -561,6 +594,69 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 		return $content;
+	}
+
+	
+	/**
+	 * Handles the function: LIMIT_TEXT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
+	 * 
+	 * @param	string	$content HTML code
+	 * @return	string	$content transformed HTML code
+	 */
+	function postProcessFunctions($content) {
+		foreach ($this->functions as $function) {
+			$pattern = '/!--###' . $function . '\((.+)\)###--/isU';
+
+			if (preg_match_all($pattern, $content, $matches)) {
+
+				$numberOfRecords = count($matches[0]);
+				for($index = 0; $index < $numberOfRecords; $index ++) {
+					switch ($function) {
+						case 'LIMIT_TEXT':
+							preg_match('/,([0-9]+)$/isU', $matches[1][$index], $limit);
+
+							// Defines the length of the string that needs to be removed
+							$stringLength = '-' . strlen(',' . $limit[1]);
+
+							// Resets the real content, without the ",xx" a the end
+							$matches[1][$index] = substr($matches[1][$index], 0, $stringLength);
+
+							// Limits the text whenever is it necessary
+							$_content = $this->limit_text($matches[1][$index], $limit[1]);
+							$content = str_replace($matches[0][$index], $_content, $content);
+							break;
+						case 'UPPERCASE':
+							$content = str_replace($matches[0][$index], strtoupper($matches[1][$index]), $content);
+							break;
+						case 'LOWERCASE':
+							$content = str_replace($matches[0][$index], strtolower($matches[1][$index]), $content);
+							break;
+						case 'UPPERCASE_FIRST':
+							$content = str_replace($matches[0][$index], ucfirst($matches[1][$index]), $content);
+							break;
+                    }
+							
+                }
+			}
+        }
+		return $content;
+    }
+
+	/**
+     * Usful method that shorten a text according to the parameter $limit.
+     *
+     * @param	string	$text: the input text
+     * @param	int		$limit: the limit of words
+     * @return	string	$text that has been shorten
+     */
+	protected function limit_text($text, $limit) {
+		$text = strip_tags($text);
+		$words = str_word_count($text, 2);
+		$pos = array_keys($words);
+		if (count($words) > $limit) {
+			$text = substr($text, 0, $pos[$limit]) . ' ...';
+		}
+		return $text;
 	}
 
 	/**
