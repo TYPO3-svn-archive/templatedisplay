@@ -811,6 +811,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
 			if (isset($this->counter[$sds['name']])) {
 				$_temp['###COUNTER###'] = $this->counter[$sds['name']];
+				
+				// other possible syntax
+				$_temp['###COUNTER.' . $sds['name'] . '###'] = $this->counter[$sds['name']];
 				$_fieldMarkers = array_merge($_fieldMarkers, $_temp);
 			}
 
