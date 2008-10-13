@@ -39,13 +39,13 @@ require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecont
  */
 class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
-	
+
 	public $extKey = 'templatedisplay';
 	protected $conf;
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
 	protected $structure = array(); // Input standardised data structure
-	protected $result; // The result of the processing by the Data Consumer
+	protected $result = ''; // The result of the processing by the Data Consumer
 
 	protected $subTemplateCode = array();
 	protected $labelMarkers = array();
@@ -160,14 +160,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		global $TYPO3_CONF_VARS;
 		global $LANG;
 
-		// Makes sure mapping exists, otherwise stops
-		if(!isset($this->consumerData['mappings'])){
-			$this->result .= '<div style="color :red; font-weight: bold">No templatedisplay has been found for uid = '.$this->uid . '.</div>';
-			$this->result .= '<div style="color :red; font-weight: bold; margin-top: 10px;">Templatedisplay\'s record may be deleted or hidden.</div>';
-			#throw new Exception('No mappings found for uid = ' . $this->uid);
-			return false;
-		}
-
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
 
@@ -185,12 +177,24 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// ****************************************
 		// ********** FETCHES DATASOURCE **********
         // ****************************************
-		
+
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
-		$datasource = json_decode($this->consumerData['mappings'],true);
+		try {
+			$datasource = json_decode($this->consumerData['mappings'],true);
+
+			// Makes sure $datasource is an array
+			if ($datasource === NULL) {
+				$datasource = array();
+			}
+		}
+		catch (Exception $e) {
+			$this->result .= '<div style="color :red; font-weight: bold">JSON decoding problem for tx_templatedisplay_displays.uid = '.$this->uid . '.</div>';
+			return false;
+		}
+
 		$uniqueMarkers = array();
-		
+
 		// Transforms the typoScript configuration into an array.
 		$parseObj = t3lib_div::makeInstance('t3lib_TSparser');
 		foreach ($datasource as $data) {
@@ -222,7 +226,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			// $data contains the complete record [marker], [table], [field], [type], [configuration]
 			$this->datasource[$data['marker']] = $data;
 		}
-		
+
 		// ***************************************
 		// ********** BEGINS PROCESSING **********
         // ***************************************
@@ -260,7 +264,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			t3lib_div::debug('content of $this->structure');
 			t3lib_div::debug($this->structure);
 		}
-		
+
 		// We want a convenient $templateCode. Substitutes $markers
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
 
@@ -326,7 +330,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 	/**
      * If found, returns markers, of type LLL
-     * 
+     *
 	 * Example of marker: ###LLL:EXT:myextension/localang.xml:myLable###
 	 *
 	 * @param	string	$content HTML code
@@ -356,7 +360,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	string	$content transformed HTML code
 	 */
 	protected function getExpressionMarkers($key, &$source, $content) {
-		
+
 		// Makes sure $expression has a value
 		if (empty($key)){
 			throw new Exception('No key given to getExpressionMarkers()');
@@ -493,7 +497,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 		return $content;
 	}
-	
+
 	/**
 	 * Pre processes the template function LIMIT_TEXT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
      * Makes them recognizable by wrapping them with !--### ###--
@@ -512,11 +516,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
         }
 		return $content;
 	}
-	
+
 	/**
      * Handles LOOP tag.
      * Transforms whenever necessary <!-- LOOP(table) --> into <!-- ###LOOP.table### begin -->.
-     * 
+     *
      * @param	string	$content: the HTML code.
      * @return	string	$content: the HTML code transformed
      */
@@ -530,7 +534,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$search = $matches[0][$index - 1];
 				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### begin -->';
 				$content = str_replace($search, $replacement , $content);
-				
+
 				$pattern = '/<!-- *ENDLOOP *-->/isU';
 				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### end -->';
 				$content = preg_replace($pattern, $replacement, $content, 1);
@@ -596,10 +600,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		return $content;
 	}
 
-	
+
 	/**
 	 * Handles the function: LIMIT_TEXT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
-	 * 
+	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
@@ -635,7 +639,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 							$content = str_replace($matches[0][$index], ucfirst($matches[1][$index]), $content);
 							break;
                     }
-							
+
                 }
 			}
         }
@@ -763,7 +767,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 								}
 								$additionalParams = '&' . $this->pObj->getPrefixId() . '[table]=' . $sds['name'] . '&' . $this->pObj->getPrefixId() .'[showUid]=' . $value;
 								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
-	
+
 								// Generates the link
 								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
 								break;
@@ -774,7 +778,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 									$configuration['returnLast'] = 'url';
 								}
 								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
-	
+
 								// Generates the link
 								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
 								break;
@@ -787,10 +791,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 								if (!isset($configuration['parameter'])) {
 									$configuration['parameter'] = $value;
 								}
-	
+
 								// replaces white spaces in filename
 								$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
-	
+
 								// Generates the link
 								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
 								break;
@@ -811,7 +815,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
 			if (isset($this->counter[$sds['name']])) {
 				$_temp['###COUNTER###'] = $this->counter[$sds['name']];
-				
+
 				// other possible syntax
 				$_temp['###COUNTER.' . $sds['name'] . '###'] = $this->counter[$sds['name']];
 				$_fieldMarkers = array_merge($_fieldMarkers, $_temp);
