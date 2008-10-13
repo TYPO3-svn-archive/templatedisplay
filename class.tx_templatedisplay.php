@@ -690,9 +690,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			else {
 				$this->subTemplateCode[$sds['name']] = $templateCode;
 			}
+			// Stores whether the template contains a tag LOOP. Avoid looping around the template when it is not necessary
+			$containsTagLOOP = TRUE;
 		}
 		else {
 			$this->subTemplateCode[$sds['name']] = $templateCode;
+			$containsTagLOOP = FALSE;
 		}
 
 		$templateContent = '';
@@ -707,6 +710,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		// Traverses the records...
+//		print_r($sds['records'] );
+
 		foreach ($sds['records'] as $records) {
 			$_fieldMarkers = array();
 
@@ -721,9 +726,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 				if (in_array($marker, $this->fieldsInDatasource)) {
 
-					// A value can be used for many markers. Loop around them.
+					// Retrieve the index of value $marker.
+					// e.g. will return "FIELD.title" if $marker = pages.title ([FIELD.title] => pages.title)
 					$keys = array_keys($this->fieldsInDatasource, $marker);
 
+					// TODO: check if this statement is true (e.g. condition <!--IF-->
+					// A marker can be used many times. Loops around them.
 					foreach	($keys as $key) {
 						switch ($this->datasource[$key]['type']) {
 							case 'text':
@@ -809,7 +817,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 						} // end switch
 					} // end foreach
 				} // end if
-			}
+			} // end foreach
 
 			// Merges "field" with "label" and substitutes content
 			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
@@ -830,6 +838,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$this->counter[$sds['name']] = $this->counter[$sds['name']] + 1;
 			# Debug:
 			#echo $this->counter[$sds['name']];
+
+			// Stopps the loop when no tag LOOP has been detected, no need to continuous further more.
+			if (!$containsTagLOOP) {
+				break;
+			}
 
 			// If the records contains subtables, recursively calls getSubContent()
 			// Else, removes a possible unwanted part <!-- ###LOOP.unsed ### begin -->.+<!-- ###LOOP.unsed ### end -->
