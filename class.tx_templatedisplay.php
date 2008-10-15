@@ -46,16 +46,31 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected $uid; // Primary key of the record to fetch for the details
 	protected $structure = array(); // Input standardised data structure
 	protected $result = ''; // The result of the processing by the Data Consumer
-
-	protected $subTemplateCode = array();
-	protected $labelMarkers = array();
-	protected $fieldMarker = array();
-	protected $markers = array();
 	protected $counter = array();
 
+	protected $labelMarkers = array();
 	protected $datasource = array();
+
+	//TODO check the utility of this property
 	protected $fieldsInDatasource = array();
 
+
+	/**
+	 * This method resets values for a number of properties
+	 * This is necessary because services are managed as singletons
+	 *
+	 * @return	void
+	 */
+	public function reset(){
+		$this->structure = array();
+		$this->result = '';
+		$this->uid = '';
+		$this->table = '';
+		$this->conf = array();
+		$this->datasource = array();
+		$this->fieldsInDatasource = array();
+    }
+	
 	/**
      *
      * @var	array	$functions: list of function handled by templatedisplay 'LIMIT_TEXT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
@@ -218,7 +233,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
             // Ex: [###FIELD.title###] => ###FIELD.title.pages.title###
 			$uniqueMarkers['###' . $data['marker'] . '###'] = '###' . $data['marker'] . '.' . $_marker . '###';
 
-			// Stores which markers are going to be substitued to what fields
+			// Stores which markers are going to be substitued with what fields
 			// Ex: [FIELD.title] => pages.title
 			$this->fieldsInDatasource[$data['marker']] = $_marker;
 
@@ -269,33 +284,15 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
 
 		// Handles LOOP tag. Transforms whenever necessary <!-- LOOP(table) --> into <!-- ###LOOP.table### begin -->
-		$templateCode = $this->processLOOP($templateCode);
+		#$templateCode = $this->processLOOP($templateCode);
 
-		// Gets the content from sub template, typically LOOP part
-		$subTemplateContent = $this->getSubContent($this->structure, $templateCode);
-
-		// Defines the $templateContent (@see variable explanation).
-		// Content can be "simply" $subTemplateContent...
-		// ...but can be something more if the $templateCode contains ###LOOP.myTableLevel1###
-
-		// Wherever markers are found, substitutes them!
-		if ($this->markers[$this->structure['name']] != '') {
-
-			// Makes sure the LOOP is present in the templateCode.
-			// It not, it might mean, there is a LOOP level2 without a LOOP level1
-			if (preg_match('/#{3}LOOP.' . $this->structure['name'] . '#{3}/',$templateCode)) {
-				$templateContent = t3lib_parsehtml::substituteSubpart($templateCode, $this->markers[$this->structure['name']], $subTemplateContent);
-
-				// Substititutes the remaining label
-				$templateContent = t3lib_parsehtml::substituteMarkerArray($templateContent, $this->labelMarkers[$this->structure['name']]);
-			}
-			else {
-				$templateContent = $subTemplateContent;
-			}
+		$templateStructure = $this->getTemplateStructure($templateCode);
+		if (isset($GLOBALS['_GET']['debug']['template']) && $GLOBALS['BE_USER']) {
+			t3lib_div::debug($templateStructure);
 		}
-		else {
-			$templateContent = $subTemplateContent;
-		}
+
+		// Transforms the templateStructure into real content
+		$templateContent = $this->getContent($templateStructure);
 
 		// Handles the page browser
 		$templateContent = $this->processPageBrowser($templateContent);
@@ -374,9 +371,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$pattern = '/#{3}(' . $key . ':)(.+)#{3}/isU';
 		if (preg_match_all($pattern, $content, $matches)) {
 			if(isset($matches[2])){
-				$numberOfRecords = count($matches[0]);
-				for($index = 0; $index < $numberOfRecords; $index ++) {
-					$markers[$matches[0][$index]] = $this->getValue($source, $matches[2][$index]);
+				$numberOfMatches = count($matches[0]);
+				for($index = 0; $index < $numberOfMatches; $index ++) {
+					$markers[$matches[0][$index]] = $this->getValueFromArray($source, $matches[2][$index]);
 				}
 			}
 		}
@@ -410,7 +407,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	mixed	Whatever value was found in the array
      * @author  François Suter (Cobweb)
 	 */
-	protected function getValue($source, $indices) {
+	protected function getValueFromArray($source, $indices) {
 		if (empty($indices)) {
 			throw new Exception('No key given for source');
 		}
@@ -524,24 +521,24 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
      * @param	string	$content: the HTML code.
      * @return	string	$content: the HTML code transformed
      */
-	protected function processLOOP($content) {
-		$pattern = '/<!-- *LOOP *\((.+)\) *-->/isU';
-		if (preg_match_all($pattern, $content, $matches)) {
-			$numberOfMatches = count($matches[0]);
-
-			// Reverses loop. The last <!--ENDLOOP--> becomes the first one
-			for ($index = $numberOfMatches; $index > 0; $index --) {
-				$search = $matches[0][$index - 1];
-				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### begin -->';
-				$content = str_replace($search, $replacement , $content);
-
-				$pattern = '/<!-- *ENDLOOP *-->/isU';
-				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### end -->';
-				$content = preg_replace($pattern, $replacement, $content, 1);
-            }
-        }
-		return $content;
-    }
+//	protected function processLOOP($content) {
+//		$pattern = '/<!-- *LOOP *\((.+)\) *-->/isU';
+//		if (preg_match_all($pattern, $content, $matches)) {
+//			$numberOfMatches = count($matches[0]);
+//
+//			// Reverses loop. The last <!--ENDLOOP--> becomes the first one
+//			for ($index = $numberOfMatches; $index > 0; $index --) {
+//				$search = $matches[0][$index - 1];
+//				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### begin -->';
+//				$content = str_replace($search, $replacement , $content);
+//
+//				$pattern = '/<!-- *ENDLOOP *-->/isU';
+//				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### end -->';
+//				$content = preg_replace($pattern, $replacement, $content, 1);
+//            }
+//        }
+//		return $content;
+//    }
 
 	/**
 	 * Post processes the <!--IF(###MARKER### == '')-->
@@ -613,8 +610,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 			if (preg_match_all($pattern, $content, $matches)) {
 
-				$numberOfRecords = count($matches[0]);
-				for($index = 0; $index < $numberOfRecords; $index ++) {
+				$numberOfMatches = count($matches[0]);
+				for($index = 0; $index < $numberOfMatches; $index ++) {
 					switch ($function) {
 						case 'LIMIT_TEXT':
 							preg_match('/,([0-9]+)$/isU', $matches[1][$index], $limit);
@@ -664,207 +661,589 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-	 * Recursive method. Gets the subpart template and substitutes content (label or field).
-	 *
-	 * @param array		$sdd
-	 * @param string	$templateCode
-	 * @return string	HTML code
-	 */
-	protected function getSubContent(&$sds, $templateCode){
+     * Analyses the template code and build a structure of type array
+     * This method is called recursively whenever a LOOP is found.
+     *
+     * Synopsis of the structure
+     *
+     * [table] => tableName
+     * [template] => template code with markers
+     * [content] => HTML code without <LOOP> marker (outer)
+     * [loop] => contains the loop / subloops / subsubloops etc... (2 levels implemented in the datastructure
+     *
+     * @param	string	$template: template code with markers
+     * @param	string	$content: template code without <LOOP> marker (outer)
+     * @param	string	$tableName
+     * @return	array	$templateStructure
+     */
+	protected function getTemplateStructure($template, $content = '', $tableName = '') {
 
-		if (preg_match('/#{3}LOOP./',$templateCode)) {
-			// Defines marker array according to $sds['name'] which contains a table name.
-			// This marker is used to extract a subtemplate
-			$this->markers[$sds['name']] = '###LOOP.' . $sds['name'] . '###';
-			$this->counter[$sds['name']] = 0;
+		// Makes sure values are ok.
+		if ($content == '') {
+			$content = $template;
+        }
+		
+		// Makes sure values are ok.
+		if ($tableName == '') {
+			$tableName = $this->structure['name'];
+		}
 
-			// Defines subTemplateCode (template HTML) array according to $sds['name'] which contains a table name.
-			$subTemplateCode = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
+		$templateStructure = array();
+		$templateStructure['table'] = $tableName;
+		$templateStructure['template'] = $template;
+		$templateStructure['content'] = $content;
+		$templateStructure['loops'] = array();
 
-			// If nothing is found, it means there are no LOOP defined for the this table name
-			// This case can be faced whenever a template defined with the LOOP level2 without a LOOP level1
-			// This code code could be compacted. However, for understanding the logic, is is clearer to let it like it.
-			if ($subTemplateCode != '') {
-				$this->subTemplateCode[$sds['name']] = $subTemplateCode;
+		// Pattern to match <!--LOOP(tt_content)-->.+<!--ENDLOOP-->
+		if (preg_match_all('/<!-- *LOOP\((.+)\) *-->(.+)<!-- *ENDLOOP *-->/isU', $content, $matches, PREG_SET_ORDER)) {
+
+			// Defines a new array
+
+			// Traverses the array to find out table, template, content
+			foreach ($matches as $match) {
+
+				// Initialize variable name
+				$subTemplate = $match[0];
+				$subTable = $match[1];
+				$subContent = $match[2];
+
+				// This is a special case. True, means there is a loop in a loop...
+                // ... and the $subTemplate, $subContent are not complete.
+				if (preg_match('/<!-- *LOOP\(/isU', $subContent)) {
+
+					// position of the template
+					$position = strpos($template,$subTemplate);
+					$remainingTemplate = substr($template, $position + strlen($subTemplate));
+
+					// Matches the remaining HTML
+					preg_match('/^(.+)<!-- *ENDLOOP *-->/isU', $remainingTemplate, $_match);
+					$subTemplate .= $_match[0];
+					$subContent .= '<!--ENDLOOP-->'.$_match[1];
+                }
+
+				// Gets recursively the template structure
+				$templateStructure['loops'][] = $this->getTemplateStructure($subTemplate, $subContent, $subTable);
 			}
-			else {
-				$this->subTemplateCode[$sds['name']] = $templateCode;
-			}
-			// Stores whether the template contains a tag LOOP. Avoid looping around the template when it is not necessary
-			$containsTagLOOP = TRUE;
+        }
+		
+		return $templateStructure;
+    }
+
+	/**
+     * Looks up for a value in a sds.
+     *
+     * @param	array	$sds: standard data structure
+     * @param	int		$index: the position in the array
+     * @param	string	$table: the name of the table
+     * @param	string	$field: the name of the field
+     * @return	string	$value: if no value is found return NULL
+     */
+	protected function getValueFromStructure(&$sds, $index, $table, $field) {
+
+		// Default value is NULL
+		$value = NULL;
+
+		// TRUE, the best case, means the table is found at the first dimension of the sds
+		if ($sds['name'] == $table) {
+			if (isset($sds['records'][$index][$field])) {
+				$value = $sds['records'][$index][$field];
+            }
 		}
 		else {
-			$this->subTemplateCode[$sds['name']] = $templateCode;
-			$containsTagLOOP = FALSE;
+			// Maybe the $sds contains subtables, have a look into it to find out the value.
+			if (!empty($sds['records'][$index]['sds:subtables'])) {
+				
+				// Traverses all subSds and call it recursively
+				foreach ($sds['records'][$index]['sds:subtables'] as $subSds){
+					$value = $this->getValueFromStructure($subSds, 0, $table, $field);
+					if ($value != NULL) {
+						break;
+                    }
+                }
+            }
+        }
+		return $value;
+    }
+
+
+	/**
+     * Tries to find out a valid $sds according to a table name.
+     *
+     * @param	array	$sds
+     * @param	string	$tableName
+     * @return	array	$result: actually this is a sds
+     */
+	protected function getSubStructure(&$sds, $tableName) {
+		$result = NULL;
+		
+		if ($sds['name'] == $tableName) {
+			$result =& $sds;
+		}
+		else {
+			foreach ($sds['records'][0]['sds:subtables'] as $subsds) {
+				if ($subsds['name'] == $tableName) {
+					$result =& $subsds;
+					break;
+				}
+			}
 		}
 
-		$templateContent = '';
+		if ($result === NULL) {
+			// TODO improved error reporting
+			throw new Exception('No sds found for table ' . $tableName);
+		}
+		return $result;
+    }
+	
+	/**
+     * Initializes language label and stores the lables for a possible further use.
+     *
+     * @param	$sds	$sds: standard data structure
+     * @return	void
+     */
+	protected function setLabelMarkers(&$sds) {
+		if (!isset($this->labelMarkers[$sds['name']]) && !empty($sds)) {
 
-		// Initializes language label and stores the lables for a possible further use.
-		if (!isset($this->labelMarkers[$sds['name']])) {
+			// Defines as array
 			$this->labelMarkers[$sds['name']] = array();
-
 			foreach ($sds['header'] as $index => $labelArray) {
 				$this->labelMarkers[$sds['name']]['###LABEL.' . $index . '###'] = $labelArray['label'];
 			}
 		}
 
-		// Traverses the records...
-//		print_r($sds['records'] );
+    }
+	
+	/**
+	 * Recursive method. Gets the subpart template and substitutes content (label or field).
+	 *
+	 * @param	string	$templateCode
+     * @param	int		$deepth: the deepth of the array, begins with 0
+	 * @return	string	HTML code
+	 */
+	protected function getContent(&$templateStructure){
 
-		foreach ($sds['records'] as $records) {
-			$_fieldMarkers = array();
+		$this->setLabelMarkers($this->structure);
 
-			// initialize data
-			$this->localCObj->start($records);
+		// Stores content in an external array
+		$content = $templateStructure['content'];
+		
+		// Means we need to handle the case "LOOP"
+		if (!empty($templateStructure['loops'])) {
 
-			// ... and traverses the fields of the current record (associative array)
-			foreach ($records as $field => $value) {
-				// Important control. Makes sure the field has been mapped.
-				// Furthermore, it avoids the field "sds:subtables" to enter in the test
-				$marker = $sds['name'] . '.' . $field;
+			
+			// Loops around the template structure
+			foreach ($templateStructure['loops'] as $subTemplateStructure) {
 
-				if (in_array($marker, $this->fieldsInDatasource)) {
+				// Resets temporary content
+				$_content = '';
 
-					// Retrieve the index of value $marker.
-					// e.g. will return "FIELD.title" if $marker = pages.title ([FIELD.title] => pages.title)
-					$keys = array_keys($this->fieldsInDatasource, $marker);
+				// Tries to find out a valid $sds according to a table name ($subTemplateStructure[table])
+				$sds = $this->getSubStructure($this->structure, $subTemplateStructure['table']);
 
-					// TODO: check if this statement is true (e.g. condition <!--IF-->
-					// A marker can be used many times. Loops around them.
-					foreach	($keys as $key) {
-						switch ($this->datasource[$key]['type']) {
-							case 'text':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['value'] = $value;
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
-							break;
-							case 'image':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['file'] = $value;
+				// Sets the label
+				$this->setLabelMarkers($sds);
+				
+				// Retrieves the fields from the templateCode that needs a conversion
+				// By the way catch the table name and the field name for futher use. -> "()"
+				preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $subTemplateStructure['content'], $subMarkers, PREG_SET_ORDER);
 
-								// Sets the alt attribute if no altText is defined
-								if (!isset($configuration['altText'])) {
-									// Gets the file name
-									$configuration['altText'] = $this->getFileName($configuration['file']);
-								}
+				// Loops around the records
+				$numbersOfRecords = count($sds['records']);
+				for($index = 0; $index < $numbersOfRecords; $index++) {
+					
+					// Increment counter
+					$_counter['###COUNTER###'] = $index;
+					
+					// other possible syntax, useful with loop in loop
+					$_counter['###COUNTER.' . $sds['name'] . '###'] = $index;
+					
+					// Initializes content object.
+					$this->localCObj->start($sds['records'][$index]);
 
-								// Sets the title attribute if no title is defined
-								if (!isset($configuration['titleText'])) {
-									if ($configuration['altText'] != '') {
-										$configuration['titleText'] = $configuration['altText'];
+					// Finds out the marker in the template.
+					foreach ($subMarkers as $marker) {
+						$markerName = $marker[0];
+						$key = $marker[1];
+						$table = $marker[2];
+						$field = $marker[3];
+						$value = $this->getValueFromStructure($sds, $index, $table, $field);
+						$fieldMarkers[$markerName] = $this->getValue($key ,$value);
+					}
+
+					// Defines a temporary variable
+					$__content = $subTemplateStructure['content'];
+
+					// Means there is a LOOP in a LOOP
+					if (!empty($subTemplateStructure['loops'])) {
+						foreach ($subTemplateStructure['loops'] as $subSubTemplateStructure) {
+
+							// Reset value of $subSds
+							$subSds = array();
+
+							// Searches for the correct subsds
+							foreach ($sds['records'][$index]['sds:subtables'] as $subSubStructure) {
+								if ($subSubStructure['name'] == $subSubTemplateStructure['table']) {
+									$subSds = $subSubStructure;
+									break;
+                                }
+                            }
+
+							// Defines the labels
+							$this->setLabelMarkers($subSds);
+							
+							/**************/
+							// Resets variable
+							$subContent = '';
+							preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $subSubTemplateStructure['content'], $subSubMarkers, PREG_SET_ORDER);
+
+							// Traverses subRecords
+							$subNumbersOfRecords = count($subSds['records']);
+							for($subIndex = 0; $subIndex < $subNumbersOfRecords; $subIndex++) {
+
+								// Increments counter
+								$_counter['###SUBCOUNTER###'] = $subIndex;
+
+								// Other syntax. TODO: choose one syntax!
+								$_counter['###COUNTER.' . $subSds['name'] . '###'] = $subIndex;
+
+								// Initializes content object.
+								$this->localCObj->start($sds['records'][$index]);
+								
+								// Gets value
+								foreach ($subSubMarkers as $marker) {
+									$markerName = $marker[0];
+									$key = $marker[1];
+									$table = $marker[2];
+									$field = $marker[3];
+									$value = $this->getValueFromStructure($subSds, $subIndex, $table, $field);
+									if ($value !== NULL) {
+										$__fieldMarkers[$markerName] = $this->getValue($key ,$value);
 									}
-									else{
-										$configuration['titleText'] = $this->getFileName($configuration['file']);
-									}
 								}
+								$subFieldMarkers = array_merge($fieldMarkers, $__fieldMarkers, $this->labelMarkers[$subSds['name']], $_counter);
+								$subContent .= t3lib_parsehtml::substituteMarkerArray($subSubTemplateStructure['content'], $subFieldMarkers);
+							}
+							/**************/
+							
+							// Replaces original sub template by the new content
+							$__content = str_replace($subSubTemplateStructure['template'], trim($subContent), $__content);
+                        }
+                    }
 
-								$image = $this->localCObj->IMAGE($configuration);
-								if (empty($image)) {
-									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'resources/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
-								}
-								else {
-									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $image;
-								}
-								break;
-							case 'linkToDetail':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['useCacheHash'] = 1;
-								if (!isset($configuration['returnLast'])) {
-									$configuration['returnLast'] = 'url';
-								}
-								$additionalParams = '&' . $this->pObj->getPrefixId() . '[table]=' . $sds['name'] . '&' . $this->pObj->getPrefixId() .'[showUid]=' . $value;
-								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+					// Merges array
+					$fieldMarkers = array_merge($fieldMarkers, $this->labelMarkers[$sds['name']], $_counter);
+					
+					// Substitues content
+					$_content .= t3lib_parsehtml::substituteMarkerArray($__content, $fieldMarkers);
+					
+                } // end for (records)
 
-								// Generates the link
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-								break;
-							case 'linkToPage':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['useCacheHash'] = 1;
-								if (!isset($configuration['returnLast'])) {
-									$configuration['returnLast'] = 'url';
-								}
-								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+				$content = str_replace($subTemplateStructure['template'], trim($_content), $content);
+            } // foreach $templateStructure['loops']
+			
+		}
 
-								// Generates the link
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-								break;
-							case 'linkToFile':
-								$configuration = $this->datasource[$key]['configuration'];
-								$configuration['useCacheHash'] = 1;
-								if (!isset($configuration['returnLast'])) {
-									$configuration['returnLast'] = 'url';
-								}
-								if (!isset($configuration['parameter'])) {
-									$configuration['parameter'] = $value;
-								}
+		// The template dimension 1
+		preg_match_all('/#{3}FIELD\..+\.(.+)\.(.+)#{3}/isU', $content, $markers, PREG_SET_ORDER);
 
-								// replaces white spaces in filename
-								$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
+		$fieldMarkers = array();
 
-								// Generates the link
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-								break;
-							case 'email':
-								$configuration = $this->datasource[$key]['configuration'];
-								if (!isset($configuration['parameter'])) {
-									$configuration['parameter'] = $value;
-								}
-								// Generates the email
-								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-							break;
-						} // end switch
-					} // end foreach
-				} // end if
-			} // end foreach
-
-			// Merges "field" with "label" and substitutes content
-			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
-			if (isset($this->counter[$sds['name']])) {
-				$_temp['###COUNTER###'] = $this->counter[$sds['name']];
-
-				// other possible syntax
-				$_temp['###COUNTER.' . $sds['name'] . '###'] = $this->counter[$sds['name']];
-				$_fieldMarkers = array_merge($_fieldMarkers, $_temp);
-			}
-
-			// $_templateContent contains the temporary HTML. Whenever getSubContent() is called recursively, the content is passed to the method
-			$_templateContent = t3lib_parsehtml::substituteMarkerArray($this->subTemplateCode[$sds['name']], $_fieldMarkers);
-			$templateContent .= $_templateContent;
-			# Debug:
-			#echo $_templateContent;
-
-			$this->counter[$sds['name']] = $this->counter[$sds['name']] + 1;
-			# Debug:
-			#echo $this->counter[$sds['name']];
-
-			// Stopps the loop when no tag LOOP has been detected, no need to continuous further more.
-			if (!$containsTagLOOP) {
-				break;
-			}
-
-			// If the records contains subtables, recursively calls getSubContent()
-			// Else, removes a possible unwanted part <!-- ###LOOP.unsed ### begin -->.+<!-- ###LOOP.unsed ### end -->
-			if (!empty($records['sds:subtables'])) {
-				foreach ($records['sds:subtables'] as $subSds) {
-					// get the subContent
-					$subTemplateContent = $this->getSubContent($subSds, $_templateContent);
-
-					// Substitutes the subcontent with the main content
-					$templateContent = t3lib_parsehtml::substituteSubpart($templateContent, $this->markers[$subSds['name']], $subTemplateContent);
-				}
-			}
-			else{
-				$pattern = '/<!-- *###LOOP\.[^#]+### *begin *-->.+<!-- *###LOOP\.[^#]+### *end *-->/isU';
-				# Debug code
-				#preg_match_all($pattern,$templateContent,$matches);
-				#print_r($matches);
-				$templateContent = preg_replace($pattern, '', $templateContent);
+		foreach ($markers as $marker) {
+			$markerName = $marker[0];
+			$table = $marker[1];
+			$field = $marker[2];
+			$value = $this->getValueFromStructure($this->structure, 0, $table, $field);
+			if ($value !== NULL) {
+				$fieldMarkers[$markerName] = $value;
 			}
 		}
-		return $templateContent;
-	}
+
+		// Merges additional fields
+		$fieldMarkers = array_merge($fieldMarkers, $this->labelMarkers[$this->structure['name']]);
+		return t3lib_parsehtml::substituteMarkerArray($content, $fieldMarkers);
+
+    }
+
+	protected function getValue($key,$value) {
+		
+		switch ($this->datasource[$key]['type']) {
+			case 'text':
+				$configuration = $this->datasource[$key]['configuration'];
+				$configuration['value'] = $value;
+				$output = $this->localCObj->TEXT($configuration);
+			break;
+			case 'image':
+				$configuration = $this->datasource[$key]['configuration'];
+				$configuration['file'] = $value;
+
+				// Sets the alt attribute if no altText is defined
+				if (!isset($configuration['altText'])) {
+					// Gets the file name
+					$configuration['altText'] = $this->getFileName($configuration['file']);
+				}
+
+				// Sets the title attribute if no title is defined
+				if (!isset($configuration['titleText'])) {
+					if ($configuration['altText'] != '') {
+						$configuration['titleText'] = $configuration['altText'];
+					}
+					else{
+						$configuration['titleText'] = $this->getFileName($configuration['file']);
+					}
+				}
+
+				$image = $this->localCObj->IMAGE($configuration);
+				if (empty($image)) {
+					$output = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'resources/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
+				}
+				else {
+					$output = $image;
+				}
+				break;
+			case 'linkToDetail':
+				$configuration = $this->datasource[$key]['configuration'];
+				$configuration['useCacheHash'] = 1;
+				if (!isset($configuration['returnLast'])) {
+					$configuration['returnLast'] = 'url';
+				}
+				$additionalParams = '&' . $this->pObj->getPrefixId() . '[table]=' . $sds['name'] . '&' . $this->pObj->getPrefixId() .'[showUid]=' . $value;
+				$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+
+				// Generates the link
+				$output = $this->localCObj->typolink('',$configuration);
+				break;
+			case 'linkToPage':
+				$configuration = $this->datasource[$key]['configuration'];
+				$configuration['useCacheHash'] = 1;
+				if (!isset($configuration['returnLast'])) {
+					$configuration['returnLast'] = 'url';
+				}
+				$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+
+				// Generates the link
+				$output = $this->localCObj->typolink('',$configuration);
+				break;
+			case 'linkToFile':
+				$configuration = $this->datasource[$key]['configuration'];
+				$configuration['useCacheHash'] = 1;
+				if (!isset($configuration['returnLast'])) {
+					$configuration['returnLast'] = 'url';
+				}
+				if (!isset($configuration['parameter'])) {
+					$configuration['parameter'] = $value;
+				}
+
+				// replaces white spaces in filename
+				$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
+
+				// Generates the link
+				$output = $this->localCObj->typolink('',$configuration);
+				break;
+			case 'email':
+				$configuration = $this->datasource[$key]['configuration'];
+				if (!isset($configuration['parameter'])) {
+					$configuration['parameter'] = $value;
+				}
+				// Generates the email
+				$output = $this->localCObj->typolink('',$configuration);
+				break;
+		} // end switch
+		
+		return $output;
+    }
+
+//
+//		if (preg_match('/#{3}LOOP./',$templateCode)) {
+//			// Defines marker array according to $sds['name'] which contains a table name.
+//			// This marker is used to extract a subtemplate
+//			$this->markers[$sds['name']] = '###LOOP.' . $sds['name'] . '###';
+//			$this->counter[$sds['name']] = 0;
+//
+//			// Defines subTemplateCode (template HTML) array according to $sds['name'] which contains a table name.
+//			$subTemplateCode = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
+//
+//			// If nothing is found, it means there are no LOOP defined for the this table name
+//			// This case can be faced whenever a template defined with the LOOP level2 without a LOOP level1
+//			// This code code could be compacted. However, for understanding the logic, is is clearer to let it like it.
+//			if ($subTemplateCode != '') {
+//				$this->subTemplateCode[$sds['name']] = $subTemplateCode;
+//			}
+//			else {
+//				$this->subTemplateCode[$sds['name']] = $templateCode;
+//			}
+//			// Stores whether the template contains a tag LOOP. Avoid looping around the template when it is not necessary
+//			$containsTagLOOP = TRUE;
+//		}
+//		else {
+//			$this->subTemplateCode[$sds['name']] = $templateCode;
+//			$containsTagLOOP = FALSE;
+//		}
+
+//		$templateContent = '';
+//
+//		// Initializes language label and stores the lables for a possible further use.
+//		if (!isset($this->labelMarkers[$sds['name']])) {
+//			$this->labelMarkers[$sds['name']] = array();
+//
+//			foreach ($sds['header'] as $index => $labelArray) {
+//				$this->labelMarkers[$sds['name']]['###LABEL.' . $index . '###'] = $labelArray['label'];
+//			}
+//		}
+//
+//		// Traverses the records...
+//		// Loops around the $records
+//		foreach ($sds['records'] as $records) {
+//			$_fieldMarkers = array();
+//
+//			// Initializes content object.
+//			$this->localCObj->start($records);
+//
+//			// ... and traverses the fields of the current record (associative array)
+//			foreach ($records as $field => $value) {
+//				// Important control. Makes sure the field has been mapped.
+//				// Furthermore, it avoids the field "sds:subtables" to enter in the test
+//				$marker = $sds['name'] . '.' . $field;
+//
+//				if (in_array($marker, $this->fieldsInDatasource)) {
+//
+//					// Retrieve the index of value $marker.
+//					// e.g. will return "FIELD.title" if $marker = pages.title ([FIELD.title] => pages.title)
+//					$keys = array_keys($this->fieldsInDatasource, $marker);
+//
+//					// TODO: check if this statement is true (e.g. condition <!--IF-->
+//					// A marker can be used many times. Loops around them.
+//					foreach	($keys as $key) {
+//						switch ($this->datasource[$key]['type']) {
+//							case 'text':
+//								$configuration = $this->datasource[$key]['configuration'];
+//								$configuration['value'] = $value;
+//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
+//							break;
+//							case 'image':
+//								$configuration = $this->datasource[$key]['configuration'];
+//								$configuration['file'] = $value;
+//
+//								// Sets the alt attribute if no altText is defined
+//								if (!isset($configuration['altText'])) {
+//									// Gets the file name
+//									$configuration['altText'] = $this->getFileName($configuration['file']);
+//								}
+//
+//								// Sets the title attribute if no title is defined
+//								if (!isset($configuration['titleText'])) {
+//									if ($configuration['altText'] != '') {
+//										$configuration['titleText'] = $configuration['altText'];
+//									}
+//									else{
+//										$configuration['titleText'] = $this->getFileName($configuration['file']);
+//									}
+//								}
+//
+//								$image = $this->localCObj->IMAGE($configuration);
+//								if (empty($image)) {
+//									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'resources/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
+//								}
+//								else {
+//									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $image;
+//								}
+//								break;
+//							case 'linkToDetail':
+//								$configuration = $this->datasource[$key]['configuration'];
+//								$configuration['useCacheHash'] = 1;
+//								if (!isset($configuration['returnLast'])) {
+//									$configuration['returnLast'] = 'url';
+//								}
+//								$additionalParams = '&' . $this->pObj->getPrefixId() . '[table]=' . $sds['name'] . '&' . $this->pObj->getPrefixId() .'[showUid]=' . $value;
+//								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+//
+//								// Generates the link
+//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+//								break;
+//							case 'linkToPage':
+//								$configuration = $this->datasource[$key]['configuration'];
+//								$configuration['useCacheHash'] = 1;
+//								if (!isset($configuration['returnLast'])) {
+//									$configuration['returnLast'] = 'url';
+//								}
+//								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+//
+//								// Generates the link
+//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+//								break;
+//							case 'linkToFile':
+//								$configuration = $this->datasource[$key]['configuration'];
+//								$configuration['useCacheHash'] = 1;
+//								if (!isset($configuration['returnLast'])) {
+//									$configuration['returnLast'] = 'url';
+//								}
+//								if (!isset($configuration['parameter'])) {
+//									$configuration['parameter'] = $value;
+//								}
+//
+//								// replaces white spaces in filename
+//								$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
+//
+//								// Generates the link
+//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+//								break;
+//							case 'email':
+//								$configuration = $this->datasource[$key]['configuration'];
+//								if (!isset($configuration['parameter'])) {
+//									$configuration['parameter'] = $value;
+//								}
+//								// Generates the email
+//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
+//							break;
+//						} // end switch
+//					} // end foreach
+//				} // end if
+//			} // end foreach
+
+			// Merges "field" with "label" and substitutes content
+//			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
+//			if (isset($this->counter[$sds['name']])) {
+//				$_temp['###COUNTER###'] = $this->counter[$sds['name']];
+//
+//				// other possible syntax
+//				$_temp['###COUNTER.' . $sds['name'] . '###'] = $this->counter[$sds['name']];
+//				$_fieldMarkers = array_merge($_fieldMarkers, $_temp);
+//			}
+//
+//			// $_templateContent contains the temporary HTML. Whenever getSubContent() is called recursively, the content is passed to the method
+//			$_templateContent = t3lib_parsehtml::substituteMarkerArray($this->subTemplateCode[$sds['name']], $_fieldMarkers);
+//			$templateContent .= $_templateContent;
+//			# Debug:
+//			#echo $_templateContent;
+//
+//			$this->counter[$sds['name']] = $this->counter[$sds['name']] + 1;
+//			# Debug:
+//			#echo $this->counter[$sds['name']];
+//
+//			// Stopps the loop when no tag LOOP has been detected, no need to continuous further more.
+//			if (!$containsTagLOOP) {
+//				break;
+//			}
+//
+//			// If the records contains subtables, recursively calls getSubContent()
+//			// Else, removes a possible unwanted part <!-- ###LOOP.unsed ### begin -->.+<!-- ###LOOP.unsed ### end -->
+//			if (!empty($records['sds:subtables'])) {
+//				foreach ($records['sds:subtables'] as $subSds) {
+//					// get the subContent
+//					$subTemplateContent = $this->getSubContent($subSds, $_templateContent);
+//
+//					// Substitutes the subcontent with the main content
+//					$templateContent = t3lib_parsehtml::substituteSubpart($templateContent, $this->markers[$subSds['name']], $subTemplateContent);
+//				}
+//			}
+//			else{
+//				$pattern = '/<!-- *###LOOP\.[^#]+### *begin *-->.+<!-- *###LOOP\.[^#]+### *end *-->/isU';
+//				# Debug code
+//				#preg_match_all($pattern,$templateContent,$matches);
+//				#print_r($matches);
+//				$templateContent = preg_replace($pattern, '', $templateContent);
+//			}
+//		}
+//		return $templateContent;
 
 	/**
 	 * Extracts the filename of a path
