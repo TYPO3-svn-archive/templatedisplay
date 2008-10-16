@@ -51,10 +51,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	protected $labelMarkers = array();
 	protected $datasource = array();
 
-	//TODO check the utility of this property
-	protected $fieldsInDatasource = array();
-
-
 	/**
 	 * This method resets values for a number of properties
 	 * This is necessary because services are managed as singletons
@@ -68,7 +64,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$this->table = '';
 		$this->conf = array();
 		$this->datasource = array();
-		$this->fieldsInDatasource = array();
     }
 	
 	/**
@@ -233,10 +228,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
             // Ex: [###FIELD.title###] => ###FIELD.title.pages.title###
 			$uniqueMarkers['###' . $data['marker'] . '###'] = '###' . $data['marker'] . '.' . $_marker . '###';
 
-			// Stores which markers are going to be substitued with what fields
-			// Ex: [FIELD.title] => pages.title
-			$this->fieldsInDatasource[$data['marker']] = $_marker;
-
 			// Builds the datasource as an associative array.
 			// $data contains the complete record [marker], [table], [field], [type], [configuration]
 			$this->datasource[$data['marker']] = $data;
@@ -248,7 +239,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		// LOCAL DOCUMENTATION:
 		// $templateCode -> HTML template roughly extracted from the database
-		// $subTemplateContent -> sub HTML transformed (temporary variable)
 		// $templateContent -> HTML that is going to be outputed
 
 		// Loads the template file
@@ -269,7 +259,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// Merges array, in order to have only one array (performance!)
 		$markers = array_merge($uniqueMarkers, $LLLMarkers, $GPMarkers, $TSFEMarkers, $pageMarkers, $globalVariablesMarkers);
 
-		#$this->displayDebug('markers', __LINE__);
 		if (isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['BE_USER']) {
 			t3lib_div::debug('content of $markers, line ' . __LINE__);
 			t3lib_div::debug($markers);
@@ -282,9 +271,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		// We want a convenient $templateCode. Substitutes $markers
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
-
-		// Handles LOOP tag. Transforms whenever necessary <!-- LOOP(table) --> into <!-- ###LOOP.table### begin -->
-		#$templateCode = $this->processLOOP($templateCode);
 
 		$templateStructure = $this->getTemplateStructure($templateCode);
 		if (isset($GLOBALS['_GET']['debug']['template']) && $GLOBALS['BE_USER']) {
@@ -513,32 +499,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
         }
 		return $content;
 	}
-
-	/**
-     * Handles LOOP tag.
-     * Transforms whenever necessary <!-- LOOP(table) --> into <!-- ###LOOP.table### begin -->.
-     *
-     * @param	string	$content: the HTML code.
-     * @return	string	$content: the HTML code transformed
-     */
-//	protected function processLOOP($content) {
-//		$pattern = '/<!-- *LOOP *\((.+)\) *-->/isU';
-//		if (preg_match_all($pattern, $content, $matches)) {
-//			$numberOfMatches = count($matches[0]);
-//
-//			// Reverses loop. The last <!--ENDLOOP--> becomes the first one
-//			for ($index = $numberOfMatches; $index > 0; $index --) {
-//				$search = $matches[0][$index - 1];
-//				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### begin -->';
-//				$content = str_replace($search, $replacement , $content);
-//
-//				$pattern = '/<!-- *ENDLOOP *-->/isU';
-//				$replacement = '<!-- ###LOOP.' . $matches[1][$index - 1] . '### end -->';
-//				$content = preg_replace($pattern, $replacement, $content, 1);
-//            }
-//        }
-//		return $content;
-//    }
 
 	/**
 	 * Post processes the <!--IF(###MARKER### == '')-->
@@ -1052,199 +1012,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		return $output;
     }
 
-//
-//		if (preg_match('/#{3}LOOP./',$templateCode)) {
-//			// Defines marker array according to $sds['name'] which contains a table name.
-//			// This marker is used to extract a subtemplate
-//			$this->markers[$sds['name']] = '###LOOP.' . $sds['name'] . '###';
-//			$this->counter[$sds['name']] = 0;
-//
-//			// Defines subTemplateCode (template HTML) array according to $sds['name'] which contains a table name.
-//			$subTemplateCode = t3lib_parsehtml::getSubpart($templateCode, $this->markers[$sds['name']]);
-//
-//			// If nothing is found, it means there are no LOOP defined for the this table name
-//			// This case can be faced whenever a template defined with the LOOP level2 without a LOOP level1
-//			// This code code could be compacted. However, for understanding the logic, is is clearer to let it like it.
-//			if ($subTemplateCode != '') {
-//				$this->subTemplateCode[$sds['name']] = $subTemplateCode;
-//			}
-//			else {
-//				$this->subTemplateCode[$sds['name']] = $templateCode;
-//			}
-//			// Stores whether the template contains a tag LOOP. Avoid looping around the template when it is not necessary
-//			$containsTagLOOP = TRUE;
-//		}
-//		else {
-//			$this->subTemplateCode[$sds['name']] = $templateCode;
-//			$containsTagLOOP = FALSE;
-//		}
-
-//		$templateContent = '';
-//
-//		// Initializes language label and stores the lables for a possible further use.
-//		if (!isset($this->labelMarkers[$sds['name']])) {
-//			$this->labelMarkers[$sds['name']] = array();
-//
-//			foreach ($sds['header'] as $index => $labelArray) {
-//				$this->labelMarkers[$sds['name']]['###LABEL.' . $index . '###'] = $labelArray['label'];
-//			}
-//		}
-//
-//		// Traverses the records...
-//		// Loops around the $records
-//		foreach ($sds['records'] as $records) {
-//			$_fieldMarkers = array();
-//
-//			// Initializes content object.
-//			$this->localCObj->start($records);
-//
-//			// ... and traverses the fields of the current record (associative array)
-//			foreach ($records as $field => $value) {
-//				// Important control. Makes sure the field has been mapped.
-//				// Furthermore, it avoids the field "sds:subtables" to enter in the test
-//				$marker = $sds['name'] . '.' . $field;
-//
-//				if (in_array($marker, $this->fieldsInDatasource)) {
-//
-//					// Retrieve the index of value $marker.
-//					// e.g. will return "FIELD.title" if $marker = pages.title ([FIELD.title] => pages.title)
-//					$keys = array_keys($this->fieldsInDatasource, $marker);
-//
-//					// TODO: check if this statement is true (e.g. condition <!--IF-->
-//					// A marker can be used many times. Loops around them.
-//					foreach	($keys as $key) {
-//						switch ($this->datasource[$key]['type']) {
-//							case 'text':
-//								$configuration = $this->datasource[$key]['configuration'];
-//								$configuration['value'] = $value;
-//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->TEXT($configuration);
-//							break;
-//							case 'image':
-//								$configuration = $this->datasource[$key]['configuration'];
-//								$configuration['file'] = $value;
-//
-//								// Sets the alt attribute if no altText is defined
-//								if (!isset($configuration['altText'])) {
-//									// Gets the file name
-//									$configuration['altText'] = $this->getFileName($configuration['file']);
-//								}
-//
-//								// Sets the title attribute if no title is defined
-//								if (!isset($configuration['titleText'])) {
-//									if ($configuration['altText'] != '') {
-//										$configuration['titleText'] = $configuration['altText'];
-//									}
-//									else{
-//										$configuration['titleText'] = $this->getFileName($configuration['file']);
-//									}
-//								}
-//
-//								$image = $this->localCObj->IMAGE($configuration);
-//								if (empty($image)) {
-//									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'resources/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
-//								}
-//								else {
-//									$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $image;
-//								}
-//								break;
-//							case 'linkToDetail':
-//								$configuration = $this->datasource[$key]['configuration'];
-//								$configuration['useCacheHash'] = 1;
-//								if (!isset($configuration['returnLast'])) {
-//									$configuration['returnLast'] = 'url';
-//								}
-//								$additionalParams = '&' . $this->pObj->getPrefixId() . '[table]=' . $sds['name'] . '&' . $this->pObj->getPrefixId() .'[showUid]=' . $value;
-//								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
-//
-//								// Generates the link
-//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-//								break;
-//							case 'linkToPage':
-//								$configuration = $this->datasource[$key]['configuration'];
-//								$configuration['useCacheHash'] = 1;
-//								if (!isset($configuration['returnLast'])) {
-//									$configuration['returnLast'] = 'url';
-//								}
-//								$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
-//
-//								// Generates the link
-//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-//								break;
-//							case 'linkToFile':
-//								$configuration = $this->datasource[$key]['configuration'];
-//								$configuration['useCacheHash'] = 1;
-//								if (!isset($configuration['returnLast'])) {
-//									$configuration['returnLast'] = 'url';
-//								}
-//								if (!isset($configuration['parameter'])) {
-//									$configuration['parameter'] = $value;
-//								}
-//
-//								// replaces white spaces in filename
-//								$configuration['parameter'] = str_replace(' ','%20',$configuration['parameter']);
-//
-//								// Generates the link
-//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-//								break;
-//							case 'email':
-//								$configuration = $this->datasource[$key]['configuration'];
-//								if (!isset($configuration['parameter'])) {
-//									$configuration['parameter'] = $value;
-//								}
-//								// Generates the email
-//								$_fieldMarkers['###' . $key . '.' . $sds['name'] . '.' . $field . '###'] = $this->localCObj->typolink('',$configuration);
-//							break;
-//						} // end switch
-//					} // end foreach
-//				} // end if
-//			} // end foreach
-
-			// Merges "field" with "label" and substitutes content
-//			$_fieldMarkers = array_merge($_fieldMarkers, $this->labelMarkers[$sds['name']]);
-//			if (isset($this->counter[$sds['name']])) {
-//				$_temp['###COUNTER###'] = $this->counter[$sds['name']];
-//
-//				// other possible syntax
-//				$_temp['###COUNTER.' . $sds['name'] . '###'] = $this->counter[$sds['name']];
-//				$_fieldMarkers = array_merge($_fieldMarkers, $_temp);
-//			}
-//
-//			// $_templateContent contains the temporary HTML. Whenever getSubContent() is called recursively, the content is passed to the method
-//			$_templateContent = t3lib_parsehtml::substituteMarkerArray($this->subTemplateCode[$sds['name']], $_fieldMarkers);
-//			$templateContent .= $_templateContent;
-//			# Debug:
-//			#echo $_templateContent;
-//
-//			$this->counter[$sds['name']] = $this->counter[$sds['name']] + 1;
-//			# Debug:
-//			#echo $this->counter[$sds['name']];
-//
-//			// Stopps the loop when no tag LOOP has been detected, no need to continuous further more.
-//			if (!$containsTagLOOP) {
-//				break;
-//			}
-//
-//			// If the records contains subtables, recursively calls getSubContent()
-//			// Else, removes a possible unwanted part <!-- ###LOOP.unsed ### begin -->.+<!-- ###LOOP.unsed ### end -->
-//			if (!empty($records['sds:subtables'])) {
-//				foreach ($records['sds:subtables'] as $subSds) {
-//					// get the subContent
-//					$subTemplateContent = $this->getSubContent($subSds, $_templateContent);
-//
-//					// Substitutes the subcontent with the main content
-//					$templateContent = t3lib_parsehtml::substituteSubpart($templateContent, $this->markers[$subSds['name']], $subTemplateContent);
-//				}
-//			}
-//			else{
-//				$pattern = '/<!-- *###LOOP\.[^#]+### *begin *-->.+<!-- *###LOOP\.[^#]+### *end *-->/isU';
-//				# Debug code
-//				#preg_match_all($pattern,$templateContent,$matches);
-//				#print_r($matches);
-//				$templateContent = preg_replace($pattern, '', $templateContent);
-//			}
-//		}
-//		return $templateContent;
-
 	/**
 	 * Extracts the filename of a path
 	 *
@@ -1258,6 +1025,45 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$filename = $fileInfo['filebody'];
 		}
 		return $filename;
+	}
+
+
+	/**
+	 * Loads local-language values by looking for a "locallang.php" file in the plugin class directory ($this->scriptRelPath) and if found includes it.
+	 * Also locallang values set in the TypoScript property "_LOCAL_LANG" are merged onto the values found in the "locallang.php" file.
+	 *
+     * @author Kasper
+	 * @return	void
+	 */
+	function pi_loadLL()	{
+		if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath)	{
+			$basePath = t3lib_extMgm::extPath($this->extKey).dirname($this->scriptRelPath).'/locallang.php';
+
+				// Read the strings in the required charset (since TYPO3 4.2)
+			$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->LLkey,$GLOBALS['TSFE']->renderCharset);
+			if ($this->altLLkey)	{
+				$tempLOCAL_LANG = t3lib_div::readLLfile($basePath,$this->altLLkey);
+				$this->LOCAL_LANG = array_merge(is_array($this->LOCAL_LANG) ? $this->LOCAL_LANG : array(),$tempLOCAL_LANG);
+			}
+
+				// Overlaying labels from TypoScript (including fictitious language keys for non-system languages!):
+			if (is_array($this->conf['_LOCAL_LANG.']))	{
+				reset($this->conf['_LOCAL_LANG.']);
+				while(list($k,$lA)=each($this->conf['_LOCAL_LANG.']))	{
+					if (is_array($lA))	{
+						$k = substr($k,0,-1);
+						foreach($lA as $llK => $llV)	{
+							if (!is_array($llV))	{
+								$this->LOCAL_LANG[$k][$llK] = $llV;
+									// For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset" and if that is not set, assumed to be that of the individual system languages
+								$this->LOCAL_LANG_charset[$k][$llK] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] ? $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] : $GLOBALS['TSFE']->csConvObj->charSetArray[$k];
+							}
+						}
+					}
+				}
+			}
+		}
+		$this->LOCAL_LANG_loaded = 1;
 	}
 }
 
