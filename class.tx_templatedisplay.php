@@ -3,7 +3,7 @@
 *  Copyright notice
 *
 *  (c) 2007 Francois Suter (Cobweb) <typo3@cobweb.ch>
-*  (c) 2008 Fabien Udriot <typo3@omic.ch>
+*  (c) 2008 Fabien Udriot <fabien.udriot@ecodev.ch>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -33,7 +33,7 @@ require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecont
  * Plugin 'Data Displayer' for the 'templatedisplay' extension.
  *
  * @author	Francois Suter (Cobweb) <typo3@cobweb.ch>
- * @author	Fabien Udriot <fabien.udriot@ecodev.ch>
+ * @author	Fabien Udriot <fabien.udriot@ecodev.ch> sponsored by Cobweb
  * @package	TYPO3
  * @subpackage	tx_templatedisplay
  */
@@ -50,6 +50,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 	protected $labelMarkers = array();
 	protected $datasource = array();
+	protected $LLkey = 'default';
 
 	/**
 	 * This method resets values for a number of properties
@@ -64,6 +65,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$this->table = '';
 		$this->conf = array();
 		$this->datasource = array();
+		$this->LLkey = 'default';
     }
 	
 	/**
@@ -161,28 +163,26 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @return	void
 	 */
 	public function startProcess() {
-
 		// ************************************
 		// ********** INITIALISATION **********
         // ************************************
 
 		// Declares global objects
-		global $TYPO3_CONF_VARS;
-		global $LANG;
+//		global $LANG;
 
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
 
 		// Initializes LANG Object whether the object does not exist. (for example in the frontend)
-		if($LANG == null){
-
-			if (isset($GLOBALS['TSFE']->tmpl->setup['config.']['language'])) {
-				$languageCode = $GLOBALS['TSFE']->tmpl->setup['config.']['language'];
-			}
-
-			$LANG = t3lib_div::makeInstance('language');
-			$LANG->init('default');
-		}
+//		if($LANG == null){
+//
+//			if (isset($GLOBALS['TSFE']->tmpl->setup['config.']['language'])) {
+//				$languageCode = $GLOBALS['TSFE']->tmpl->setup['config.']['language'];
+//			}
+//
+//			$LANG = t3lib_div::makeInstance('language');
+//			$LANG->init('default');
+//		}
 
 		// ****************************************
 		// ********** FETCHES DATASOURCE **********
@@ -219,7 +219,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$data['configuration'] = array();
 			}
 
-			// Concatains some data to create a new marker. Will look like: table.field
+			// Merges some data to create a new marker. Will look like: table.field
 			$_marker = $data['table'] . '.' . $data['field'];
 
 			// IMPORTANT NOTICE:
@@ -260,12 +260,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$markers = array_merge($uniqueMarkers, $LLLMarkers, $GPMarkers, $TSFEMarkers, $pageMarkers, $globalVariablesMarkers);
 
 		if (isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['BE_USER']) {
-			t3lib_div::debug('content of $markers, line ' . __LINE__);
+			t3lib_div::debug('Content of $markers, line ' . __LINE__);
 			t3lib_div::debug($markers);
 		}
 
 		if (isset($GLOBALS['_GET']['debug']['structure']) && $GLOBALS['BE_USER']) {
-			t3lib_div::debug('content of $this->structure');
+			t3lib_div::debug('Content of $this->structure');
 			t3lib_div::debug($this->structure);
 		}
 
@@ -309,28 +309,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$operand = substr($operand, 0, strlen($operand) - 1);
 		$operand = str_replace("'","\'",$operand);
 		return "'" . $operand . "'";
-	}
-
-	/**
-     * If found, returns markers, of type LLL
-     *
-	 * Example of marker: ###LLL:EXT:myextension/localang.xml:myLable###
-	 *
-	 * @param	string	$content HTML code
-	 * @return	string	$content transformed HTML code
-	 */
-	protected function getLLLMarkers($content) {
-		$markers = array();
-		$pattern = '/#{3}(LLL:EXT:.+)#{3}/isU';
-		if (preg_match_all($pattern, $content, $matches)) {
-			global $LANG;
-			if(isset($matches[1])){
-				foreach($matches[1] as $marker){
-					$markers['###' . $marker . '###'] = $LANG->sL($marker);
-				}
-			}
-		}
-		return $markers;
 	}
 
 	/**
@@ -819,7 +797,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					
 					// Initializes content object.
 					$this->localCObj->start($sds['records'][$index]);
-
+					
+					// Defines default value in case no $fieldsMarkers are found
+					$fieldMarkers = array();
+					
 					// Finds out the marker in the template.
 					foreach ($subMarkers as $marker) {
 						$markerName = $marker[0];
@@ -827,7 +808,23 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 						$table = $marker[2];
 						$field = $marker[3];
 						$value = $this->getValueFromStructure($sds, $index, $table, $field);
-						$fieldMarkers[$markerName] = $this->getValue($key ,$value);
+
+						// Ouch... difficult to explain
+						// We are traversing a sds. The sds can be at the first dimension of $this->structure *OR* a the second dimension.
+                        //
+                        // We are in the "first" dimension:
+						// this first case: we are in the first dimension, even is value is NULL replace it
+                        //                  Anyway, templatedisplay will have *no* futher chance to translate the value.
+                        //
+                        // We are in a "second" dimension:
+						// the second case: replace only the value you that are not NULL
+						//                  templatedisplay will have futher chance to translate the value at the end of the function
+						if ($this->structure['name'] == $subTemplateStructure['table']) {
+							$fieldMarkers[$markerName] = $this->getValue($key ,$value);
+                        }
+						else if ($value !== NULL) {
+							$fieldMarkers[$markerName] = $this->getValue($key ,$value);
+                        }
 					}
 
 					// Defines a temporary variable
@@ -869,6 +866,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 								// Initializes content object.
 								$this->localCObj->start($sds['records'][$index]);
 								
+								// Defines default value in case no $subFieldMarkers are found
+                                $_fieldMarkers = array();
+								
 								// Gets value
 								foreach ($subSubMarkers as $marker) {
 									$markerName = $marker[0];
@@ -877,10 +877,10 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 									$field = $marker[3];
 									$value = $this->getValueFromStructure($subSds, $subIndex, $table, $field);
 									if ($value !== NULL) {
-										$__fieldMarkers[$markerName] = $this->getValue($key ,$value);
+										$_fieldMarkers[$markerName] = $this->getValue($key ,$value);
 									}
 								}
-								$subFieldMarkers = array_merge($fieldMarkers, $__fieldMarkers, $this->labelMarkers[$subSds['name']], $_counter);
+								$subFieldMarkers = array_merge($fieldMarkers, $_fieldMarkers, $this->labelMarkers[$subSds['name']], $_counter);
 								$subContent .= t3lib_parsehtml::substituteMarkerArray($subSubTemplateStructure['content'], $subFieldMarkers);
 							}
 							/**************/
@@ -904,17 +904,18 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		// The template dimension 1
-		preg_match_all('/#{3}FIELD\..+\.(.+)\.(.+)#{3}/isU', $content, $markers, PREG_SET_ORDER);
+		preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $content, $markers, PREG_SET_ORDER);
 
 		$fieldMarkers = array();
 
 		foreach ($markers as $marker) {
 			$markerName = $marker[0];
-			$table = $marker[1];
-			$field = $marker[2];
+			$key = $marker[1];
+			$table = $marker[2];
+			$field = $marker[3];
 			$value = $this->getValueFromStructure($this->structure, 0, $table, $field);
 			if ($value !== NULL) {
-				$fieldMarkers[$markerName] = $value;
+				$fieldMarkers[$markerName] = $this->getValue($key ,$value);
 			}
 		}
 
@@ -954,6 +955,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 				$image = $this->localCObj->IMAGE($configuration);
 				if (empty($image)) {
+					// TODO: in production mode, nothing should be displayed. "templateDisplay_imageNotFound"
 					$output = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'resources/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
 				}
 				else {
@@ -1026,45 +1028,122 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 		return $filename;
 	}
-
+	
+	/**
+     * If found, returns markers, of type LLL
+     *
+	 * Example of marker: ###LLL:EXT:myextension/localang.xml:myLable###
+	 *
+	 * @param	string	$content HTML code
+	 * @return	string	$content transformed HTML code
+	 */
+	protected function getLLLMarkers($content) {
+		$markers = array();
+		if (preg_match_all('/#{3}(LLL:.+)#{3}/isU', $content, $matches, PREG_SET_ORDER)) {
+			foreach($matches as $marker){
+				$markers[$marker[0]] = $GLOBALS['TSFE']->sL($marker[1]);
+			}
+		}
+//		if (preg_match_all('/#{3}L{0,3}:*(EXT:(.+)\/.+):(.+)#{3}/isU', $content, $matches, PREG_SET_ORDER)) {
+//			foreach($matches as $marker){
+//				$fileReference = $marker[1];
+//				$extensionKey = $marker[2];
+//				$LLLMarker = $marker[3];
+//				$this->loadLocalLang($extensionKey, $fileReference);
+//				$markers[$marker[0]] = $this->getLocalLang($extensionKey, $LLLMarker);
+//			}
+//		}
+		return $markers;
+	}
 
 	/**
 	 * Loads local-language values by looking for a "locallang.php" file in the plugin class directory ($this->scriptRelPath) and if found includes it.
 	 * Also locallang values set in the TypoScript property "_LOCAL_LANG" are merged onto the values found in the "locallang.php" file.
 	 *
-     * @author Kasper
+     * @param	string	$extensionKey: the extension key
+     * @param	string	$extensionKey: the extension key
+     * @author	Fabien Udriot
+     * @author	Kasper Skårhøj
 	 * @return	void
 	 */
-	function pi_loadLL()	{
-		if (!$this->LOCAL_LANG_loaded && $this->scriptRelPath)	{
-			$basePath = t3lib_extMgm::extPath($this->extKey).dirname($this->scriptRelPath).'/locallang.php';
+	protected function loadLocalLang($extensionKey, $fileReference) {
+		if ($GLOBALS['TSFE']->config['config']['language']) {
+			$this->LLkey = $GLOBALS['TSFE']->config['config']['language'];
+			if ($GLOBALS['TSFE']->config['config']['language_alt']) {
+				$this->altLLkey = $GLOBALS['TSFE']->config['config']['language_alt'];
+			}
+		}
+		
+		$basePath = t3lib_div::getFileAbsFileName($fileReference);
 
-				// Read the strings in the required charset (since TYPO3 4.2)
-			$this->LOCAL_LANG = t3lib_div::readLLfile($basePath,$this->LLkey,$GLOBALS['TSFE']->renderCharset);
-			if ($this->altLLkey)	{
-				$tempLOCAL_LANG = t3lib_div::readLLfile($basePath,$this->altLLkey);
-				$this->LOCAL_LANG = array_merge(is_array($this->LOCAL_LANG) ? $this->LOCAL_LANG : array(),$tempLOCAL_LANG);
+		if (!is_readable($basePath) && isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['BE_USER']) {
+			echo t3lib_div::debug('Warning: language file does not exist for ' . $fileReference);
+		}
+
+		if(!$this->LOCAL_LANG_loaded[$extensionKey]){
+			// php or xml as source: In any case the charset will be that of the system language.
+			// However, this function guarantees only return output for default language plus the specified language (which is different from how 3.7.0 dealt with it)
+			$this->LOCAL_LANG[$extensionKey] = t3lib_div::readLLfile($basePath,$this->LLkey);
+			if ($this->altLLkey) {
+				$tempLOCAL_LANG = t3lib_div::readLLfile($basePath, $this->altLLkey);
+				$this->LOCAL_LANG[$extensionKey] = array_merge(is_array($this->LOCAL_LANG[$extensionKey]) ? $this->LOCAL_LANG[$extensionKey] : array(), $tempLOCAL_LANG);
 			}
 
-				// Overlaying labels from TypoScript (including fictitious language keys for non-system languages!):
-			if (is_array($this->conf['_LOCAL_LANG.']))	{
+			// Overlaying labels from TypoScript (including fictitious language keys for non-system languages!):
+			// TODO: this portion of code need to be tested. In the state of art, it won't work.
+			// Actually, _LOCAL_LANG is not transmitted to templatedisplay but needs to be extracted from the global TypoScript
+			if (is_array($this->conf['_LOCAL_LANG.'])) {
 				reset($this->conf['_LOCAL_LANG.']);
-				while(list($k,$lA)=each($this->conf['_LOCAL_LANG.']))	{
-					if (is_array($lA))	{
+				while(list($k,$lA) = each($this->conf['_LOCAL_LANG.']))   {
+					if (is_array($lA))      {
 						$k = substr($k,0,-1);
-						foreach($lA as $llK => $llV)	{
-							if (!is_array($llV))	{
-								$this->LOCAL_LANG[$k][$llK] = $llV;
-									// For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset" and if that is not set, assumed to be that of the individual system languages
-								$this->LOCAL_LANG_charset[$k][$llK] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] ? $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'] : $GLOBALS['TSFE']->csConvObj->charSetArray[$k];
+						foreach($lA as $llK => $llV)    {
+							if (!is_array($llV))    {
+								$this->LOCAL_LANG[$extension][$k][$llK] = $llV;
+								if ($k != 'default')    {
+									$this->LOCAL_LANG_charset[$k][$llK] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];        // For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset" and if that is not set, assumed to be that of the individual system languages (thus no conversion)
+								}
 							}
 						}
 					}
 				}
 			}
+			$this->LOCAL_LANG_loaded[$extensionKey] = 1;
 		}
-		$this->LOCAL_LANG_loaded = 1;
-	}
+    }
+
+	/**
+	 * Returns the localized label of the LOCAL_LANG key, $key
+	 * Notice that for debugging purposes prefixes for the output values can be set with the internal vars ->LLtestPrefixAlt and ->LLtestPrefix
+	 *
+	 * @param	string		The key from the LOCAL_LANG array for which to return the value.
+	 * @param	string		Alternative string to return IF no value is found set for the key, neither for the local language nor the default.
+	 * @param	boolean		If true, the output label is passed through htmlspecialchars()
+	 * @return	string		The value from LOCAL_LANG.
+     * @author	Fabien Udriot
+     * @author	Kasper Skårhøj
+	 */
+	function getLocalLang($extension, $key,$alt='',$hsc=FALSE)	{
+		// The "from" charset of csConv() is only set for strings from TypoScript via _LOCAL_LANG
+		if (isset($this->LOCAL_LANG[$extension][$this->LLkey][$key])) {
+			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$extension][$this->LLkey][$key], $this->LOCAL_LANG_charset[$extension][$this->LLkey][$key]);
+		} elseif ($this->altLLkey && isset($this->LOCAL_LANG[$extension][$this->altLLkey][$key]))	{
+			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$extension][$this->altLLkey][$key], $this->LOCAL_LANG_charset[$extension][$this->altLLkey][$key]);
+		} elseif (isset($this->LOCAL_LANG[$extension]['default'][$key])) {
+			$word = $this->LOCAL_LANG[$extension]['default'][$key];	// No charset conversion because default is english and thereby ASCII
+		} else {
+			$word = $this->LLtestPrefixAlt.$alt;
+		}
+		// TODO:
+		#var_dump($this->LOCAL_LANG_charset);
+
+		//$output = $this->LLtestPrefix.$word;
+		//if ($hsc) {
+		//	$output = htmlspecialchars($output);
+        //}
+
+		return $word;
+	}	
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay.php']){
