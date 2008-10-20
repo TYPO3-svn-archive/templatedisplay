@@ -67,12 +67,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$this->datasource = array();
 		$this->LLkey = 'default';
     }
-	
+
 	/**
      *
-     * @var	array	$functions: list of function handled by templatedisplay 'LIMIT_TEXT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
+     * @var	array	$functions: list of function handled by templatedisplay 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
      */
-	protected $functions = array('LIMIT_TEXT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST');
+	protected $functions = array('LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST');
 	/**
 	 *
 	 * @var tslib_cObj
@@ -167,22 +167,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		// ********** INITIALISATION **********
         // ************************************
 
-		// Declares global objects
-//		global $LANG;
-
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
-
-		// Initializes LANG Object whether the object does not exist. (for example in the frontend)
-//		if($LANG == null){
-//
-//			if (isset($GLOBALS['TSFE']->tmpl->setup['config.']['language'])) {
-//				$languageCode = $GLOBALS['TSFE']->tmpl->setup['config.']['language'];
-//			}
-//
-//			$LANG = t3lib_div::makeInstance('language');
-//			$LANG->init('default');
-//		}
 
 		// ****************************************
 		// ********** FETCHES DATASOURCE **********
@@ -205,7 +191,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		$uniqueMarkers = array();
 
-		// Transforms the typoScript configuration into an array.
+		// Formats TypoScript configuration as array.
 		$parseObj = t3lib_div::makeInstance('t3lib_TSparser');
 		foreach ($datasource as $data) {
 			if(trim($data['configuration']) != ''){
@@ -460,7 +446,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-	 * Pre processes the template function LIMIT_TEXT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
+	 * Pre processes the template function LIMIT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
      * Makes them recognizable by wrapping them with !--### ###--
 	 *
 	 * @param	string	$content HTML code
@@ -537,7 +523,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 
 	/**
-	 * Handles the function: LIMIT_TEXT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
+	 * Handles the function: LIMIT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
@@ -551,7 +537,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$numberOfMatches = count($matches[0]);
 				for($index = 0; $index < $numberOfMatches; $index ++) {
 					switch ($function) {
-						case 'LIMIT_TEXT':
+						case 'LIMIT':
 							preg_match('/,([0-9]+)$/isU', $matches[1][$index], $limit);
 
 							// Defines the length of the string that needs to be removed
@@ -561,7 +547,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 							$matches[1][$index] = substr($matches[1][$index], 0, $stringLength);
 
 							// Limits the text whenever is it necessary
-							$_content = $this->limit_text($matches[1][$index], $limit[1]);
+							$_content = $this->limit($matches[1][$index], $limit[1]);
 							$content = str_replace($matches[0][$index], $_content, $content);
 							break;
 						case 'UPPERCASE':
@@ -588,7 +574,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
      * @param	int		$limit: the limit of words
      * @return	string	$text that has been shorten
      */
-	protected function limit_text($text, $limit) {
+	protected function limit($text, $limit) {
 		$text = strip_tags($text);
 		$words = str_word_count($text, 2);
 		$pos = array_keys($words);
@@ -620,7 +606,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		if ($content == '') {
 			$content = $template;
         }
-		
+
 		// Makes sure values are ok.
 		if ($tableName == '') {
 			$tableName = $this->structure['name'];
@@ -663,7 +649,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$templateStructure['loops'][] = $this->getTemplateStructure($subTemplate, $subContent, $subTable);
 			}
         }
-		
+
 		return $templateStructure;
     }
 
@@ -690,7 +676,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		else {
 			// Maybe the $sds contains subtables, have a look into it to find out the value.
 			if (!empty($sds['records'][$index]['sds:subtables'])) {
-				
+
 				// Traverses all subSds and call it recursively
 				foreach ($sds['records'][$index]['sds:subtables'] as $subSds){
 					$value = $this->getValueFromStructure($subSds, 0, $table, $field);
@@ -713,7 +699,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
      */
 	protected function getSubStructure(&$sds, $tableName) {
 		$result = NULL;
-		
+
 		if ($sds['name'] == $tableName) {
 			$result =& $sds;
 		}
@@ -726,13 +712,17 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 
+		// Forges an empty structure
 		if ($result === NULL) {
-			// TODO improved error reporting
-			//throw new Exception('No sds found for table ' . $tableName);
+			$result = array();
+			$result['records'] = array();
+			$result['header'] = array();
+//			throw new Exception('No sds found for table ' . $tableName);
 		}
+
 		return $result;
     }
-	
+
 	/**
      * Initializes language label and stores the lables for a possible further use.
      *
@@ -750,7 +740,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
     }
-	
+
 	/**
 	 * Recursive method. Gets the subpart template and substitutes content (label or field).
 	 *
@@ -764,44 +754,51 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		// Stores content in an external array
 		$content = $templateStructure['content'];
-		
+
 		// Means we need to handle the case "LOOP"
 		if (!empty($templateStructure['loops'])) {
 
-			
-			// Loops around the template structure
+			// Local documentation:
+            //
+            // The following code is going to loop around different strucutre as follow:
+            // The first loop is around the template structure
+            // The second loop is around the standard data structure. (loops around records)
+            // The third loop is around the marker. (markers are substituted by content)
+
+			// TRAVERSES TEMPLATE STRUCTURE
 			foreach ($templateStructure['loops'] as $subTemplateStructure) {
 
 				// Resets temporary content
 				$_content = '';
+				unset($subSubMarkers);
 
 				// Tries to find out a valid $sds according to a table name ($subTemplateStructure[table])
 				$sds = $this->getSubStructure($this->structure, $subTemplateStructure['table']);
 
 				// Sets the label
 				$this->setLabelMarkers($sds);
-				
+
 				// Retrieves the fields from the templateCode that needs a conversion
 				// By the way catch the table name and the field name for futher use. -> "()"
 				preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $subTemplateStructure['content'], $subMarkers, PREG_SET_ORDER);
 
-				// Loops around the records
+				// TRAVERSES RECORDS
 				$numbersOfRecords = count($sds['records']);
 				for($index = 0; $index < $numbersOfRecords; $index++) {
-					
+
 					// Increment counter
 					$_counter['###COUNTER###'] = $index;
-					
+
 					// other possible syntax, useful with loop in loop
 					$_counter['###COUNTER.' . $sds['name'] . '###'] = $index;
-					
+
 					// Initializes content object.
 					$this->localCObj->start($sds['records'][$index]);
-					
+
 					// Defines default value in case no $fieldsMarkers are found
 					$fieldMarkers = array();
-					
-					// Finds out the marker in the template.
+
+					// TRAVERSES MARKERS
 					foreach ($subMarkers as $marker) {
 						$markerName = $marker[0];
 						$key = $marker[1];
@@ -813,7 +810,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 						// We are traversing a sds. The sds can be at the first dimension of $this->structure *OR* a the second dimension.
                         //
                         // We are in the "first" dimension:
-						// this first case: we are in the first dimension, even is value is NULL replace it
+						// this first case: we are in the first dimension, even if value is NULL replace it
                         //                  Anyway, templatedisplay will have *no* futher chance to translate the value.
                         //
                         // We are in a "second" dimension:
@@ -832,6 +829,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 					// Means there is a LOOP in a LOOP
 					if (!empty($subTemplateStructure['loops'])) {
+
+						// TRAVERSES (SUB) TEMPLATE STRUCTURE
 						foreach ($subTemplateStructure['loops'] as $subSubTemplateStructure) {
 
 							// Reset value of $subSds
@@ -847,13 +846,17 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 							// Defines the labels
 							$this->setLabelMarkers($subSds);
-							
+
 							/**************/
 							// Resets variable
 							$subContent = '';
-							preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $subSubTemplateStructure['content'], $subSubMarkers, PREG_SET_ORDER);
 
-							// Traverses subRecords
+							// Checks if $subSubMarkers has been defined. -> performance check
+							if(!isset($subSubMarkers)) {
+								preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $subSubTemplateStructure['content'], $subSubMarkers, PREG_SET_ORDER);
+							}
+
+							// TRAVERSES (SUB) RECORDS
 							$subNumbersOfRecords = count($subSds['records']);
 							for($subIndex = 0; $subIndex < $subNumbersOfRecords; $subIndex++) {
 
@@ -865,11 +868,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 								// Initializes content object.
 								$this->localCObj->start($sds['records'][$index]);
-								
+
 								// Defines default value in case no $subFieldMarkers are found
                                 $_fieldMarkers = array();
-								
-								// Gets value
+
+								// TRAVERSES (SUB) MARKERS
 								foreach ($subSubMarkers as $marker) {
 									$markerName = $marker[0];
 									$key = $marker[1];
@@ -880,27 +883,37 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 										$_fieldMarkers[$markerName] = $this->getValue($key ,$value);
 									}
 								}
+								// Merges array
 								$subFieldMarkers = array_merge($fieldMarkers, $_fieldMarkers, $this->labelMarkers[$subSds['name']], $_counter);
 								$subContent .= t3lib_parsehtml::substituteMarkerArray($subSubTemplateStructure['content'], $subFieldMarkers);
 							}
+
+							// Handles the case when there is no record -> parses anyway
+							if ($subNumbersOfRecords == 0) {
+								// Merges array
+								$_counter['###SUBCOUNTER###'] = 0;
+								$subFieldMarkers = array_merge($fieldMarkers, $_counter);
+								#$subContent = t3lib_parsehtml::substituteMarkerArray($subSubTemplateStructure['content'], $subFieldMarkers);
+								$subContent = '<tr><td>No section found!</td></tr>';
+                            }
 							/**************/
-							
+
 							// Replaces original sub template by the new content
 							$__content = str_replace($subSubTemplateStructure['template'], trim($subContent), $__content);
-                        }
-                    }
+                        } // End foreach (SUB) TEMPLATE STRUCTURE
+                    } // End if
 
 					// Merges array
 					$fieldMarkers = array_merge($fieldMarkers, $this->labelMarkers[$sds['name']], $_counter);
-					
+
 					// Substitues content
 					$_content .= t3lib_parsehtml::substituteMarkerArray($__content, $fieldMarkers);
-					
+
                 } // end for (records)
 
 				$content = str_replace($subTemplateStructure['template'], trim($_content), $content);
             } // foreach $templateStructure['loops']
-			
+
 		}
 
 		// The template dimension 1
@@ -926,7 +939,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
     }
 
 	protected function getValue($key,$value) {
-		
+
 		switch ($this->datasource[$key]['type']) {
 			case 'text':
 				$configuration = $this->datasource[$key]['configuration'];
@@ -1010,7 +1023,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$output = $this->localCObj->typolink('',$configuration);
 				break;
 		} // end switch
-		
+
 		return $output;
     }
 
@@ -1028,7 +1041,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 		return $filename;
 	}
-	
+
 	/**
      * If found, returns markers, of type LLL
      *
@@ -1044,106 +1057,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$markers[$marker[0]] = $GLOBALS['TSFE']->sL($marker[1]);
 			}
 		}
-//		if (preg_match_all('/#{3}L{0,3}:*(EXT:(.+)\/.+):(.+)#{3}/isU', $content, $matches, PREG_SET_ORDER)) {
-//			foreach($matches as $marker){
-//				$fileReference = $marker[1];
-//				$extensionKey = $marker[2];
-//				$LLLMarker = $marker[3];
-//				$this->loadLocalLang($extensionKey, $fileReference);
-//				$markers[$marker[0]] = $this->getLocalLang($extensionKey, $LLLMarker);
-//			}
-//		}
 		return $markers;
 	}
-
-	/**
-	 * Loads local-language values by looking for a "locallang.php" file in the plugin class directory ($this->scriptRelPath) and if found includes it.
-	 * Also locallang values set in the TypoScript property "_LOCAL_LANG" are merged onto the values found in the "locallang.php" file.
-	 *
-     * @param	string	$extensionKey: the extension key
-     * @param	string	$extensionKey: the extension key
-     * @author	Fabien Udriot
-     * @author	Kasper Skårhøj
-	 * @return	void
-	 */
-	protected function loadLocalLang($extensionKey, $fileReference) {
-		if ($GLOBALS['TSFE']->config['config']['language']) {
-			$this->LLkey = $GLOBALS['TSFE']->config['config']['language'];
-			if ($GLOBALS['TSFE']->config['config']['language_alt']) {
-				$this->altLLkey = $GLOBALS['TSFE']->config['config']['language_alt'];
-			}
-		}
-		
-		$basePath = t3lib_div::getFileAbsFileName($fileReference);
-
-		if (!is_readable($basePath) && isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['BE_USER']) {
-			echo t3lib_div::debug('Warning: language file does not exist for ' . $fileReference);
-		}
-
-		if(!$this->LOCAL_LANG_loaded[$extensionKey]){
-			// php or xml as source: In any case the charset will be that of the system language.
-			// However, this function guarantees only return output for default language plus the specified language (which is different from how 3.7.0 dealt with it)
-			$this->LOCAL_LANG[$extensionKey] = t3lib_div::readLLfile($basePath,$this->LLkey);
-			if ($this->altLLkey) {
-				$tempLOCAL_LANG = t3lib_div::readLLfile($basePath, $this->altLLkey);
-				$this->LOCAL_LANG[$extensionKey] = array_merge(is_array($this->LOCAL_LANG[$extensionKey]) ? $this->LOCAL_LANG[$extensionKey] : array(), $tempLOCAL_LANG);
-			}
-
-			// Overlaying labels from TypoScript (including fictitious language keys for non-system languages!):
-			// TODO: this portion of code need to be tested. In the state of art, it won't work.
-			// Actually, _LOCAL_LANG is not transmitted to templatedisplay but needs to be extracted from the global TypoScript
-			if (is_array($this->conf['_LOCAL_LANG.'])) {
-				reset($this->conf['_LOCAL_LANG.']);
-				while(list($k,$lA) = each($this->conf['_LOCAL_LANG.']))   {
-					if (is_array($lA))      {
-						$k = substr($k,0,-1);
-						foreach($lA as $llK => $llV)    {
-							if (!is_array($llV))    {
-								$this->LOCAL_LANG[$extension][$k][$llK] = $llV;
-								if ($k != 'default')    {
-									$this->LOCAL_LANG_charset[$k][$llK] = $GLOBALS['TYPO3_CONF_VARS']['BE']['forceCharset'];        // For labels coming from the TypoScript (database) the charset is assumed to be "forceCharset" and if that is not set, assumed to be that of the individual system languages (thus no conversion)
-								}
-							}
-						}
-					}
-				}
-			}
-			$this->LOCAL_LANG_loaded[$extensionKey] = 1;
-		}
-    }
-
-	/**
-	 * Returns the localized label of the LOCAL_LANG key, $key
-	 * Notice that for debugging purposes prefixes for the output values can be set with the internal vars ->LLtestPrefixAlt and ->LLtestPrefix
-	 *
-	 * @param	string		The key from the LOCAL_LANG array for which to return the value.
-	 * @param	string		Alternative string to return IF no value is found set for the key, neither for the local language nor the default.
-	 * @param	boolean		If true, the output label is passed through htmlspecialchars()
-	 * @return	string		The value from LOCAL_LANG.
-     * @author	Fabien Udriot
-     * @author	Kasper Skårhøj
-	 */
-	function getLocalLang($extension, $key,$alt='',$hsc=FALSE)	{
-		// The "from" charset of csConv() is only set for strings from TypoScript via _LOCAL_LANG
-		if (isset($this->LOCAL_LANG[$extension][$this->LLkey][$key])) {
-			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$extension][$this->LLkey][$key], $this->LOCAL_LANG_charset[$extension][$this->LLkey][$key]);
-		} elseif ($this->altLLkey && isset($this->LOCAL_LANG[$extension][$this->altLLkey][$key]))	{
-			$word = $GLOBALS['TSFE']->csConv($this->LOCAL_LANG[$extension][$this->altLLkey][$key], $this->LOCAL_LANG_charset[$extension][$this->altLLkey][$key]);
-		} elseif (isset($this->LOCAL_LANG[$extension]['default'][$key])) {
-			$word = $this->LOCAL_LANG[$extension]['default'][$key];	// No charset conversion because default is english and thereby ASCII
-		} else {
-			$word = $this->LLtestPrefixAlt.$alt;
-		}
-		// TODO:
-		#var_dump($this->LOCAL_LANG_charset);
-
-		//$output = $this->LLtestPrefix.$word;
-		//if ($hsc) {
-		//	$output = htmlspecialchars($output);
-        //}
-
-		return $word;
-	}	
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay.php']){
