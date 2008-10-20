@@ -136,15 +136,18 @@ class tx_templatedisplay_tceforms {
 
 		# Wrap IF markers with a different background
 		$pattern = $replacement = array();
-		$pattern[] = "/(&lt;!-- *IF *\(.+--&gt;)/isU";
+		$pattern[] = "/(&lt;!-- *IF *\(.+--&gt;|&lt;!-- *ENDIF *--&gt;)/isU";
 		$replacement[] = '<span class="templatedisplay_if">$1</span>';
+		
+		$pattern[] = "/(&lt;!-- *EMPTY *--&gt;|&lt;!-- *ENDEMPTY *--&gt;)/isU";
+		$replacement[] = '<span class="templatedisplay_empty">$1</span>';
+
+		#$pattern[] = "/(&lt;!-- *ENDIF *--&gt;)/isU";
+		#$replacement[] = '<span class="templatedisplay_if">$1</span>';
 
 		# LIMIT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST
 		$pattern[] = "/(LIMIT\(.+\)|UPPERCASE\(.+\)|UPPERCASE\(.+\)|UPPERCASE_FIRST\(.+\))/isU";
 		$replacement[] = '<span class="templatedisplay_function">$1</span>';
-
-		$pattern[] = "/(&lt;!-- *ENDIF *--&gt;)/isU";
-		$replacement[] = '<span class="templatedisplay_if">$1</span>';
 
 		# Wrap LOOP markers with a different background
 		$pattern[] = "/(&lt;!-- *LOOP *\(.+--&gt;)/isU";

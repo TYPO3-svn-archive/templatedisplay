@@ -66,12 +66,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$this->conf = array();
 		$this->datasource = array();
 		$this->LLkey = 'default';
-    }
+	}
 
 	/**
-     *
-     * @var	array	$functions: list of function handled by templatedisplay 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
-     */
+	 *
+	 * @var	array	$functions: list of function handled by templatedisplay 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
+	 */
 	protected $functions = array('LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST');
 	/**
 	 *
@@ -165,14 +165,14 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	public function startProcess() {
 		// ************************************
 		// ********** INITIALISATION **********
-        // ************************************
+		// ************************************
 
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
 
 		// ****************************************
 		// ********** FETCHES DATASOURCE **********
-        // ****************************************
+		// ****************************************
 
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
@@ -211,7 +211,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			// IMPORTANT NOTICE:
 			// The idea is to make the field unique
 			// Replaces the ###FIELD.xxx### by the value "table.field"
-            // Ex: [###FIELD.title###] => ###FIELD.title.pages.title###
+			// Ex: [###FIELD.title###] => ###FIELD.title.pages.title###
 			$uniqueMarkers['###' . $data['marker'] . '###'] = '###' . $data['marker'] . '.' . $_marker . '###';
 
 			// Builds the datasource as an associative array.
@@ -221,7 +221,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		// ***************************************
 		// ********** BEGINS PROCESSING **********
-        // ***************************************
+		// ***************************************
 
 		// LOCAL DOCUMENTATION:
 		// $templateCode -> HTML template roughly extracted from the database
@@ -298,8 +298,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-     * If found, returns markers, of type $key (GP, TSFE, page)
-     *
+	 * If found, returns markers, of type $key (GP, TSFE, page)
+	 *
 	 * Example of GP marker: ###GP:tx_displaycontroller_pi2|parameter###
 	 *
 	 * @param	string	$key: Maybe, tsfe, page, gp
@@ -317,7 +317,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$markers = array();
 
 		// Tests if $expressions are found
-        // Does it worth to get into the process of evaluation?
+		// Does it worth to get into the process of evaluation?
 		$pattern = '/#{3}(' . $key . ':)(.+)#{3}/isU';
 		if (preg_match_all($pattern, $content, $matches)) {
 			if(isset($matches[2])){
@@ -331,20 +331,20 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-     * If found, returns markers, of type global template variable
-     * Global template variable can be ###TOTAL_OF_RECORDS### ###SUBTOTAL_OF_RECORDS###
-     *
-     * @param	string	$content: HTML content
-     * @return  string	$content: transformed HTML content
-     */
+	 * If found, returns markers, of type global template variable
+	 * Global template variable can be ###TOTAL_OF_RECORDS### ###SUBTOTAL_OF_RECORDS###
+	 *
+	 * @param	string	$content: HTML content
+	 * @return  string	$content: transformed HTML content
+	 */
 	protected function getGlobalVariablesMarkers($content) {
 		$markers = array();
 		if (preg_match('/#{3}TOTAL_OF_RECORDS#{3}/isU', $content)) {
 			$markers['###TOTAL_OF_RECORDS###']  = $this->structure['totalCount'];
-        }
+		}
 		if (preg_match('/#{3}SUBTOTAL_OF_RECORDS#{3}/isU', $content)) {
 			$markers['###SUBTOTAL_OF_RECORDS###']  = $this->structure['count'];
-        }
+		}
 		return $markers;
 	}
 
@@ -355,7 +355,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	 * @param	mixed	$source: array or object to look into
 	 * @param	string	$indices: "path" of indinces inside the multi-dimensional array, of the form index1|index2|...
 	 * @return	mixed	Whatever value was found in the array
-     * @author  François Suter (Cobweb)
+	 * @author  François Suter (Cobweb)
 	 */
 	protected function getValueFromArray($source, $indices) {
 		if (empty($indices)) {
@@ -447,7 +447,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 	/**
 	 * Pre processes the template function LIMIT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
-     * Makes them recognizable by wrapping them with !--### ###--
+	 * Makes them recognizable by wrapping them with !--### ###--
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
@@ -458,9 +458,9 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			if (preg_match_all($pattern, $content, $matches)) {
 				foreach ($matches[0] as $match) {
 					$content = str_replace($match,'!--###' . $match . '###--',$content);
-                }
+				}
 			}
-        }
+		}
 		return $content;
 	}
 
@@ -559,21 +559,21 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 						case 'UPPERCASE_FIRST':
 							$content = str_replace($matches[0][$index], ucfirst($matches[1][$index]), $content);
 							break;
-                    }
+					}
 
-                }
+				}
 			}
-        }
+		}
 		return $content;
-    }
+	}
 
 	/**
-     * Usful method that shorten a text according to the parameter $limit.
-     *
-     * @param	string	$text: the input text
-     * @param	int		$limit: the limit of words
-     * @return	string	$text that has been shorten
-     */
+	 * Usful method that shorten a text according to the parameter $limit.
+	 *
+	 * @param	string	$text: the input text
+	 * @param	int		$limit: the limit of words
+	 * @return	string	$text that has been shorten
+	 */
 	protected function limit($text, $limit) {
 		$text = strip_tags($text);
 		$words = str_word_count($text, 2);
@@ -585,27 +585,27 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-     * Analyses the template code and build a structure of type array
-     * This method is called recursively whenever a LOOP is found.
-     *
-     * Synopsis of the structure
-     *
-     * [table] => tableName
-     * [template] => template code with markers
-     * [content] => HTML code without <LOOP> marker (outer)
-     * [loop] => contains the loop / subloops / subsubloops etc... (2 levels implemented in the datastructure
-     *
-     * @param	string	$template: template code with markers
-     * @param	string	$content: template code without <LOOP> marker (outer)
-     * @param	string	$tableName
-     * @return	array	$templateStructure
-     */
-	protected function getTemplateStructure($template, $content = '', $tableName = '') {
+	 * Analyses the template code and build a structure of type array
+	 * This method is called recursively whenever a LOOP is found.
+	 *
+	 * Synopsis of the structure
+	 *
+	 * [table] => tableName
+	 * [template] => template code with markers
+	 * [content] => HTML code without <LOOP> marker (outer)
+	 * [loop] => contains the loop / subloops / subsubloops etc... (2 levels implemented in the datastructure
+	 *
+	 * @param	string	$template: template code with markers
+	 * @param	string	$content: template code without <LOOP> marker (outer)
+	 * @param	string	$tableName
+	 * @return	array	$templateStructure
+	 */
+	protected function getTemplateStructure($template, $content = '', $tableName = '', $emptyTemplate = '', $emptyContent = '') {
 
 		// Makes sure values are ok.
 		if ($content == '') {
 			$content = $template;
-        }
+		}
 
 		// Makes sure values are ok.
 		if ($tableName == '') {
@@ -616,6 +616,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		$templateStructure['table'] = $tableName;
 		$templateStructure['template'] = $template;
 		$templateStructure['content'] = $content;
+		$templateStructure['empty']['template'] = $emptyTemplate;
+		$templateStructure['empty']['content'] = $emptyContent;
 		$templateStructure['loops'] = array();
 
 		// Pattern to match <!--LOOP(tt_content)-->.+<!--ENDLOOP-->
@@ -632,7 +634,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$subContent = $match[2];
 
 				// This is a special case. True, means there is a loop in a loop...
-                // ... and the $subTemplate, $subContent are not complete.
+				// ... and the $subTemplate, $subContent are not complete.
 				if (preg_match('/<!-- *LOOP\(/isU', $subContent)) {
 
 					// position of the template
@@ -643,25 +645,36 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					preg_match('/^(.+)<!-- *ENDLOOP *-->/isU', $remainingTemplate, $_match);
 					$subTemplate .= $_match[0];
 					$subContent .= '<!--ENDLOOP-->'.$_match[1];
-                }
+				}
+
+				// Handles the case when no data are found.
+				if (preg_match('/<!-- *EMPTY *-->(.+)<!-- *ENDEMPTY *-->/isU', $subContent, $_match)) {
+					$emptyTemplate = $_match[0];
+					$emptyContent = $_match[1];
+					$subContent = str_replace($emptyTemplate, '', $subContent);
+				}
+				else {
+					$emptyTemplate = '';
+					$emptyContent = '';
+				}
 
 				// Gets recursively the template structure
-				$templateStructure['loops'][] = $this->getTemplateStructure($subTemplate, $subContent, $subTable);
+				$templateStructure['loops'][] = $this->getTemplateStructure($subTemplate, trim($subContent), $subTable, $emptyTemplate, trim($emptyContent));
 			}
-        }
+		}
 
 		return $templateStructure;
-    }
+	}
 
 	/**
-     * Looks up for a value in a sds.
-     *
-     * @param	array	$sds: standard data structure
-     * @param	int		$index: the position in the array
-     * @param	string	$table: the name of the table
-     * @param	string	$field: the name of the field
-     * @return	string	$value: if no value is found return NULL
-     */
+	 * Looks up for a value in a sds.
+	 *
+	 * @param	array	$sds: standard data structure
+	 * @param	int		$index: the position in the array
+	 * @param	string	$table: the name of the table
+	 * @param	string	$field: the name of the field
+	 * @return	string	$value: if no value is found return NULL
+	 */
 	protected function getValueFromStructure(&$sds, $index, $table, $field) {
 
 		// Default value is NULL
@@ -671,7 +684,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		if ($sds['name'] == $table) {
 			if (isset($sds['records'][$index][$field])) {
 				$value = $sds['records'][$index][$field];
-            }
+			}
 		}
 		else {
 			// Maybe the $sds contains subtables, have a look into it to find out the value.
@@ -682,21 +695,21 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					$value = $this->getValueFromStructure($subSds, 0, $table, $field);
 					if ($value != NULL) {
 						break;
-                    }
-                }
-            }
-        }
+					}
+				}
+			}
+		}
 		return $value;
-    }
+	}
 
 
 	/**
-     * Tries to find out a valid $sds according to a table name.
-     *
-     * @param	array	$sds
-     * @param	string	$tableName
-     * @return	array	$result: actually this is a sds
-     */
+	 * Tries to find out a valid $sds according to a table name.
+	 *
+	 * @param	array	$sds
+	 * @param	string	$tableName
+	 * @return	array	$result: actually this is a sds
+	 */
 	protected function getSubStructure(&$sds, $tableName) {
 		$result = NULL;
 
@@ -721,14 +734,14 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		return $result;
-    }
+	}
 
 	/**
-     * Initializes language label and stores the lables for a possible further use.
-     *
-     * @param	$sds	$sds: standard data structure
-     * @return	void
-     */
+	 * Initializes language label and stores the lables for a possible further use.
+	 *
+	 * @param	$sds	$sds: standard data structure
+	 * @return	void
+	 */
 	protected function setLabelMarkers(&$sds) {
 		if (!isset($this->labelMarkers[$sds['name']]) && !empty($sds)) {
 
@@ -739,13 +752,13 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			}
 		}
 
-    }
+	}
 
 	/**
 	 * Recursive method. Gets the subpart template and substitutes content (label or field).
 	 *
 	 * @param	string	$templateCode
-     * @param	int		$deepth: the deepth of the array, begins with 0
+	 * @param	int		$deepth: the deepth of the array, begins with 0
 	 * @return	string	HTML code
 	 */
 	protected function getContent(&$templateStructure){
@@ -759,11 +772,11 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		if (!empty($templateStructure['loops'])) {
 
 			// Local documentation:
-            //
-            // The following code is going to loop around different strucutre as follow:
-            // The first loop is around the template structure
-            // The second loop is around the standard data structure. (loops around records)
-            // The third loop is around the marker. (markers are substituted by content)
+			//
+			// The following code is going to loop around different strucutre as follow:
+			// The first loop is around the template structure
+			// The second loop is around the standard data structure. (loops around records)
+			// The third loop is around the marker. (markers are substituted by content)
 
 			// TRAVERSES TEMPLATE STRUCTURE
 			foreach ($templateStructure['loops'] as $subTemplateStructure) {
@@ -789,9 +802,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					// Increment counter
 					$_counter['###COUNTER###'] = $index;
 
-					// other possible syntax, useful with loop in loop
-					$_counter['###COUNTER.' . $sds['name'] . '###'] = $index;
-
 					// Initializes content object.
 					$this->localCObj->start($sds['records'][$index]);
 
@@ -808,20 +818,20 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 						// Ouch... difficult to explain
 						// We are traversing a sds. The sds can be at the first dimension of $this->structure *OR* a the second dimension.
-                        //
-                        // We are in the "first" dimension:
+						//
+						// We are in the "first" dimension:
 						// this first case: we are in the first dimension, even if value is NULL replace it
-                        //                  Anyway, templatedisplay will have *no* futher chance to translate the value.
-                        //
-                        // We are in a "second" dimension:
+						//				  Anyway, templatedisplay will have *no* futher chance to translate the value.
+						//
+						// We are in a "second" dimension:
 						// the second case: replace only the value you that are not NULL
-						//                  templatedisplay will have futher chance to translate the value at the end of the function
+						//				  templatedisplay will have futher chance to translate the value at the end of the function
 						if ($this->structure['name'] == $subTemplateStructure['table']) {
 							$fieldMarkers[$markerName] = $this->getValue($key ,$value);
-                        }
+						}
 						else if ($value !== NULL) {
 							$fieldMarkers[$markerName] = $this->getValue($key ,$value);
-                        }
+						}
 					}
 
 					// Defines a temporary variable
@@ -841,8 +851,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 								if ($subSubStructure['name'] == $subSubTemplateStructure['table']) {
 									$subSds = $subSubStructure;
 									break;
-                                }
-                            }
+								}
+							}
 
 							// Defines the labels
 							$this->setLabelMarkers($subSds);
@@ -858,19 +868,28 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 							// TRAVERSES (SUB) RECORDS
 							$subNumbersOfRecords = count($subSds['records']);
+
+							// Handles the case when there is no record -> parses anyway
+							if ($subNumbersOfRecords == 0) {
+								$_counter['###SUBCOUNTER###'] = 0;
+								// Merges array
+								$subFieldMarkers = array_merge($fieldMarkers, $_counter);
+								
+								$subContent = $this->getEmptyValue($subTemplateStructure, $subFieldMarkers);
+								#$subContent = t3lib_parsehtml::substituteMarkerArray($subSubTemplateStructure['content'], $subFieldMarkers);
+								#$subContent = '<tr><td>No section found!</td></tr>';
+							}
+
 							for($subIndex = 0; $subIndex < $subNumbersOfRecords; $subIndex++) {
 
 								// Increments counter
 								$_counter['###SUBCOUNTER###'] = $subIndex;
 
-								// Other syntax. TODO: choose one syntax!
-								$_counter['###COUNTER.' . $subSds['name'] . '###'] = $subIndex;
-
 								// Initializes content object.
 								$this->localCObj->start($sds['records'][$index]);
 
 								// Defines default value in case no $subFieldMarkers are found
-                                $_fieldMarkers = array();
+								$_fieldMarkers = array();
 
 								// TRAVERSES (SUB) MARKERS
 								foreach ($subSubMarkers as $marker) {
@@ -887,21 +906,12 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 								$subFieldMarkers = array_merge($fieldMarkers, $_fieldMarkers, $this->labelMarkers[$subSds['name']], $_counter);
 								$subContent .= t3lib_parsehtml::substituteMarkerArray($subSubTemplateStructure['content'], $subFieldMarkers);
 							}
-
-							// Handles the case when there is no record -> parses anyway
-							if ($subNumbersOfRecords == 0) {
-								// Merges array
-								$_counter['###SUBCOUNTER###'] = 0;
-								$subFieldMarkers = array_merge($fieldMarkers, $_counter);
-								#$subContent = t3lib_parsehtml::substituteMarkerArray($subSubTemplateStructure['content'], $subFieldMarkers);
-								$subContent = '<tr><td>No section found!</td></tr>';
-                            }
 							/**************/
 
 							// Replaces original sub template by the new content
-							$__content = str_replace($subSubTemplateStructure['template'], trim($subContent), $__content);
-                        } // End foreach (SUB) TEMPLATE STRUCTURE
-                    } // End if
+							$__content = str_replace($subSubTemplateStructure['template'], $subContent, $__content);
+						} // End foreach (SUB) TEMPLATE STRUCTURE
+					} // End if
 
 					// Merges array
 					$fieldMarkers = array_merge($fieldMarkers, $this->labelMarkers[$sds['name']], $_counter);
@@ -909,10 +919,16 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					// Substitues content
 					$_content .= t3lib_parsehtml::substituteMarkerArray($__content, $fieldMarkers);
 
-                } // end for (records)
+				} // end for (records)
 
-				$content = str_replace($subTemplateStructure['template'], trim($_content), $content);
-            } // foreach $templateStructure['loops']
+				// Handles the case when there is no record -> parses anyway
+				if ($numbersOfRecords == 0) {
+					$_counter['###COUNTER###'] = 0;
+					$_content = $this->getEmptyValue($subTemplateStructure, $_counter);
+				}
+
+				$content = str_replace($subTemplateStructure['template'], $_content, $content);
+			} // end foreach $templateStructure['loops']
 
 		}
 
@@ -927,17 +943,35 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 			$table = $marker[2];
 			$field = $marker[3];
 			$value = $this->getValueFromStructure($this->structure, 0, $table, $field);
-			if ($value !== NULL) {
+			#if ($value !== NULL) {
 				$fieldMarkers[$markerName] = $this->getValue($key ,$value);
-			}
+			#}
 		}
 
 		// Merges additional fields
 		$fieldMarkers = array_merge($fieldMarkers, $this->labelMarkers[$this->structure['name']]);
 		return t3lib_parsehtml::substituteMarkerArray($content, $fieldMarkers);
 
-    }
+	}
 
+	protected function getEmptyValue(&$sds, $markers) {
+		if ($sds['empty']['content'] != '') {
+			$content = $sds['empty']['content'];
+		}
+		else {
+			$content = t3lib_parsehtml::substituteMarkerArray($sds['content'], $markers);
+		}
+		return $content;
+    }
+	
+	/**
+	 * Important method! Formats the $value given as input according to the $key.
+     * The variable $key will tell the type of $value. Then format the $value whenever there is TypoScript configuration.
+	 *
+	 * @param	string	$key
+	 * @param	string	$value
+	 * @return	string
+	 */
 	protected function getValue($key,$value) {
 
 		switch ($this->datasource[$key]['type']) {
@@ -1025,7 +1059,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		} // end switch
 
 		return $output;
-    }
+	}
 
 	/**
 	 * Extracts the filename of a path
@@ -1043,8 +1077,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 	}
 
 	/**
-     * If found, returns markers, of type LLL
-     *
+	 * If found, returns markers, of type LLL
+	 *
 	 * Example of marker: ###LLL:EXT:myextension/localang.xml:myLable###
 	 *
 	 * @param	string	$content HTML code
