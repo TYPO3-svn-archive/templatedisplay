@@ -728,7 +728,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		if ($result === NULL) {
 			// TODO improved error reporting
-			throw new Exception('No sds found for table ' . $tableName);
+			//throw new Exception('No sds found for table ' . $tableName);
 		}
 		return $result;
     }
