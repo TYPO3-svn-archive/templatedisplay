@@ -14,9 +14,9 @@
 			<label index="tx_templatedisplay_displays.noTemplateFoundError">Please add some content in the HTML tabs</label>
 			<label index="tx_templatedisplay_displays.text">Text</label>
 			<label index="tx_templatedisplay_displays.image">Image</label>
-			<label index="tx_templatedisplay_displays.link_to_detail">Link to detail</label>
-			<label index="tx_templatedisplay_displays.link_to_page">Link to page</label>
-			<label index="tx_templatedisplay_displays.link_to_file">Link to file</label>
+			<label index="tx_templatedisplay_displays.link_to_detail">URL to detail</label>
+			<label index="tx_templatedisplay_displays.link_to_page">URL to page</label>
+			<label index="tx_templatedisplay_displays.link_to_file">URL to file</label>
 			<label index="tx_templatedisplay_displays.email">Email</label>
 			<label index="tx_templatedisplay_displays.showJson">Show JSON</label>
 			<label index="tx_templatedisplay_displays.editJson">Edit JSON</label>

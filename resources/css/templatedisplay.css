@@ -60,6 +60,7 @@
 
 #templatedisplay_cellLeft{
 	border-right: 1px dotted gray;
+	min-width: 200px;
 }
 
 .mapping_pictogrammBox{
