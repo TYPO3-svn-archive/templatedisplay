@@ -139,8 +139,8 @@ class tx_templatedisplay_tceforms {
 		$pattern[] = "/(&lt;!-- *IF *\(.+--&gt;)/isU";
 		$replacement[] = '<span class="templatedisplay_if">$1</span>';
 
-		# LIMIT_TEXT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST
-		$pattern[] = "/(LIMIT_TEXT\(.+\)|UPPERCASE\(.+\)|UPPERCASE\(.+\)|UPPERCASE_FIRST\(.+\))/isU";
+		# LIMIT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST
+		$pattern[] = "/(LIMIT\(.+\)|UPPERCASE\(.+\)|UPPERCASE\(.+\)|UPPERCASE_FIRST\(.+\))/isU";
 		$replacement[] = '<span class="templatedisplay_function">$1</span>';
 
 		$pattern[] = "/(&lt;!-- *ENDIF *--&gt;)/isU";
