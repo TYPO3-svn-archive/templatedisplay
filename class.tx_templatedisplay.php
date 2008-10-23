@@ -22,7 +22,8 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 *
-* $Id: class.tx_templatedisplay_pi1.php 3938 2008-06-04 08:39:01Z fsuter $
+* $Id$
+* $Rev$
 ***************************************************************/
 
 require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecontroller_consumerbase.php'));
@@ -36,7 +37,6 @@ require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecont
  * @subpackage	tx_templatedisplay
  */
 class tx_templatedisplay extends tx_basecontroller_consumerbase {
-
 
 	public $extKey = 'templatedisplay';
 	protected $conf;
@@ -493,7 +493,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 
 		// Wraps if LOOP
-		if (!preg_match('/<!-- *LOOP\(' . $this->structure['name'] . '/isU', $content, $matches)) {
+		if (!preg_match('/<!-- *LOOP\(' . $this->structure['name'] . '\)/isU', $content, $matches)) {
 			$content = '<!--LOOP(' . $this->structure['name'] . ')-->' . chr(10) . $content . chr(10) . '<!--ENDLOOP(' . $this->structure['name'] . ')-->';
 		}
 		return $content;
@@ -675,20 +675,6 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				$_table = $matches[$index][1];
 				$_content = $matches[$index][2];
 
-				// TRUE, means there is a loop in a loop...
-				// ... and the $subTemplate, $subContent are not complete.
-				//				if (preg_match('/<!-- *LOOP\(/isU', $_content)) {
-				//
-				//					// Position of the template
-				//					$position = strpos($template,$_template);
-				//					$remainingTemplate = substr($template, $position + strlen($_template));
-				//
-				//					// Matches the remaining HTML
-				//					preg_match('/^(.+)<!-- *ENDLOOP *-->/isU', $remainingTemplate, $_match);
-				//					$_template .= $_match[0];
-				//					$_content .= '<!--ENDLOOP-->'.$_match[1];
-				//				}
-
 				$templateStructure[$index] = array();
 				$templateStructure[$index]['table'] = $_table;
 				$templateStructure[$index]['template'] = $_template;
@@ -799,7 +785,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 
 		// Retrieves the fields from the templateCode that needs a substitution
 		// By the way catch the table name and the field name for futher use. -> "()"
-		preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $templateStructure['content'], $subMarkers, PREG_SET_ORDER);
+		preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $templateStructure['content'], $markers, PREG_SET_ORDER);
 
 		// TRAVERSES RECORDS
 		$numbersOfRecords = count($sds['records']);
@@ -818,11 +804,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 				}
 			}
 
-			// Defines default value in case no $fieldsMarkers are found
-			#$fieldMarkers = array_merge($markers);
-
 			// TRAVERSES MARKERS
-			foreach ($subMarkers as $marker) {
+			foreach ($markers as $marker) {
 				$markerName = $marker[0];
 				$key = $marker[1];
 				$table = $marker[2];
@@ -833,7 +816,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					$fieldMarkers[$markerName] = $this->getValue($key ,$value, $sds);
 				#}
 			}
-
+			
 			// Means there is a LOOP in a LOOP
 			if (!empty($templateStructure['loops'])) {
 
