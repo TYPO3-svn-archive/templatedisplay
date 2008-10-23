@@ -22,8 +22,8 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 *
-* $Id$
-* $Rev: $
+* $Id: class.tx_templatedisplay.php 13294 2008-10-23 13:16:13Z omic $
+* $Rev$
 * $Rev$
 ***************************************************************/
 
