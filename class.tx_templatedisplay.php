@@ -25,8 +25,6 @@
 * $Id: class.tx_templatedisplay_pi1.php 3938 2008-06-04 08:39:01Z fsuter $
 ***************************************************************/
 
-//require_once(PATH_tslib.'class.tslib_pibase.php');
-//require_once(t3lib_extMgm::extPath('dataquery','class.tx_dataquery_wrapper.php'));
 require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecontroller_consumerbase.php'));
 
 /**
