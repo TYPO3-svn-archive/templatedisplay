@@ -27,7 +27,7 @@
 * $Rev$
 ***************************************************************/
 
-require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecontroller_consumerbase.php'));
+require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecontroller_feconsumerbase.php'));
 
 /**
  * Plugin 'Data Displayer' for the 'templatedisplay' extension.
@@ -37,8 +37,9 @@ require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecont
  * @package	TYPO3
  * @subpackage	tx_templatedisplay
  */
-class tx_templatedisplay extends tx_basecontroller_consumerbase {
+class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 
+	public $tsKey = 'tx_templatedisplay';
 	public $extKey = 'templatedisplay';
 	protected $conf;
 	protected $table; // Name of the table where the details about the data display are stored
@@ -817,7 +818,7 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 					$fieldMarkers[$markerName] = $this->getValue($key ,$value, $sds);
 				#}
 			}
-			
+
 			// Means there is a LOOP in a LOOP
 			if (!empty($templateStructure['loops'])) {
 
@@ -882,8 +883,8 @@ class tx_templatedisplay extends tx_basecontroller_consumerbase {
 		}
 		else {
 			// Checks the configuration
-			$this->pObj->conf += array('parseEmptyLoops' => 0);
-			$parseEmptyLoops = $this->pObj->conf['parseEmptyLoops'];
+			$this->conf += array('parseEmptyLoops' => 0);
+			$parseEmptyLoops = $this->conf['parseEmptyLoops'];
 			if ((boolean) $parseEmptyLoops) {
 				$content = t3lib_parsehtml::substituteMarkerArray($templateStructure['content'], $markers);
 
