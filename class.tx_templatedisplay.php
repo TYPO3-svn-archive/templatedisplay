@@ -750,7 +750,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @return	void
 	 */
 	protected function setLabelMarkers(&$sds) {
-		if (!isset($this->labelMarkers[$sds['name']]) && !empty($sds)) {
+		if (!isset($this->labelMarkers[$sds['name']]) && !empty($sds['header'])) {
 
 			// Defines as array
 			$this->labelMarkers[$sds['name']] = array();
