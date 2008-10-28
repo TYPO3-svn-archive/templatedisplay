@@ -16,6 +16,39 @@ $TCA['tx_templatedisplay_displays'] = array(
 				'default' => '0'
 			)
 		),
+		'debug_markers' => array(
+			'exclude' => 1,
+			#'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug',
+			'config'  => array(
+				'type'    => 'check',
+				'default' => '0',
+				'items' => array(
+					array('LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug_markers', ''),
+				),
+			)
+		),
+		'debug_template_structure' => array(
+			'exclude' => 1,
+			#'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug_data_template',
+			'config'  => array(
+				'type'    => 'check',
+				'default' => '0',
+				'items' => array(
+					array('LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug_template_structure', ''),
+				),
+			)
+		),
+		'debug_data_structure' => array(
+			'exclude' => 1,
+			#'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug_data_structure',
+			'config'  => array(
+				'type'    => 'check',
+				'default' => '0',
+				'items' => array(
+					array('LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug_data_structure', ''),
+				),
+			)
+		),
 		'title' => array(
 			'exclude' => 0,
 			'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.title',
@@ -58,5 +91,12 @@ $TCA['tx_templatedisplay_displays'] = array(
 	'palettes' => array(
 		'1' => array('showitem' => '')
 	)
+);
+
+t3lib_extMgm::addToAllTCAtypes("tx_templatedisplay_displays","--palette--;LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug;10","","after:description");
+
+$TCA['tx_templatedisplay_displays']['palettes']['10'] = array(
+	"showitem" => "debug_markers, debug_template_structure, debug_data_structure",
+	"canNotCollapse" => 1
 );
 ?>

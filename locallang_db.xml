@@ -17,6 +17,10 @@
 			<label index="tx_templatedisplay_displays.link_to_detail">URL to detail</label>
 			<label index="tx_templatedisplay_displays.link_to_page">URL to page</label>
 			<label index="tx_templatedisplay_displays.link_to_file">URL to file</label>
+			<label index="tx_templatedisplay_displays.debug">Debug (extension develog must be installed)</label>
+			<label index="tx_templatedisplay_displays.debug_markers">Debug markers</label>
+			<label index="tx_templatedisplay_displays.debug_template_structure">Debug template structure</label>
+			<label index="tx_templatedisplay_displays.debug_data_structure">Debug data structure</label>
 			<label index="tx_templatedisplay_displays.email">Email</label>
 			<label index="tx_templatedisplay_displays.showJson">Show JSON</label>
 			<label index="tx_templatedisplay_displays.editJson">Edit JSON</label>
@@ -34,6 +38,25 @@
 			<label index="tx_templatedisplay_displays.description">Description</label>
 			<label index="tx_templatedisplay_displays.mappings">Corrélations</label>
 			<label index="tx_templatedisplay_displays.template">Modèle HTML</label>
+			<label index="tx_templatedisplay_displays.noTemplateFoundError">Ajouter du contenu</label>
+			<label index="tx_templatedisplay_displays.text">Texte</label>
+			<label index="tx_templatedisplay_displays.image">Image</label>
+			<label index="tx_templatedisplay_displays.link_to_detail">URL detail</label>
+			<label index="tx_templatedisplay_displays.link_to_page">URL détail</label>
+			<label index="tx_templatedisplay_displays.link_to_file">URL fichier</label>
+			<label index="tx_templatedisplay_displays.debug">Deboguer (l'extension devlog doit être installé)</label>
+			<label index="tx_templatedisplay_displays.debug_markers">Deboguer les tags</label>
+			<label index="tx_templatedisplay_displays.debug_template_structure">Deboguer la structure de modèles</label>
+			<label index="tx_templatedisplay_displays.debug_data_structure">Deboguer la structure de données</label>
+			<label index="tx_templatedisplay_displays.email">Email</label>
+			<label index="tx_templatedisplay_displays.showJson">Afficher JSON</label>
+			<label index="tx_templatedisplay_displays.editJson">Editer JSON</label>
+			<label index="tx_templatedisplay_displays.editHtml">HTML</label>
+			<label index="tx_templatedisplay_displays.fields">Champs</label>
+			<label index="tx_templatedisplay_displays.types">Types</label>
+			<label index="tx_templatedisplay_displays.configuration">Configuration Typoscript</label>
+			<label index="tx_templatedisplay_displays.insertDefaultConfiguration">Insérer une valeur par défaut</label>
+			<label index="tx_templatedisplay_displays.saveFieldConfiguration">Sauvegarder la configuration</label>
 		</languageKey>
 	</data>
 </T3locallang>

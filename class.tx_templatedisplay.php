@@ -22,9 +22,9 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
 *
-* $Id: class.tx_templatedisplay.php 13294 2008-10-23 13:16:13Z omic $
-* $Rev$
-* $Rev$
+* $Id$
+* $Rev: 13440 $
+* $Rev: 13440 $
 ***************************************************************/
 
 require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecontroller_feconsumerbase.php'));
@@ -169,6 +169,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
+		$this->configuration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
 
 		// ****************************************
 		// ********** FETCHES DATASOURCE **********
@@ -246,24 +247,14 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		// Merges array, in order to have only one array (performance!)
 		$markers = array_merge($uniqueMarkers, $LLLMarkers, $GPMarkers, $TSFEMarkers, $pageMarkers, $globalVariablesMarkers);
 
-		if (isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['BE_USER']) {
-			t3lib_div::debug('Content of $markers, line ' . __LINE__);
-			t3lib_div::debug($markers);
-		}
-
-		if (isset($GLOBALS['_GET']['debug']['structure']) && $GLOBALS['BE_USER']) {
-			t3lib_div::debug('Content of $this->structure');
-			t3lib_div::debug($this->structure);
-		}
-
 		// First transformation of $templateCode. Substitutes $markers that can be already substituted. (LLL, GP, TSFE, etc...)
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
 
 		// Cuts out the template into different part and organizes it in an array.
 		$templateStructure = $this->getTemplateStructure($templateCode);
-		if (isset($GLOBALS['_GET']['debug']['template']) && $GLOBALS['BE_USER']) {
-			t3lib_div::debug($templateStructure);
-		}
+
+		/* Debug */
+		$this->debug($markers,$templateStructure);
 
 		// Transforms the templateStructure[template] into real content
 		$templateContent = $templateCode;
@@ -760,6 +751,12 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		}
 	}
 
+	/**
+	 * Returns an array that contains LABEL
+	 *
+	 * @param	string	$name: corresponds to a table name.
+	 * @return	array	$markers
+	 */
 	protected function getLabelMarkers($name) {
 		$markers = array();
 
@@ -815,7 +812,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 				$value = $this->getValueFromStructure($sds, $index, $table, $field);
 
 				#if ($value !== NULL) {
-					$fieldMarkers[$markerName] = $this->getValue($key ,$value, $sds);
+				$fieldMarkers[$markerName] = $this->getValue($key ,$value, $sds);
 				#}
 			}
 
@@ -1032,6 +1029,38 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 			}
 		}
 		return $markers;
+	}
+
+	protected function debug($markers, $templateStructure) {
+		if (isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['BE_USER']) {
+			t3lib_div::debug($markers);
+		}
+
+		if (isset($GLOBALS['_GET']['debug']['template']) && $GLOBALS['BE_USER']) {
+			t3lib_div::debug($templateStructure);
+		}
+
+		if (isset($GLOBALS['_GET']['debug']['structure']) && $GLOBALS['BE_USER']) {
+			t3lib_div::debug($this->structure);
+		}
+
+		if ($this->configuration['debug'] || TYPO3_DLOG) {
+			t3lib_div::devLog('<b>Markers: "' . $this->consumerData['title'] . '"</b>' . t3lib_div::view_array($markers), $this->extKey);
+			t3lib_div::devLog('<b>Template structure: "' . $this->consumerData['title'] . '"</b>' . t3lib_div::view_array($templateStructure), $this->extKey);
+			t3lib_div::devLog('<b>Data structure: ' . $this->pObj->cObj->data['header'] . '"</b>' . t3lib_div::view_array($this->structure), $this->extKey);
+		}
+
+		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
+			t3lib_div::devLog('<b>Markers: "' . $this->consumerData['title'] . '"</b>' . t3lib_div::view_array($markers), $this->extKey);
+		}
+
+		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
+			t3lib_div::devLog('<b>Template structure: "' . $this->consumerData['title'] . '"</b>' . t3lib_div::view_array($templateStructure), $this->extKey);
+		}
+
+		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
+			t3lib_div::devLog('<b>Data structure: ' . $this->pObj->cObj->data['header'] . '"</b>' . t3lib_div::view_array($this->structure), $this->extKey);
+		}
 	}
 }
 
