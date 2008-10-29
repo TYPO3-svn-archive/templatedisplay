@@ -170,6 +170,21 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
 		$this->configuration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
 
+		// Checks if the title of the template need to be changed
+		if ($this->conf['substitutePageTitle']) {
+			$values = explode('.', $this->conf['substitutePageTitle']);
+			if (count($values) == 1) {
+				$table = $this->structure['name'];
+				$field = $values[0];
+			}
+			else if (count($values) == 2) {
+				$table = $values[0];
+				$field = $values[1];
+			}
+			$GLOBALS['TSFE']->page['title'] = $this->getValueFromStructure($this->structure, 0, $table, $field);
+		}
+
+
 		// ****************************************
 		// ********** FETCHES DATASOURCE **********
 		// ****************************************
