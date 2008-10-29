@@ -23,8 +23,6 @@
 *  This copyright notice MUST APPEAR in all copies of the script!
 *
 * $Id$
-* $Rev: 13440 $
-* $Rev: 13440 $
 ***************************************************************/
 
 require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecontroller_feconsumerbase.php'));
@@ -163,6 +161,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @return	void
 	 */
 	public function startProcess() {
+		
 		// ************************************
 		// ********** INITIALISATION **********
 		// ************************************
@@ -1045,21 +1044,21 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		}
 
 		if ($this->configuration['debug'] || TYPO3_DLOG) {
-			t3lib_div::devLog('<b>Markers: "' . $this->consumerData['title'] . '"</b>' . t3lib_div::view_array($markers), $this->extKey);
-			t3lib_div::devLog('<b>Template structure: "' . $this->consumerData['title'] . '"</b>' . t3lib_div::view_array($templateStructure), $this->extKey);
-			t3lib_div::devLog('<b>Data structure: ' . $this->pObj->cObj->data['header'] . '"</b>' . t3lib_div::view_array($this->structure), $this->extKey);
+			t3lib_div::devLog('Markers: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $markers);
+			t3lib_div::devLog('Template structure: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $templateStructure);
+			t3lib_div::devLog('Data structure: ' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
 		}
 
 		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
-			t3lib_div::devLog('<b>Markers: "' . $this->consumerData['title'] . '"</b>' . t3lib_div::view_array($markers), $this->extKey);
+			t3lib_div::devLog('Markers: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $markers);
 		}
 
 		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
-			t3lib_div::devLog('<b>Template structure: "' . $this->consumerData['title'] . '"</b>' . t3lib_div::view_array($templateStructure), $this->extKey);
+			t3lib_div::devLog('Template structure: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $templateStructure);
 		}
 
 		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
-			t3lib_div::devLog('<b>Data structure: ' . $this->pObj->cObj->data['header'] . '"</b>' . t3lib_div::view_array($this->structure), $this->extKey);
+			t3lib_div::devLog('Data structure: ' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
 		}
 	}
 }
