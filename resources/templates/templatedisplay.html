@@ -59,6 +59,7 @@
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines alt / title tag"/></a>
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: wraps a link around the image"/></a>
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_yellow.png" alt="snippet" title="snippet 4: wraps a link around the image and remove white spaces from the URL"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_orange.png" alt="snippet" title="snippet 5: defines the image's path"/></a>
 						</div>
 						<div id="templatedisplay_snippetlinkToDetail" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
@@ -144,11 +145,11 @@ stdWrap.typolink{
 </script>
 <script id="snippetimage4" type="text/plain">
 <![CDATA[
+# Remove white spaces in the URL
 file.width = 100
 stdWrap.typolink{
   parameter.field = media
   target = blank
-  # Remove white spaces in the URL
   parameter.split{
     token = /
     cObjNum = 1
@@ -157,6 +158,19 @@ stdWrap.typolink{
     1.rawUrlEncode = 1
     1.wrap = /|
   }
+}
+]]>
+</script>
+<script id="snippetimage5" type="text/plain">
+<![CDATA[
+# Defines the image path
+file.import = uploads/pics/
+file.import.field = image
+file.height = 230
+imageLinkWrap = 1
+imageLinkWrap {
+    typolink.parameter.field = shortcut
+    enable = 1
 }
 ]]>
 </script>
