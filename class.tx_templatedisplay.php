@@ -170,20 +170,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
 		$this->configuration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
 
-		// Checks if the title of the template need to be changed
-		if ($this->conf['substitutePageTitle']) {
-			$values = explode('.', $this->conf['substitutePageTitle']);
-			if (count($values) == 1) {
-				$table = $this->structure['name'];
-				$field = $values[0];
-			}
-			else if (count($values) == 2) {
-				$table = $values[0];
-				$field = $values[1];
-			}
-			$GLOBALS['TSFE']->page['title'] = $this->getValueFromStructure($this->structure, 0, $table, $field);
-		}
-
+		$this->setPageTitle();
 
 		// ****************************************
 		// ********** FETCHES DATASOURCE **********
@@ -245,6 +232,14 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		// Loads the template file
 		$templateCode = $this->consumerData['template'];
 
+		// Hook that enables to pre process the output)
+		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extKey]['preProcessResult'])) {
+			foreach($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extKey]['preProcessResult'] as $className) {
+				$preProcessor = &t3lib_div::getUserObj($className);
+				$templateCode = $preProcessor->preProcessResult($templatecode, $this);
+			}
+		}
+
 		// Begins $templateCode transformation.
 		// *Must* be at the beginning of startProcess()
 		$templateCode = $this->preProcessIf($templateCode);
@@ -295,6 +290,26 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 				$postProcessor = &t3lib_div::getUserObj($className);
 				$this->result = $postProcessor->postProcessResult($this->result, $this);
 			}
+		}
+	}
+
+	/**
+	 * Changes the page title if templatedisplay encounters typoScript configuration.
+	 * This is done by changing the page title in the tslib_fe object.
+	 */
+	protected function setPageTitle() {
+		// Checks wheter the title of the template need to be changed
+		if ($this->conf['substitutePageTitle']) {
+			$values = explode('.', $this->conf['substitutePageTitle']);
+			if (count($values) == 1) {
+				$table = $this->structure['name'];
+				$field = $values[0];
+			}
+			else if (count($values) == 2) {
+				$table = $values[0];
+				$field = $values[1];
+			}
+			$GLOBALS['TSFE']->page['title'] = $this->getValueFromStructure($this->structure, 0, $table, $field);
 		}
 	}
 
