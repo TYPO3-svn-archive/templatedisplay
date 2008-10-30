@@ -161,7 +161,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @return	void
 	 */
 	public function startProcess() {
-		
+
 		// ************************************
 		// ********** INITIALISATION **********
 		// ************************************
@@ -265,15 +265,16 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		/* Debug */
 		$this->debug($markers,$templateStructure);
 
-		// Transforms the templateStructure[template] into real content
+		// Transforms the HTML template to HTML content
 		$templateContent = $templateCode;
 		foreach ($templateStructure as &$_templateStructure) {
 			$_content = $this->getContent($_templateStructure, $this->structure);
 			$templateContent = str_replace($_templateStructure['template'], $_content, $templateContent);
 		}
 
-		// Translate ramaining labels
-		$templateContent = t3lib_parsehtml::substituteMarkerArray($templateContent,$this->getLabelMarkers($this->structure['name']));
+		// Translates outter labels and fields.
+		$fieldMarkers = array_merge($this->fieldMarkers, $this->getLabelMarkers($this->structure['name']));
+		$templateContent = t3lib_parsehtml::substituteMarkerArray($templateContent, $fieldMarkers);
 
 		// Handles the page browser
 		$templateContent = $this->processPageBrowser($templateContent);
@@ -884,10 +885,10 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 			}
 
 			// Increment counter + Merges array(FIELD, LABEL, COUNTER)
-			$fieldMarkers = array_merge($fieldMarkers, $this->getLabelMarkers($sds['name']), array('###' . $counterName . '###' => $index));
+			$this->fieldMarkers = array_merge($fieldMarkers, $this->getLabelMarkers($sds['name']), array('###' . $counterName . '###' => $index));
 
 			// Substitues content
-			$content .= t3lib_parsehtml::substituteMarkerArray($_content, $fieldMarkers);
+			$content .= t3lib_parsehtml::substituteMarkerArray($_content, $this->fieldMarkers);
 
 		} // end for (records)
 
