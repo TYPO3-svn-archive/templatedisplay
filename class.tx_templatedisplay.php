@@ -268,8 +268,17 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		// Transforms the HTML template to HTML content
 		$templateContent = $templateCode;
 		foreach ($templateStructure as &$_templateStructure) {
-			$_content = $this->getContent($_templateStructure, $this->structure);
-			$templateContent = str_replace($_templateStructure['template'], $_content, $templateContent);
+			if (!empty($this->structure['records'])) {
+					$_content = $this->getContent($_templateStructure, $this->structure);
+					$templateContent = str_replace($_templateStructure['template'], $_content, $templateContent);
+			}
+			else {
+				if (preg_match('/<!-- *EMPTY *-->(.+)<!-- *ENDEMPTY *-->/isU',$_templateStructure['template'], $matches)) {
+					$_templateStructure['emptyLoops'][0] = $matches[1];
+				}
+				$_content = $this->getEmptyValue($_templateStructure);
+				$templateContent = str_replace($_templateStructure['template'], $_content, $templateContent);
+			}
 		}
 
 		// Translates outter labels and fields.
@@ -869,7 +878,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 
 						// Handles the case when there is no record -> replace with other content
 						$fieldMarkers = array_merge($fieldMarkers, $this->getLabelMarkers($sds['name']), array('###SUBCOUNTER###' => '0'));
-						$__content = $this->getEmptyValue($sds, $subTemplateStructure, $loop, $fieldMarkers);
+						$__content = $this->getEmptyValue($subTemplateStructure, $loop, $fieldMarkers);
 						$_content = str_replace($subTemplateStructure['template'], $__content, $_content);
 					} // end else
 					$loop ++;
@@ -903,7 +912,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @param	array	$markers
 	 * @return	string
 	 */
-	protected function getEmptyValue(&$sds, &$templateStructure, $index, $markers) {
+	protected function getEmptyValue(&$templateStructure, $index = 0, $markers = array()) {
 		$content = '';
 		if ($templateStructure['emptyLoops'][$index] != '') {
 			$content = $templateStructure['emptyLoops'][$index];
