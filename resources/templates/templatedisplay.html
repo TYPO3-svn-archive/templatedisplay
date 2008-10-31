@@ -124,11 +124,13 @@ file.width = 100
 </script>
 <script id="snippetimage2" type="text/plain">
 <![CDATA[
-# width - height
-file.width = 100
-# The default value is the name of the file
-altText = some text
-titleText = some texte
+file.width = 50
+file.height = 50
+params = class="thumbnail"
+altText = {field:model}
+altText.insertData =1
+titleText = {field:model}
+titleText.insertData =1
 ]]>
 </script>
 <script id="snippetimage3" type="text/plain">
@@ -179,14 +181,14 @@ imageLinkWrap {
 <![CDATA[
 # parameter is mandatory
 parameter = 1
-additionalParams = &tx_myext_pi1[param]=value
+additionalParams = &tx_displaycontroller[table]=value1&tx_displaycontroller[showUid]=value2
 ]]>
 </script>
 <script id="snippetlinkToDetail2" type="text/plain">
 <![CDATA[
 # parameter is mandatory
 parameter = 1
-additionalParams = &tx_myext_pi1[uid]={field:uid}&tx_myext_pi1[title]={page:title}
+additionalParams = &tx_displaycontroller[table]=myTable&tx_displaycontroller[showUid]={register:parent.uid}
 additionalParams.insertData = 1
 ]]>
 </script>
