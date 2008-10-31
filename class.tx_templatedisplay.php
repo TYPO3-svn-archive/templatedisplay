@@ -49,6 +49,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	protected $labelMarkers = array();
 	protected $datasource = array();
 	protected $LLkey = 'default';
+	protected $fieldMarkers = array();
 
 	/**
 	 * This method resets values for a number of properties
@@ -64,6 +65,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		$this->conf = array();
 		$this->datasource = array();
 		$this->LLkey = 'default';
+		$this->fieldMarkers = array();
 	}
 
 	/**
@@ -251,7 +253,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		$GPMarkers = $this->getExpressionMarkers('GP', array_merge(t3lib_div::_GET(), t3lib_div::_POST()), $templateCode);
 		$TSFEMarkers = $this->getExpressionMarkers('TSFE', $GLOBALS['TSFE'], $templateCode);
 		$pageMarkers = $this->getExpressionMarkers('page', $GLOBALS['TSFE']->page, $templateCode);
-		$globalVariablesMarkers = $this->getGlobalVariablesMarkers($templateCode); // Global template variable can be ###TOTAL_OF_RECORDS### ###SUBTOTAL_OF_RECORDS###
+		$globalVariablesMarkers = $this->getGlobalVariablesMarkers($templateCode); // Global template variable can be ###TOTAL_RECORDS### ###SUBTOTAL_RECORDS###
 
 		// Merges array, in order to have only one array (performance!)
 		$markers = array_merge($uniqueMarkers, $LLLMarkers, $GPMarkers, $TSFEMarkers, $pageMarkers, $globalVariablesMarkers);
@@ -281,6 +283,9 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 			}
 		}
 
+		if (!$this->getLabelMarkers($this->structure['name'])) {
+			$this->setLabelMarkers($this->structure);
+		}
 		// Translates outter labels and fields.
 		$fieldMarkers = array_merge($this->fieldMarkers, $this->getLabelMarkers($this->structure['name']));
 		$templateContent = t3lib_parsehtml::substituteMarkerArray($templateContent, $fieldMarkers);
@@ -371,18 +376,31 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 
 	/**
 	 * If found, returns markers, of type global template variable
-	 * Global template variable can be ###TOTAL_OF_RECORDS### ###SUBTOTAL_OF_RECORDS###
+	 * Global template variable can be ###TOTAL_RECORDS### ###SUBTOTAL_RECORDS###
 	 *
 	 * @param	string	$content: HTML content
 	 * @return  string	$content: transformed HTML content
 	 */
 	protected function getGlobalVariablesMarkers($content) {
 		$markers = array();
-		if (preg_match('/#{3}TOTAL_OF_RECORDS#{3}/isU', $content)) {
-			$markers['###TOTAL_OF_RECORDS###']  = $this->structure['totalCount'];
+		if (preg_match('/#{3}TOTAL_RECORDS#{3}/isU', $content)) {
+			$markers['###TOTAL_RECORDS###']  = $this->structure['totalCount'];
 		}
-		if (preg_match('/#{3}SUBTOTAL_OF_RECORDS#{3}/isU', $content)) {
-			$markers['###SUBTOTAL_OF_RECORDS###']  = $this->structure['count'];
+		if (preg_match('/#{3}SUBTOTAL_RECORDS#{3}/isU', $content)) {
+			$markers['###SUBTOTAL_RECORDS###']  = $this->structure['count'];
+		}
+
+		if (preg_match('/#{3}RECORD_OFFSET#{3}/isU', $content)) {
+			if (!$this->pObj->piVars['page']) {
+				$this->pObj->piVars['page'] = 0;
+			}
+
+			// Computes the record offset
+			$recordOffset = ($this->pObj->piVars['page'] + 1) * $this->filter['limit']['max'];
+			if ($recordOffset > $this->structure['totalCount']) {
+				$recordOffset = $this->structure['totalCount'];
+			}
+			$markers['###RECORD_OFFSET###']  = $recordOffset;
 		}
 		return $markers;
 	}
@@ -425,7 +443,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @return	string	$content transformed HTML code
 	 */
 	protected function processPageBrowser($content) {
-		$pattern = '/#{3}PAGE_BROWSER#{3}/isU';
+		$pattern = '/#{3}PAGE_BROWSER#{3}|#{3}PAGEBROWSER#{3}/isU';
 		if (preg_match($pattern, $content)) {
 
 			// Fetches the configuration
@@ -944,7 +962,11 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		switch ($this->datasource[$key]['type']) {
 			case 'text':
 				$configuration = $this->datasource[$key]['configuration'];
-				$configuration['value'] = $value;
+
+				if (!isset($configuration['value'])) {
+					$configuration['value'] = $value;
+				}
+				
 				$output = $this->localCObj->TEXT($configuration);
 				break;
 			case 'image':
