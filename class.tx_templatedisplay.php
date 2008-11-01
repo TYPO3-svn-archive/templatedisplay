@@ -275,14 +275,13 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 					$templateContent = str_replace($_templateStructure['template'], $_content, $templateContent);
 			}
 			else {
-				if (preg_match('/<!-- *EMPTY *-->(.+)<!-- *ENDEMPTY *-->/isU',$_templateStructure['template'], $matches)) {
-					$_templateStructure['emptyLoops'][0] = $matches[1];
-				}
+				// Checks if an empty value must replace the block.
 				$_content = $this->getEmptyValue($_templateStructure);
 				$templateContent = str_replace($_templateStructure['template'], $_content, $templateContent);
 			}
 		}
 
+		// Useful when the data structure is empty (no records)
 		if (!$this->getLabelMarkers($this->structure['name'])) {
 			$this->setLabelMarkers($this->structure);
 		}
@@ -697,7 +696,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * [table]		=>	(string) tableName
 	 * [template]	=>	(string) template code with markers
 	 * [content]	=>	(string) HTML code without <LOOP> marker (outer)
-	 * [emptyLoops]	=>	(array) Contains the value if loops is empty.
+	 * [emptyLoops]	=>	(string) Contains the value if loops is empty.
 	 * [loops]		=>	(array) Contains a templateStructure array [table], [template], [content], [emptyLoops], [loops]
 	 *
 	 * @param	string	$template: template code with markers
@@ -712,8 +711,8 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 
 		// Default value
 		$templateStructure = array();
-
-		if (preg_match_all('/<!-- *LOOP\((.+)\) *-->(.+)<!-- *ENDLOOP\(\1\) *-->/isU', $content, $matches, PREG_SET_ORDER)) {
+		
+		if (preg_match_all('/<!-- *LOOP\((.+)\) *-->(.+)<!-- *ENDLOOP\(\1\) *-->/isU', $template, $matches, PREG_SET_ORDER)) {
 
 			$numberOfMatches = count($matches);
 
@@ -723,33 +722,38 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 				// Initialize variable name
 				$_template = $matches[$index][0];
 				$_table = $matches[$index][1];
-				$_content = $matches[$index][2];
+				$_content = trim($matches[$index][2]);
 
 				$templateStructure[$index] = array();
 				$templateStructure[$index]['table'] = $_table;
 				$templateStructure[$index]['template'] = $_template;
-				$templateStructure[$index]['content'] = trim($_content);
-				// Gets recursively the template structure
-				$templateStructure[$index]['loops'] = $this->getTemplateStructure($_template, trim($_content));
+				$templateStructure[$index]['content'] = $_content;
+				$templateStructure[$index]['emptyLoops'] = '';
+				$templateStructure[$index]['loops'] = array();
 
-				// Searches for EMPTY $value
-				foreach ($templateStructure[$index]['loops'] as &$loopContent) {
+				// Handles the case when the user has defined content to be substitued when no records are found
+				if (preg_match('/<!-- *EMPTY *-->(.*)<!-- *ENDEMPTY *-->/isU', $_content, $_match, PREG_OFFSET_CAPTURE)) {
 
-					// Handles the case when special content must substitue empty LOOP instead of nothing.
-					if (preg_match('/<!-- *EMPTY *-->(.+)<!-- *ENDEMPTY *-->/isU', $loopContent['content'], $_match)) {
+					// Exctracts the code between the beginning and the frist <EMPTY>
+					$offset = $_match[0][1];
+					$subPartCode = substr($_content, 0, $offset);
 
-						$emptyTemplate = $_match[0];
-						$_emptyContent = $_match[1];
+					// Makes sure the subParCode does not contain LOOP (means EMPTY content does not belong to this LOOP)
+					if (!preg_match('/<!-- *LOOP/isU', $subPartCode)) {
+						
+
+						$_emptyLoopsTemplate = $_match[0][0];
+						$_emptyLoops = $_match[1][0];
 
 						// Replaces final content
-						$loopContent['content'] = trim(str_replace($emptyTemplate, '', $loopContent['content']));
-					}
-					else {
-						$_emptyContent = '';
+						$templateStructure[$index]['content'] = trim(str_replace($_emptyLoopsTemplate, '', $templateStructure[$index]['content']));
+						$templateStructure[$index]['emptyLoops'] = trim($_emptyLoops);
 					}
 
-					$templateStructure[$index]['emptyLoops'][] = trim($_emptyContent);
 				}
+
+				// Gets recursively the template structure
+				$templateStructure[$index]['loops'] = $this->getTemplateStructure($_content);
 			}
 		}
 		return $templateStructure;
@@ -896,7 +900,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 
 						// Handles the case when there is no record -> replace with other content
 						$fieldMarkers = array_merge($fieldMarkers, $this->getLabelMarkers($sds['name']), array('###SUBCOUNTER###' => '0'));
-						$__content = $this->getEmptyValue($subTemplateStructure, $loop, $fieldMarkers);
+						$__content = $this->getEmptyValue($subTemplateStructure, $fieldMarkers);
 						$_content = str_replace($subTemplateStructure['template'], $__content, $_content);
 					} // end else
 					$loop ++;
@@ -930,10 +934,10 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @param	array	$markers
 	 * @return	string
 	 */
-	protected function getEmptyValue(&$templateStructure, $index = 0, $markers = array()) {
+	protected function getEmptyValue(&$templateStructure, $markers = array()) {
 		$content = '';
-		if ($templateStructure['emptyLoops'][$index] != '') {
-			$content = $templateStructure['emptyLoops'][$index];
+		if ($templateStructure['emptyLoops'] != '') {
+			$content = $templateStructure['emptyLoops'];
 		}
 		else {
 			// Checks the configuration
