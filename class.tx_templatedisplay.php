@@ -252,11 +252,12 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		$LLLMarkers = $this->getLLLMarkers($templateCode);
 		$GPMarkers = $this->getExpressionMarkers('GP', array_merge(t3lib_div::_GET(), t3lib_div::_POST()), $templateCode);
 		$TSFEMarkers = $this->getExpressionMarkers('TSFE', $GLOBALS['TSFE'], $templateCode);
+		$VARSMarkers = $this->getExpressionMarkers('VARS', $this->pObj->piVars, $templateCode);
 		$pageMarkers = $this->getExpressionMarkers('page', $GLOBALS['TSFE']->page, $templateCode);
 		$globalVariablesMarkers = $this->getGlobalVariablesMarkers($templateCode); // Global template variable can be ###TOTAL_RECORDS### ###SUBTOTAL_RECORDS###
 
 		// Merges array, in order to have only one array (performance!)
-		$markers = array_merge($uniqueMarkers, $LLLMarkers, $GPMarkers, $TSFEMarkers, $pageMarkers, $globalVariablesMarkers);
+		$markers = array_merge($uniqueMarkers, $LLLMarkers, $GPMarkers, $TSFEMarkers, $VARSMarkers, $pageMarkers, $globalVariablesMarkers);
 
 		// First transformation of $templateCode. Substitutes $markers that can be already substituted. (LLL, GP, TSFE, etc...)
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
