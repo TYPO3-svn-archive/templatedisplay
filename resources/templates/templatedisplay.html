@@ -52,7 +52,9 @@
 
 						<div id="templatedisplay_snippettext" class="templatedisplay_snippetBox templatedisplay_component">
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines some styling value"/></a>
-							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: TODO"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: format date"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: wrap data"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_yellow.png" alt="snippet" title="snippet 4: insert data"/></a>
 						</div>
 						<div id="templatedisplay_snippetimage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines width"/></a>
@@ -64,12 +66,10 @@
 						<div id="templatedisplay_snippetlinkToDetail" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines other paramaters which are dynamic"/></a>
-							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: TODO"/></a>
 						</div>
 						<div id="templatedisplay_snippetlinkToPage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines other parameters"/></a>
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: defines other paramaters which are dynamic"/></a>
-							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: TODO"/></a>
 						</div>
 						<div id="templatedisplay_snippetlinkToFile" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: TODO"/></a>
@@ -114,6 +114,20 @@ case = upper="adsf"
 <![CDATA[
 # Formats a local time/date according to locale settings
 strftime = %e %B %G
+]]>
+</script>
+<script id="snippettext3" type="text/plain">
+<![CDATA[
+#Wrap the content with value
+# {leveltitle:0}
+# {page:title}
+# {gpvar:tx_extension_pi1|uid}
+dataWrap = Page id {tsfe:id} | ...
+]]>
+</script>
+<script id="snippettext4" type="text/plain">
+<![CDATA[
+data = field:title // field:subtitle
 ]]>
 </script>
 <script id="snippetimage1" type="text/plain">
@@ -192,11 +206,6 @@ additionalParams = &tx_displaycontroller[table]=myTable&tx_displaycontroller[sho
 additionalParams.insertData = 1
 ]]>
 </script>
-<script id="snippetlinkToDetail3" type="text/plain">
-<![CDATA[
-# Other examples are welcome. Please report them.
-]]>
-</script>
 <script id="snippetlinkToPage1" type="text/plain">
 <![CDATA[
 # parameter is mandatory
@@ -210,11 +219,6 @@ additionalParams = &tx_myext_pi1[param]=value
 parameter = 1
 additionalParams = &tx_myext_pi1[uid]={field:uid}&tx_myext_pi1[title]={page:title}
 additionalParams.insertData = 1
-]]>
-</script>
-<script id="snippetlinkToPage3" type="text/plain">
-<![CDATA[
-# Other examples are welcome. Please report them.
 ]]>
 </script>
 <script id="snippetlinkToFile1" type="text/plain">
