@@ -241,7 +241,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 				$templateCode = $preProcessor->preProcessResult($templatecode, $this);
 			}
 		}
-		
+
 		// Begins $templateCode transformation.
 		// *Must* be at the beginning of startProcess()
 		$templateCode = $this->preProcessIF($templateCode);
@@ -771,7 +771,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 
 		// Default value
 		$templateStructure = array();
-		
+
 		if (preg_match_all('/<!-- *LOOP\((.+)\) *-->(.+)<!-- *ENDLOOP\(\1\) *-->/isU', $template, $matches, PREG_SET_ORDER)) {
 
 			$numberOfMatches = count($matches);
@@ -800,7 +800,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 
 					// Makes sure the subParCode does not contain LOOP (means EMPTY content does not belong to this LOOP)
 					if (!preg_match('/<!-- *LOOP/isU', $subPartCode)) {
-						
+
 
 						$_emptyLoopsTemplate = $_match[0][0];
 						$_emptyLoops = $_match[1][0];
@@ -1030,7 +1030,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 				if (!isset($configuration['value'])) {
 					$configuration['value'] = $value;
 				}
-				
+
 				$output = $this->localCObj->TEXT($configuration);
 				break;
 			case 'image':
@@ -1179,11 +1179,11 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 			t3lib_div::devLog('Markers: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $markers);
 		}
 
-		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
+		if ($this->consumerData['debug_template_structure'] && !$this->configuration['debug']) {
 			t3lib_div::devLog('Template structure: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $templateStructure);
 		}
 
-		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
+		if ($this->consumerData['debug_data_structure'] && !$this->configuration['debug']) {
 			t3lib_div::devLog('Data structure: ' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
 		}
 	}
