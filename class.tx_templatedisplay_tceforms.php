@@ -142,6 +142,9 @@ class tx_templatedisplay_tceforms {
 		$pattern[] = "/(&lt;!-- *EMPTY *--&gt;|&lt;!-- *ENDEMPTY *--&gt;)/isU";
 		$replacement[] = '<span class="templatedisplay_empty">$1</span>';
 
+		$pattern[] = "/(#{3}.+#{3})/isU";
+		$replacement[] = '<span class="templatedisplay_label">$1</span>';
+
 		#$pattern[] = "/(&lt;!-- *ENDIF *--&gt;)/isU";
 		#$replacement[] = '<span class="templatedisplay_if">$1</span>';
 

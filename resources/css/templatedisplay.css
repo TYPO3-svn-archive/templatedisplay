@@ -21,6 +21,11 @@
 	color: #333;
 }
 
+.templatedisplay_label{
+	background-color: #ccccff;
+	color: #333;
+}
+
 .templatedisplay_function{
 	background-color: #ffcc99;
 	color: #333;
@@ -69,6 +74,7 @@
 }
 
 .mapping_pictogrammBox{
+    background-color: #fff;
 	position: relative;
 	line-height: 2;
 }
