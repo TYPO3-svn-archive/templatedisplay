@@ -55,6 +55,7 @@
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_green.png" alt="snippet" title="snippet 2: format date"/></a>
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_red.png" alt="snippet" title="snippet 3: wrap data"/></a>
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_yellow.png" alt="snippet" title="snippet 4: insert data"/></a>
+							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_orange.png" alt="snippet" title="snippet 5: concatain field"/></a>
 						</div>
 						<div id="templatedisplay_snippetimage" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">
 							<a href="#" onclick="return false"><img src="###INFOMODULE_PATH###tag_blue.png" alt="snippet" title="snippet 1: defines width"/></a>
@@ -128,6 +129,29 @@ dataWrap = Page id {tsfe:id} | ...
 <script id="snippettext4" type="text/plain">
 <![CDATA[
 data = field:title // field:subtitle
+]]>
+</script>
+<script id="snippettext5" type="text/plain">
+<![CDATA[
+cObject = COA
+cObject {
+  10 = TEXT
+  10 {
+    field = title
+    required = 1
+    noTrimWrap = ||, |
+  }
+  20 = TEXT
+  20 {
+    field = substitle
+    required = 1
+    noTrimWrap = ||, |
+  }
+}
+
+cObject.stdWrap.case = lower
+cObject.stdWrap.trim = 1
+cObject.stdWrap.substring = 0,-1
 ]]>
 </script>
 <script id="snippetimage1" type="text/plain">
