@@ -241,12 +241,12 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 				$templateCode = $preProcessor->preProcessResult($templatecode, $this);
 			}
 		}
-
+		
 		// Begins $templateCode transformation.
 		// *Must* be at the beginning of startProcess()
-		$templateCode = $this->preProcessIf($templateCode);
+		$templateCode = $this->preProcessIF($templateCode);
 		$templateCode = $this->preProcessFunctions($templateCode);
-		$templateCode = $this->processLoop($templateCode); // Adds a LOOP marker of first level, if it does not exist.
+		$templateCode = $this->processLOOP($templateCode); // Adds a LOOP marker of first level, if it does not exist.
 
 		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###, ###GP:###, ###TSFE:### etc...
 		$LLLMarkers = $this->getLLLMarkers($templateCode);
@@ -296,7 +296,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		// Handles the <!--IF(###MARKER### == '')-->
 		// Evaluates the condition and replaces the content whether it is necessary
 		// Must be at the end of startProcess()
-		$templateContent = $this->postProcessIf($templateContent);
+		$templateContent = $this->postProcessIF($templateContent);
 		$this->result = $this->postProcessFunctions($templateContent);
 
 		// Hook that enables to post process the output)
@@ -306,6 +306,65 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 				$this->result = $postProcessor->postProcessResult($this->result, $this);
 			}
 		}
+
+		// Processes markers of type ###RECORD(tt_content,1)###
+		$this->result = $this->processRECORDS($this->result);
+	}
+
+
+	/**
+	 * Processes markers of type ###RECORD('tt_content',1)###
+	 *
+	 * @param	string	$content: the content
+	 * @return	string	$content:
+	 */
+	protected function processRECORDS($content) {
+
+		if (preg_match_all("/#{3}RECORD\((.+),(.+)\)#{3}/isU", $content, $matches, PREG_SET_ORDER)) {
+
+			foreach ($matches as $match) {
+				$marker = $match[0];
+				$table = $match[1];
+				$uid = $match[2];
+
+				// Avoids recursive call.
+				if ($this->pObj->cObj->data['uid'] != $uid) {
+
+					// Fetches the record in the database.
+					$records = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*',$table, 'uid = ' . $uid);
+					$this->localCObj->start($records[0], '');
+					$CType = $records[0]['CType'];
+
+					if ($CType == 'displaycontroller_pi2') {
+						$CType = 'displaycontroller_pi1';
+					}
+
+					if (isset($GLOBALS['TSFE']->tmpl->setup[$table . '.'][$CType . '.'])) {
+						$conf = $GLOBALS['TSFE']->tmpl->setup[$table . '.'][$CType . '.'];
+						$name = $GLOBALS['TSFE']->tmpl->setup[$table . '.'][$CType];
+					}
+					else if (true){
+						$conf = $GLOBALS['TSFE']->tmpl->setup['plugin.'][$CType . '.'];
+						$name = 'USER'; // USER_INT does not seem to work... Further investiagation seems necessary
+					}
+					else {
+						$conf = array();
+						$name = '';
+					}
+
+					// Gets the configuration from the t3lib_TStemplate
+					$_content = $this->localCObj->cObjGetSingle($name, $conf);
+					$content = str_replace($marker, $_content, $content);
+
+					//$conf = array();
+					//$conf['source'] = 'tt_content_1185';
+					//$conf['tables'] = 'tt_content';
+					//$conf['conf.']['tt_content.'] = $GLOBALS['TSFE']->tmpl->setup['tt_content.']['displaycontroller_pi1.'];
+					//$content = $this->localCObj->RECORDS($conf);
+				}
+			}
+		}
+		return $content;
 	}
 
 	/**
@@ -482,7 +541,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
-	protected function preProcessIf($content) {
+	protected function preProcessIF($content) {
 
 		// Preprocesses the <!--IF(###MARKER### == '')-->, puts a '' around the marker
 		$pattern = '/<!-- *IF.+-->/isU';
@@ -510,7 +569,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
-	protected function processLoop($content) {
+	protected function processLOOP($content) {
 
 		// Matches the LOOP(table) with offset
 		if (preg_match_all('/<!-- *LOOP *\((.+)\) *-->/isU', $content, $loopMatches, PREG_OFFSET_CAPTURE)) {
@@ -575,7 +634,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
-	protected function postProcessIf($content) {
+	protected function postProcessIF($content) {
 		$pattern = '/(<!-- *IF *\( *(.+)\) *-->)(.+)(<!-- *ENDIF *-->)/isU';
 		if (preg_match_all($pattern, $content, $matches)) {
 
