@@ -18,7 +18,6 @@ $TCA['tx_templatedisplay_displays'] = array(
 		),
 		'debug_markers' => array(
 			'exclude' => 1,
-			#'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug',
 			'config'  => array(
 				'type'    => 'check',
 				'default' => '0',
@@ -29,7 +28,6 @@ $TCA['tx_templatedisplay_displays'] = array(
 		),
 		'debug_template_structure' => array(
 			'exclude' => 1,
-			#'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug_data_template',
 			'config'  => array(
 				'type'    => 'check',
 				'default' => '0',
@@ -40,7 +38,6 @@ $TCA['tx_templatedisplay_displays'] = array(
 		),
 		'debug_data_structure' => array(
 			'exclude' => 1,
-			#'label' => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.debug_data_structure',
 			'config'  => array(
 				'type'    => 'check',
 				'default' => '0',
