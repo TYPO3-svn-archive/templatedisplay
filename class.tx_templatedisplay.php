@@ -72,7 +72,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 *
 	 * @var	array	$functions: list of function handled by templatedisplay 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
 	 */
-	protected $functions = array('LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST');
+	protected $functions = array('LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST', 'COUNT');
 	/**
 	 *
 	 * @var tslib_cObj
@@ -245,7 +245,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		// Begins $templateCode transformation.
 		// *Must* be at the beginning of startProcess()
 		$templateCode = $this->preProcessIF($templateCode);
-		$templateCode = $this->preProcessFunctions($templateCode);
+		$templateCode = $this->preProcessFUNCTIONS($templateCode);
 		$templateCode = $this->processLOOP($templateCode); // Adds a LOOP marker of first level, if it does not exist.
 
 		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###, ###GP:###, ###TSFE:### etc...
@@ -297,7 +297,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		// Evaluates the condition and replaces the content whether it is necessary
 		// Must be at the end of startProcess()
 		$templateContent = $this->postProcessIF($templateContent);
-		$this->result = $this->postProcessFunctions($templateContent);
+		$this->result = $this->postProcessFUNCTIONS($templateContent);
 
 		// Hook that enables to post process the output)
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extKey]['postProcessResult'])) {
@@ -609,13 +609,13 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	}
 
 	/**
-	 * Pre processes the template function LIMIT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST.
+	 * Pre processes the template function LIMIT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST, COUNT
 	 * Makes them recognizable by wrapping them with !--### ###--
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
-	protected function preProcessFunctions($content) {
+	protected function preProcessFUNCTIONS($content) {
 		foreach ($this->functions as $function) {
 			$pattern = '/' . $function . '\(.+\)/isU';
 			if (preg_match_all($pattern, $content, $matches)) {
@@ -691,7 +691,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
-	function postProcessFunctions($content) {
+	function postProcessFUNCTIONS($content) {
 		foreach ($this->functions as $function) {
 			$pattern = '/!--###' . $function . '\((.+)\)###--/isU';
 
@@ -699,28 +699,45 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 
 				$numberOfMatches = count($matches[0]);
 				for($index = 0; $index < $numberOfMatches; $index ++) {
+					$_marker = $matches[0][$index];
+					$_content = $matches[1][$index];
 					switch ($function) {
 						case 'LIMIT':
-							preg_match('/,([0-9]+)$/isU', $matches[1][$index], $limit);
+							preg_match('/,([0-9]+)$/isU', $_content, $limit);
 
 							// Defines the length of the string that needs to be removed
 							$stringLength = '-' . strlen(',' . $limit[1]);
 
 							// Resets the real content, without the ",xx" a the end
-							$matches[1][$index] = substr($matches[1][$index], 0, $stringLength);
+							$_content = substr($_content, 0, $stringLength);
 
 							// Limits the text whenever is it necessary
-							$_content = $this->limit($matches[1][$index], $limit[1]);
-							$content = str_replace($matches[0][$index], $_content, $content);
+							$__content = $this->limit($_content, $limit[1]);
+							$content = str_replace($_marker, $__content, $content);
+							break;
+						case 'COUNT':
+							$numberOfRecords = 0;
+							if ($this->structure['name'] == $_content) {
+								$numberOfRecords = $this->structure['count'];
+							}
+							else if (isset($this->structure['records'][0])) {
+								foreach ($this->structure['records'][0]['sds:subtables'] as $structure) {
+									if ($structure['name'] == $_content) {
+										$numberOfRecords = $structure['count'];
+										break;
+									}
+								}
+							}
+							$content = str_replace($_marker, $numberOfRecords, $content);
 							break;
 						case 'UPPERCASE':
-							$content = str_replace($matches[0][$index], strtoupper($matches[1][$index]), $content);
+							$content = str_replace($_marker, strtoupper($_content), $content);
 							break;
 						case 'LOWERCASE':
-							$content = str_replace($matches[0][$index], strtolower($matches[1][$index]), $content);
+							$content = str_replace($_marker, strtolower($_content), $content);
 							break;
 						case 'UPPERCASE_FIRST':
-							$content = str_replace($matches[0][$index], ucfirst($matches[1][$index]), $content);
+							$content = str_replace($_marker, ucfirst($_content), $content);
 							break;
 					}
 
