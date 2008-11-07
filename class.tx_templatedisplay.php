@@ -69,6 +69,24 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	}
 
 	/**
+	 * Return the controller data.
+	 *
+	 * @return	array
+	 */
+	public function getControllerData() {
+		return $this->pObj->cObj->data;
+	}
+
+	/**
+	 * Return the filter data.
+	 *
+	 * @return	array
+	 */
+	public function getFilter() {
+		return $this->filter;
+	}
+
+	/**
 	 *
 	 * @var	array	$functions: list of function handled by templatedisplay 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
 	 */
@@ -1189,7 +1207,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		if ($this->configuration['debug'] || TYPO3_DLOG) {
 			t3lib_div::devLog('Markers: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $markers);
 			t3lib_div::devLog('Template structure: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $templateStructure);
-			t3lib_div::devLog('Data structure: ' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
+			t3lib_div::devLog('Data structure: "' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
 		}
 
 		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
@@ -1201,7 +1219,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 		}
 
 		if ($this->consumerData['debug_data_structure'] && !$this->configuration['debug']) {
-			t3lib_div::devLog('Data structure: ' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
+			t3lib_div::devLog('Data structure: "' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
 		}
 	}
 }
