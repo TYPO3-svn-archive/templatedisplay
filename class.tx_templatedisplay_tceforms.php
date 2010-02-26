@@ -203,52 +203,56 @@ class tx_templatedisplay_tceforms {
 	}
 
 	/**
-	 * This method returns the name of the table where the relations between
-	 * Data Providers and Controllers are saved
-	 * (this has been abstracted in a method in case the was of retrieving this table mame is changed in the future
-	 * e.g. by defining a bidirection MM-relation to the display controller, in which case the name
-	 * would be retrieved from the TCA instead)
+	 * This method returns the names of all tables that store relations
+	 * between controllers and components
+	 * (this has been abstracted in a method in case the way of retrieving this list is changed in the future)
 	 *
-	 * @return	string	Name of the table
+	 * @return	array	List of table names
 	 */
-	protected function getMMTableName() {
-		return $GLOBALS['TYPO3_CONF_VARS']['EXTCONF'][$this->extKey]['mm_table'];
+	protected function getMMTablesList() {
+		return $GLOBALS['T3_VAR']['EXT']['basecontroller']['controller_mm_tables'];
 	}
 
 	/**
-	 * This method retrieves the controller which calls this specific instance of template display
+	 * This method retrieves a controller which calls this specific instance of template display
 	 *
 	 * @param	array	$row: database record corresponding the instance of template display
 	 */
 	protected function getRelatedProvider($row) {
-		// Get the tt_content record(s) the template display instance is related to
-		$mmTable = $this->getMMTableName();
-		$rows = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid_local', $mmTable, "uid_foreign = '".$row['uid']."' AND tablenames = 'tx_templatedisplay_displays'");
-		$numRows = count($rows);
-
-		// The template display instance is not related yet
-		if ($numRows == 0) {
-			throw new Exception('No controller found');
+		$numRelations = 0;
+			// Get the list of tables where relations are stored
+		$mmTables = $this->getMMTablesList();
+			// In each table, try to find relations to the current templatedisplay component
+		foreach ($mmTables as $aTable) {
+			$relations = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid_local, local_table, local_field', $aTable, "uid_foreign = '" . $row['uid'] . "' AND tablenames = 'tx_templatedisplay_displays'");
+			$numRelations = count($relations);
+				// Exit the loop as soon as at least one relation is found
+			if ($numRelations > 0) {
+				break;
+			}
 		}
 
-		// The template display instance is related to exactly one tt_content record (easy case)
-		// TODO: check back that situation. It must be possible for a provider to be related to more than one controller
-		else {
-//		elseif ($numRows == 1) {
-			$tt_contentRecord = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('CType', 'tt_content', "uid = '".$rows[0]['uid_local']."'");
-			$controller = t3lib_div::makeInstanceService('datacontroller', $tt_contentRecord[0]['CType']);
-			$controller->loadControllerData($rows[0]['uid_local']);
+			// If no relations were found, throw an exception
+		if ($numRelations == 0) {
+			throw new Exception('No controller found');
+
+			// Otherwise get all the related records
+			// NOTE:	a templatedisplay component may be related to several providers
+			//			Which one we pick does not matter, as they should all provide the same structure
+			//			(otherwise inconsistencies can only be expected)
+		} else {
+				// Get the related controllers
+			$table = $relations[0]['local_table'];
+			$field = $relations[0]['local_field'];
+			$uid = $relations[0]['uid_local'];
+			$relatedRecords = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows($field, $table, "uid = '" . $uid . "'");
+				// Instantiate the corresponding service and load the data into it
+			$controller = t3lib_div::makeInstanceService('datacontroller', $relatedRecords[0][$field]);
+			$controller->loadData($uid);
 				// NOTE: getPrimaryProvider() may throw an exception, but we just let it pass at this point
 			$provider = $controller->getPrimaryProvider();
 			return $provider;
 		}
-/*
-		// The template display instance is related to more than one tt_content records
-		// Some additional checks must be performed
-		else {
-			throw new Exception('More than one controller found');
-		}
-*/
 	}
 }
 

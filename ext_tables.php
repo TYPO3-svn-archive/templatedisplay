@@ -50,9 +50,6 @@ $TCA['tt_content']['columns']['tx_displaycontroller_consumer']['config']['wizard
 t3lib_div::loadTCA('tt_content');
 $TCA['tt_content']['columns']['tx_displaycontroller_consumer']['config']['allowed'] .= ',tx_templatedisplay_displays';
 
-	// Define table name that contains the MM relationships
-$TYPO3_CONF_VARS['EXTCONF'][$_EXTKEY]['mm_table'] = 'tx_displaycontroller_consumers_mm';
-
 	// Define the path to the static TS files
 t3lib_extMgm::addStaticFile($_EXTKEY, 'static/', 'Template Display');
 ?>
