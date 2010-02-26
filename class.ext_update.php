@@ -29,7 +29,7 @@
  * @package		TYPO3
  * @subpackage	tx_templatedisplay
  *
- * $Id: $
+ * $Id$
  */
 class ext_update {
 
