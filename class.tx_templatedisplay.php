@@ -538,14 +538,14 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * If found, returns all markers that correspond to subexpressions
 	 * and can be parsed using tx_expressions_parser
 	 *
-	 * Example of GP marker: ###EXPRESSION:gp|parameter###
+	 * Example of GP marker: ###EXPRESSION.gp|parameter###
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
 	protected function getAllExpressionMarkers($content) {
 		$markers = array();
-		if (preg_match_all('/#{3}EXPRESSION:\.(.+)#{3}/isU', $content, $matches, PREG_SET_ORDER)) {
+		if (preg_match_all('/#{3}EXPRESSION\.(.+)#{3}/isU', $content, $matches, PREG_SET_ORDER)) {
 			$numberOfMatches = count($matches);
 			if ($numberOfMatches > 0) {
 				for ($index = 0; $index < $numberOfMatches; $index ++) {
