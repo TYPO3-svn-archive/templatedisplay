@@ -2,7 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2008 Francois Suter (Cobweb) <typo3@cobweb.ch>
+*  (c) 2008-2010	Francois Suter (Cobweb) <typo3@cobweb.ch>
+*					Fabien Udriot <fabien.udriot@ecodev.ch>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -20,18 +21,18 @@
 *  GNU General Public License for more details.
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
-*
-* $Id$
 ***************************************************************/
 
-require_once(t3lib_extMgm::extPath('basecontroller', 'lib/class.tx_basecontroller_utilities.php'));
+require_once(t3lib_extMgm::extPath('tesseract', 'lib/class.tx_tesseract_utilities.php'));
 
 /**
  * TCEform custom field for template mapping
  *
- * @author	Francois Suter (Cobweb) <typo3@cobweb.ch>
- * @package	TYPO3
+ * @author		Francois Suter (Cobweb) <typo3@cobweb.ch>
+ * @package		TYPO3
  * @subpackage	tx_templatedisplay
+ *
+ * $Id$
  */
 class tx_templatedisplay_tceforms {
 	protected $extKey = 'templatedisplay';
@@ -132,12 +133,12 @@ class tx_templatedisplay_tceforms {
 				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
 			}
 			catch (Exception $e) {
-				$formField .= tx_basecontroller_utilities::wrapMessage($e->getMessage());
+				$formField .= tx_tesseract_utilities::wrapMessage($e->getMessage());
 			}
 
 		}
 		catch (Exception $e) {
-			$formField .= tx_basecontroller_utilities::wrapMessage($e->getMessage());
+			$formField .= tx_tesseract_utilities::wrapMessage($e->getMessage());
 		}
 		return $formField;
 	}
@@ -210,7 +211,7 @@ class tx_templatedisplay_tceforms {
 	 * @return	array	List of table names
 	 */
 	protected function getMMTablesList() {
-		return $GLOBALS['T3_VAR']['EXT']['basecontroller']['controller_mm_tables'];
+		return $GLOBALS['T3_VAR']['EXT']['tesseract']['controller_mm_tables'];
 	}
 
 	/**

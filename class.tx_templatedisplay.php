@@ -2,8 +2,8 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007 Francois Suter (Cobweb) <typo3@cobweb.ch>
-*  (c) 2008 Fabien Udriot <fabien.udriot@ecodev.ch>
+*  (c) 2007-2010	Francois Suter (Cobweb) <typo3@cobweb.ch>
+*					Fabien Udriot <fabien.udriot@ecodev.ch>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -21,11 +21,9 @@
 *  GNU General Public License for more details.
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
-*
-* $Id$
 ***************************************************************/
 
-require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecontroller_feconsumerbase.php'));
+require_once(t3lib_extMgm::extPath('tesseract', 'services/class.tx_tesseract_feconsumerbase.php'));
 
 /**
  * Plugin 'Data Displayer' for the 'templatedisplay' extension.
@@ -34,8 +32,10 @@ require_once(t3lib_extMgm::extPath('basecontroller', 'services/class.tx_basecont
  * @author		Fabien Udriot <fabien.udriot@ecodev.ch>
  * @package		TYPO3
  * @subpackage	tx_templatedisplay
+ *
+ * $Id$
  */
-class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
+class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 	public $tsKey = 'tx_templatedisplay';
 	public $extKey = 'templatedisplay';
@@ -115,7 +115,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @return	string	type of used data structures
 	 */
 	public function getAcceptedDataStructure() {
-		return tx_basecontroller::$recordsetStructureType;
+		return tx_tesseract::RECORDSET_STRUCTURE_TYPE;
 	}
 
 	/**
@@ -125,7 +125,7 @@ class tx_templatedisplay extends tx_basecontroller_feconsumerbase {
 	 * @return	boolean		true if it can use the requested type, false otherwise
 	 */
 	public function acceptsDataStructure($type) {
-		return $type == tx_basecontroller::$recordsetStructureType;
+		return $type == tx_tesseract::RECORDSET_STRUCTURE_TYPE;
 	}
 
 	/**
