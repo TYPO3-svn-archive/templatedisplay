@@ -250,8 +250,8 @@ class tx_templatedisplay_tceforms {
 				// Instantiate the corresponding service and load the data into it
 			$controller = t3lib_div::makeInstanceService('datacontroller', $relatedRecords[0][$field]);
 			$controller->loadData($uid);
-				// NOTE: getPrimaryProvider() may throw an exception, but we just let it pass at this point
-			$provider = $controller->getPrimaryProvider();
+				// NOTE: getRelatedProvider() may throw an exception, but we just let it pass at this point
+			$provider = $controller->getRelatedProvider();
 			return $provider;
 		}
 	}

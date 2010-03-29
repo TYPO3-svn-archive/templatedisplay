@@ -29,7 +29,7 @@ Then, you can:
 			<label index="tx_templatedisplay_displays.link_to_page">URL to page</label>
 			<label index="tx_templatedisplay_displays.link_to_file">URL to file</label>
 			<label index="tx_templatedisplay_displays.user">User Function</label>
-			<label index="tx_templatedisplay_displays.debug">Debug (extension develog must be installed)</label>
+			<label index="tx_templatedisplay_displays.debug">Debug (extension devlog must be installed)</label>
 			<label index="tx_templatedisplay_displays.debug_markers">Debug markers</label>
 			<label index="tx_templatedisplay_displays.debug_template_structure">Debug template structure</label>
 			<label index="tx_templatedisplay_displays.debug_data_structure">Debug data structure</label>
