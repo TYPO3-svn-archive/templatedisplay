@@ -24,6 +24,7 @@
 ***************************************************************/
 
 require_once(t3lib_extMgm::extPath('tesseract', 'lib/class.tx_tesseract_utilities.php'));
+require_once(t3lib_extMgm::extPath('templatedisplay', 'class.tx_templatedisplay.php'));
 
 /**
  * TCEform custom field for template mapping
@@ -110,15 +111,11 @@ class tx_templatedisplay_tceforms {
 				$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
 				$marker['###INFOMODULE_PATH###'] = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
 				$marker['###UID###'] = $row['uid'];
-				$marker['###TEXT###'] = $this->getLL('tx_templatedisplay_displays.text');
-				$marker['###RICHTEXT###'] = $this->getLL('tx_templatedisplay_displays.richtext');
-				$marker['###IMAGE###'] = $this->getLL('tx_templatedisplay_displays.image');
-				$marker['###IMAGE_RESOURCE###'] = $this->getLL('tx_templatedisplay_displays.image_resource');
-				$marker['###LINK_TO_DETAIL###'] = $this->getLL('tx_templatedisplay_displays.link_to_detail');
-				$marker['###LINK_TO_PAGE###'] = $this->getLL('tx_templatedisplay_displays.link_to_page');
-				$marker['###LINK_TO_FILE###'] = $this->getLL('tx_templatedisplay_displays.link_to_file');
-				$marker['###USER###'] = $this->getLL('tx_templatedisplay_displays.user');
-				$marker['###EMAIL###'] = $this->getLL('tx_templatedisplay_displays.email');
+				$marker['###TYPES_OPTIONS###'] = '';
+				foreach (tx_templatedisplay::$defaultTypes as $type) {
+					$option = '<option value="' . $type . '">' . $this->getLL('tx_templatedisplay_displays.' . $type) . '</option>';
+					$marker['###TYPES_OPTIONS###'] .= $option;
+				}
 				$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.showJson');
 				$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.editJson');
 				$marker['###EDIT_HTML###'] = $this->getLL('tx_templatedisplay_displays.editHtml');
