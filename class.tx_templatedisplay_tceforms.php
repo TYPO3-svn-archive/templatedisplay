@@ -57,6 +57,64 @@ class tx_templatedisplay_tceforms {
 				$fieldsArray = $provider->getTablesAndFields();
 				$row = $PA['row'];
 
+					// Prepare all content that depends on the list of element types:
+					//		- options for type selector
+					//		- localized string for global JS object
+					//		- icons path for global JS object
+				$JSLabels = '';
+				$JSIcons = '';
+				$marker['###TYPES_OPTIONS###'] = '';
+					// Loop on default types
+				foreach (tx_templatedisplay::$defaultTypes as $type) {
+					$label = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $this->getLL('tx_templatedisplay_displays.' . $type);
+					$option = '<option value="' . $type . '">' . $label . '</option>';
+					$marker['###TYPES_OPTIONS###'] .= $option;
+					if (!empty($JSLabels)) {
+						$JSLabels .= ",\n";
+						$JSIcons .= ",\n";
+					}
+					$JSLabels .= $type . ': "' . $label . '"';
+					$JSIcons .= $type . ': "' . t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/' . $type . '.png"';
+				}
+					// Loop on types added by extensions
+				if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types']) && count($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types']) > 0) {
+					$unknownIcon = t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/unknown.png';
+					$unknownLabel = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $this->getLL('tx_templatedisplay_displays.unknown');
+					foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types'] as $type => $newTypeData) {
+						$label = $GLOBALS['LANG']->sL($newTypeData['label']);
+						if (empty($label)) {
+							$label = $unknownLabel;
+						} else {
+							$label = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $label;
+						}
+						$option = '<option value="' . $type . '">' . $label . '</option>';
+						$marker['###TYPES_OPTIONS###'] .= $option;
+						if (!empty($JSLabels)) {
+							$JSLabels .= ",\n";
+							$JSIcons .= ",\n";
+						}
+						$JSLabels .= $type . ': "' . $label . '"';
+						$icon = $this->evaluateFileName($newTypeData['icon']);
+							// Use the "unknown type" icon if file was not found
+						if (empty($icon)) {
+							$icon = $unknownIcon;
+						}
+						$JSIcons .= $type . ': "' . $icon . '"';
+					}
+				}
+					// Put all labels and icons paths into global JS object
+				$preJS = '
+					var LOCALAPP = {
+						labels : {' .
+							$JSLabels
+						. '},
+						icons : {' .
+							$JSIcons
+						. '}
+					};';
+					// Load JavaScript at top of form
+				$fobj->additionalJS_pre[] = $preJS;
+
 				$marker['###CONTENT_FROM_FILE###'] = '';
 				$marker['###IMPORTED###'] = '';
 				$marker['###TEMPLATE_CONTENT_SRC###'] = $row['template'];
@@ -100,11 +158,6 @@ class tx_templatedisplay_tceforms {
 				$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
 				$marker['###INFOMODULE_PATH###'] = t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/';
 				$marker['###UID###'] = $row['uid'];
-				$marker['###TYPES_OPTIONS###'] = '';
-				foreach (tx_templatedisplay::$defaultTypes as $type) {
-					$option = '<option value="' . $type . '">' . $this->getLL('tx_templatedisplay_displays.' . $type) . '</option>';
-					$marker['###TYPES_OPTIONS###'] .= $option;
-				}
 				$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.showJson');
 				$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.editJson');
 				$marker['###EDIT_HTML###'] = $this->getLL('tx_templatedisplay_displays.editHtml');
@@ -187,6 +240,32 @@ class tx_templatedisplay_tceforms {
 	private function getLL($key){
 		$langReference = 'LLL:EXT:templatedisplay/locallang_db.xml:';
 		return $GLOBALS['LANG']->sL($langReference . $key);
+	}
+
+	/**
+	 * This method takes a filename and transforms it into a relative path
+	 * if the name begins with "EXT:". Otherwise it is returned as is.
+	 * The name might be empty if the mentioned "EXT" is not found.
+	 *
+	 * @param	string	$filename: the filename to interpret
+	 * @return	string	The interpreted filename
+	 */
+	protected function evaluateFileName($filename) {
+		$relFilePath = '';
+			// If the file path begins with EXT:, interpret the path to the extension
+		if (substr($filename, 0, 4) == 'EXT:') {
+			$extKey = '';
+			$local = '';
+			list($extKey, $local) = explode('/', substr($filename, 4), 2);
+			if (!empty($extKey) && t3lib_extMgm::isLoaded($extKey) && !empty($local)) {
+				$relFilePath = t3lib_extMgm::extRelPath($extKey) . $local;
+			}
+
+			// If not, take path as is
+		} else {
+			$relFilePath = $filename;
+		}
+		return $relFilePath;
 	}
 
 	/**

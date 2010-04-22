@@ -190,7 +190,9 @@ if (Prototype) {
 			$$('.templatedisplay_snippetBox').each(function(record, index){
 				record.addClassName('templatedisplay_hidden');
 			});
-			$('templatedisplay_snippet' + type).removeClassName('templatedisplay_hidden');
+			if ($('templatedisplay_snippet' + type)) {
+				$('templatedisplay_snippet' + type).removeClassName('templatedisplay_hidden');
+			}
 		},
 
 		/**
@@ -256,8 +258,8 @@ if (Prototype) {
 						var image2 = image1.nextSibling;
 						//image1.src = infomodule_path + 'accept.png';
 						//image1.title = 'Status: OK';
-						image2.src = infomodule_path + type + '.png';
-						image2.title = 'Type: ' + type;
+						image2.src = LOCALAPP.icons[type];
+						image2.title = LOCALAPP.labels[type];
 
 						//$('templatedisplay_typeBox').addClassName('templatedisplay_hidden');
 						//$('templatedisplay_configuationBox').addClassName('templatedisplay_hidden');
@@ -354,13 +356,13 @@ if (Prototype) {
 			});
 
 			// Puts the right icon wheter a marker is defined or not
-			if(type != ''){
+			if (type != '') {
 				image.src = infomodule_path + 'accept.png';
 				image.title = 'Status: OK';
 
 				// Puts an other icon according to the type of the link
-				$(image.nextSibling).src = infomodule_path + type + '.png';
-				$(image.nextSibling).title = 'Type: ' + type;
+				$(image.nextSibling).src = LOCALAPP.icons[type];
+				$(image.nextSibling).title = LOCALAPP.labels[type];
 			}
 			else{
 				image.src = infomodule_path + 'exclamation.png';
