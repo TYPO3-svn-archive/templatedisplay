@@ -1535,9 +1535,18 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				if (!isset($configuration['parameter'])) {
 					$configuration['parameter'] = $value;
 				}
-				// Generates the user content
+					// Generates the user content
 				$output = $this->localCObj->USER($configuration);
 				break;
+			default:
+					// Not a standard type, check if it matches a custom one
+				if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types'][$datasource['type']]['class'])) {
+					$class = t3lib_div::makeInstance($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types'][$datasource['type']]['class']);
+					$output = $class->render($value, $configuration, $this);
+				} else {
+					// TODO: error reporting
+					// Ideally this should be an exception, to display when in debug mode
+				}
 		} // end switch
 
 		return $output;

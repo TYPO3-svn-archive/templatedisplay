@@ -40,4 +40,7 @@ t3lib_extMgm::addService($_EXTKEY,  'dataconsumer' /* sv type */,  'tx_templated
 		'className' => 'tx_templatedisplay',
 	)
 );
+
+	// Load the interface for custome element types
+require_once(t3lib_extMgm::extPath($_EXTKEY, 'interfaces/class.tx_templatedisplay_customtype.php'));
 ?>
