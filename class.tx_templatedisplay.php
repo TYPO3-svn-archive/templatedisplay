@@ -539,7 +539,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 * If found, returns all markers that correspond to subexpressions
 	 * and can be parsed using tx_expressions_parser
 	 *
-	 * Example of GP marker: ###EXPRESSION.gp|parameter###
+	 * Example of GP marker: ###EXPRESSION.gp:parameter1|parameter2###
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
@@ -554,6 +554,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 						$markers[$matches[$index][0]] = tx_expressions_parser::evaluateExpression($matches[$index][1]);
 					}
 					catch (Exception $e) {
+							// TODO: if and when a debug mode is implemented, this exception should be floated up
 						continue;
 					}
 				}
