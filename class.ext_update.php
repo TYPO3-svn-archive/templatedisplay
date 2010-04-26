@@ -32,6 +32,7 @@
  * $Id$
  */
 class ext_update {
+	var $deprecatedMarkers = array('GP', 'TSFE', 'VARS', 'PLUGIN', 'page');
 
 	/**
 	 * Main function, returning the HTML content of the module
@@ -39,21 +40,36 @@ class ext_update {
 	 * @return	string	HTML to display
 	 */
 	function main() {
+		$update = t3lib_div::_GP('update');
+		if ($update == 'wrongExpressions') {
+			// Not handled for now
+		} elseif ($update == 'deprecatedMarkers') {
+			$idList = t3lib_div::_GP('uids');
+			if (!empty($idList)) {
+				$templates = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid, title, template', 'tx_templatedisplay_displays', 'uid IN (' . $idList . ')', '', '', '', 'uid');
+			}
+		}
+
+		$html = array();
+		$isInFile = array();
 			// Get all templatedisplay records
 		$templates = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid, title, template', 'tx_templatedisplay_displays', '', '', '', '', 'uid');
 		$wrongExpressions = array();
 		foreach ($templates as $uid => $templateRecord) {
-			$html = $templateRecord['template'];
+			$html[$uid] = $templateRecord['template'];
 				// Loads the template file
-			if (preg_match('/^FILE:/isU', $html)) {
-				$filePath = str_replace('FILE:', '' , $html);
+			if (preg_match('/^FILE:/isU', $html[$uid])) {
+				$filePath = str_replace('FILE:', '' , $html[$uid]);
 				$filePath = t3lib_div::getFileAbsFileName($filePath);
 				if (is_file($filePath)) {
-					$html = file_get_contents($filePath);
+					$html[$uid] = file_get_contents($filePath);
 				}
+				$isInFile[$uid] = TRUE;
+			} else {
+				$isInFile[$uid] = FALSE;
 			}
 			$matches = array();
-			if (preg_match_all('/#{3}EXPRESSION:\.(.+)#{3}/isU', $html, $matches, PREG_SET_ORDER)) {
+			if (preg_match_all('/#{3}EXPRESSION:\.(.+)#{3}/isU', $html[$uid], $matches, PREG_SET_ORDER)) {
 				if (count($matches) > 0) {
 					$wrongExpressions[] = $uid;
 				}
@@ -68,10 +84,52 @@ class ext_update {
 			}
 			$content .= '</ul>';
 			$content .= '<p>Wrong EXPRESSION markers use a colon and a dot instead of just a dot after &quot;EXPRESSION&quot;.</p>';
-			$content .= '<p>Wrong: <em>###EXPRESSION:.foo|bar###</em>. Correct: <em>###EXPRESSION.foo|bar###</em>';
+			$content .= '<p>Wrong: <em>###EXPRESSION:.foo:bar###</em>. Correct: <em>###EXPRESSION.foo:bar###</em>';
 		} else {
 			$content .= '<p>No wrong EXPRESSION markers were found.</p>';
 		}
+		$content .= '<h2>Checking for deprecated markers</h2>';
+		$list = '';
+		$possibleChanges = 0;
+		$changeableUids = array();
+		foreach ($this->deprecatedMarkers as $marker) {
+			$pattern = '/#{3}(' . $marker . ':)(.+)#{3}/isU';
+			foreach ($html as $uid => $htmlCode) {
+				$matches = array();
+				if (preg_match_all($pattern, $htmlCode, $matches, PREG_SET_ORDER)) {
+					if (count($matches) > 0) {
+						$displayMatches = '';
+						foreach ($matches as $matchInfo) {
+							if (!empty($displayMatches)) {
+								$displayMatches .= ', ';
+							}
+							$displayMatches .= $matchInfo[0];
+						}
+						$list .= '<li>In item: ' . $templates[$uid]['title'] . ' [' . $uid . ']: ' . $displayMatches . '</li>';
+						if (!$isInFile) {
+							$possibleChanges++;
+							$changeableUids[] = $uid;
+						}
+					}
+				}
+			}
+		}
+		if (empty($list)) {
+			$content .= '<p>No deprecated markers were found.</p>';
+		} else {
+			$content .= '<ul>' . $list . '</ul>';
+			if ($possibleChanges > 0) {
+				$content .= '<p>' . $possibleChanges . ' happen in records (and not in files), so they can be automatically modified. Click the update button below to change them.</p>';
+				if (empty($update)) {
+					$content .= '<form name="updateForm" action="" method ="post">';
+					$content .= '<input type="hidden" name="update" value ="deprecatedMarkers">';
+					$content .= '<input type="hidden" name="uids" value ="' . implode(',', $changeableUids) . '">';
+					$content .= '<p><input type="submit" name="submitButton" value ="Update"></p>';
+					$content .= '</form>';
+				}
+			}
+		}
+
 		return $content;
 	}
 
