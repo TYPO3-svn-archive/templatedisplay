@@ -1252,21 +1252,32 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 		// Intializes the label (header part of sds).
 		$this->setLabelMarkers($sds);
+		
+		// Computes a possible loop limit
+		// By default $numberOfLoops = 100000
+		// This value may be set to a different one (e.g. NUMBER_OF_LOOPS xx)
+		$numberOfLoops = 100000;
+		$tableNameTemplate = $templateStructure['table'];
+		if (preg_match('/(.*) NUMBER_OF_LOOPS ([0-9]+)/is', $tableNameTemplate, $loops)) {
+			if (is_int((int)$loops[1])) {
+				$tableNameTemplate = trim($loops[1]);
+				$numberOfLoops = $loops[2];
+			}
+		}
 
 		// Resets temporary content
 		$content = '';
-		$this->counter['###COUNTER(' . $templateStructure['table'] . ')###'] = 0;
+		$this->counter['###COUNTER(' . $tableNameTemplate . ')###'] = 0;
 
 		// Retrieves the fields from the templateCode that needs a substitution
 		// By the way catch the table name and the field name for futher use. -> "()"
 		preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $templateStructure['content'], $markers, PREG_SET_ORDER);
-
-		// TRAVERSES RECORDS
+		
 		$numbersOfRecords = $sds['count'];
-		for($index = 0; $index < $numbersOfRecords; $index++) {
+		for($index = 0; $index < $numbersOfRecords && $index < $numberOfLoops; $index++) {
 
 			// Increments a counter
-			$this->counter['###COUNTER(' . $templateStructure['table'] . ')###'] = $index;
+			$this->counter['###COUNTER(' . $tableNameTemplate . ')###'] = $index;
 
 			$_content = $templateStructure['content'];
 
