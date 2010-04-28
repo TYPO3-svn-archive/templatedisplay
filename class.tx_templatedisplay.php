@@ -287,36 +287,26 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		$templateCode = $this->preProcessFUNCTIONS($templateCode);
 		$templateCode = $this->processLOOP($templateCode); // Adds a LOOP marker of first level, if it does not exist.
 
-		// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###, ###GP:###, ###TSFE:### etc...
+			// Handles possible marker: ###LLL:EXT:myextension/localang.xml:myLable###, ###GP:###, ###TSFE:### etc...
 		$LLLMarkers = $this->getLLLMarkers($templateCode);
 		$expressionMarkers = $this->getAllExpressionMarkers($templateCode);
-		$GPMarkers = $this->getExpressionMarkers('GP', array_merge(t3lib_div::_GET(), t3lib_div::_POST()), $templateCode);
-		$TSFEMarkers = $this->getExpressionMarkers('TSFE', $GLOBALS['TSFE'], $templateCode);
-		$PLUGINMarkers = $this->getExpressionMarkers('PLUGIN', $GLOBALS['TSFE']->tmpl->setup['plugin.'], $templateCode);
-		$VARSMarkers = $this->getExpressionMarkers('VARS', $this->pObj->piVars, $templateCode);
-		$pageMarkers = $this->getExpressionMarkers('page', $GLOBALS['TSFE']->page, $templateCode);
 		$sortMarkers = $this->getSortMarkers($templateCode);
 		$filterMarkers = $this->getFilterMarkers($templateCode);
 		$globalVariablesMarkers = $this->getGlobalVariablesMarkers($templateCode); // Global template variable can be ###TOTAL_RECORDS### ###SUBTOTAL_RECORDS###
 
-		// Merges array, in order to have only one array (performance!)
-		$markers = array_merge($uniqueMarkers, $LLLMarkers, $expressionMarkers, $GPMarkers, $TSFEMarkers, $PLUGINMarkers, $VARSMarkers, $pageMarkers, $sortMarkers, $filterMarkers, $globalVariablesMarkers);
+			// Merges array, in order to have only one array (performance!)
+		$markers = array_merge($uniqueMarkers, $LLLMarkers, $expressionMarkers, $sortMarkers, $filterMarkers, $globalVariablesMarkers);
 
-		// Parse evaluation. typically for {config:language} syntax
-		foreach ($markers as &$marker) {
-			$marker = tx_expressions_parser::evaluateString($marker);
-		}
-
-		// First transformation of $templateCode. Substitutes $markers that can be already substituted. (LLL, GP, TSFE, etc...)
+			// First transformation of $templateCode. Substitutes $markers that can be already substituted. (LLL, GP, TSFE, etc...)
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
 
-		// Cuts out the template into different part and organizes it in an array.
+			// Cuts out the template into different part and organizes it in an array.
 		$templateStructure = $this->getTemplateStructure($templateCode);
 
-		/* Debug */
-		$this->debug($markers,$templateStructure);
+			// Debug
+		$this->debug($markers, $templateStructure);
 
-		// Transforms the HTML template to HTML content
+			// Transforms the HTML template to HTML content
 		$templateContent = $templateCode;
 		foreach ($templateStructure as &$_templateStructure) {
 			if (!empty($this->structure['records'])) {
@@ -493,13 +483,17 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				}
 			}
 		}
+			// Post-process markers as possible expressions
+		foreach ($markers as &$marker) {
+			$marker = tx_expressions_parser::evaluateString($marker);
+		}
 		return $markers;
 	}
 
 	/**
-	 * If found, returns markers of type SORT
+	 * If found, returns markers of type FILTER
 	 *
-	 * Example of marker: ###SORT###
+	 * Example of marker: ###FILTER###
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
@@ -531,6 +525,10 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$markers[$marker] = $_filter['value'];
 				}
 			}
+		}
+			// Post-process markers as possible expressions
+		foreach ($markers as &$marker) {
+			$marker = tx_expressions_parser::evaluateString($marker);
 		}
 		return $markers;
 	}

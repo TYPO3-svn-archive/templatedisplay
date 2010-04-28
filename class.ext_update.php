@@ -117,8 +117,30 @@ class ext_update {
 			$content .= '</ul>';
 			$content .= '<p>Wrong EXPRESSION markers use a colon and a dot instead of just a dot after &quot;EXPRESSION&quot;.</p>';
 			$content .= '<p>Wrong: <em>###EXPRESSION:.foo:bar###</em>. Correct: <em>###EXPRESSION.foo:bar###</em>';
+			$content .= '<p><strong>You should edit these records manually.</strong></p>';
 		} else {
 			$content .= '<p>No wrong EXPRESSION markers were found.</p>';
+		}
+			// Check for expressions in markers (they are normally allowed only in SORT and FILTER markers)
+		$content .= '<h2>Checking for expressions in markers</h2>';
+		$list = '';
+		foreach ($html as $uid => $htmlCode) {
+			$matches = array();
+			$numReplacements = preg_match_all('/(\{.*?\})/', $htmlCode, $matches, PREG_SET_ORDER);
+			if ($numReplacements > 0) {
+				$list .= '<li>Expressions found in item &quot;' . $templates[$uid]['title'] . ' [' . $uid . ']&quot; in markers:';
+				$list .= '<ul>';
+				foreach ($matches as $matchInfo) {
+					$list .= '<li>' . $matchInfo[0] . '</li>';
+				}
+				$list .= '</ul>';
+			}
+		}
+		if (empty($list)) {
+			$content .= '<p>No expressions in markers were found.</p>';
+		} else {
+			$content .= '<p>Some items that look like expressions were found, they may not all be inside markers. If inside markers, it should be only SORT and FILTER markers. If this is not the case, you should edit those records manually and make the necessary changes.</p>';
+			$content .= '<ul>' . $list . '</ul>';
 		}
 			 // Loop again on all templates to find deprecated markers
 		$content .= '<h2>Checking for deprecated markers</h2>';
