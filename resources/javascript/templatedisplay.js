@@ -115,44 +115,51 @@ if (Prototype) {
 				// If content has changed, sends an ajax request
 				if (tx_templatedisplay_hasChanged) {
 
-					// GUI changes
-					$('templatedisplay_htmlContent').setStyle("opacity: 0.5");
-					$$('#templatedisplay_html div')[0].removeClassName('templatedisplay_hidden');
+					// No uid to send (case: new record)
+					if (tx_templatedisplay_uid.search('NEW') == -1) {
 
-					// Sends the content in an Ajax request
-					new Ajax.Request("ajax.php", {
-						method: "post",
-						parameters: {
-							"ajaxID": "templatedisplay::saveTemplate",
-							"uid" : tx_templatedisplay_uid,
-							"template" : $('templatedisplay_htmlContent').value
-						},
-						onComplete: function(xhr) {
-							if (xhr.responseText != 0) {
-								$('templatedisplay_tab2').parentNode.removeClassName('tabact');
-								$('templatedisplay_tab1').parentNode.removeClassName('tab');
-								$('templatedisplay_tab1').parentNode.addClassName('tabact');
-								$('templatedisplay_mapping').removeClassName('templatedisplay_hidden');
-								$('templatedisplay_html').addClassName('templatedisplay_hidden');
-								$('templatedisplay_htmlContent').setStyle("opacity: 1");
-								$$('#templatedisplay_html div')[0].addClassName('templatedisplay_hidden');
+						// GUI changes
+						$('templatedisplay_htmlContent').setStyle("opacity: 0.5");
+						$$('#templatedisplay_html div')[0].removeClassName('templatedisplay_hidden');
 
-								// Reinject the new HTML
-								$('templatedisplay_templateBox').innerHTML = xhr.responseText;
+						// Sends the content in an Ajax request
+						new Ajax.Request("ajax.php", {
+							method: "post",
+							parameters: {
+								"ajaxID": "templatedisplay::saveTemplate",
+								"uid" : tx_templatedisplay_uid,
+								"template" : $('templatedisplay_htmlContent').value
+							},
+							onComplete: function(xhr) {
+								if (xhr.responseText != 0) {
+									$('templatedisplay_tab2').parentNode.removeClassName('tabact');
+									$('templatedisplay_tab1').parentNode.removeClassName('tab');
+									$('templatedisplay_tab1').parentNode.addClassName('tabact');
+									$('templatedisplay_mapping').removeClassName('templatedisplay_hidden');
+									$('templatedisplay_html').addClassName('templatedisplay_hidden');
+									$('templatedisplay_htmlContent').setStyle("opacity: 1");
+									$$('#templatedisplay_html div')[0].addClassName('templatedisplay_hidden');
 
-								// clickable link on marker ###FIELD.xxx###
-								$$('#templatedisplay_templateBox a').each(function(element){
-									templatedisplay.initializeImages(element);
-									Event.observe(element, 'click', templatedisplay.selectField);
-								});
-								tx_templatedisplay_hasChanged = false;
-							}
+									// Reinject the new HTML
+									$('templatedisplay_templateBox').innerHTML = xhr.responseText;
 
-						}.bind(this),
-						onT3Error: function(xhr) {
-						//	console.log(xhr);
-						}.bind(this)
-					});
+									// clickable link on marker ###FIELD.xxx###
+									$$('#templatedisplay_templateBox a').each(function(element){
+										templatedisplay.initializeImages(element);
+										Event.observe(element, 'click', templatedisplay.selectField);
+									});
+									tx_templatedisplay_hasChanged = false;
+								}
+
+							}.bind(this),
+							onT3Error: function(xhr) {
+							//	console.log(xhr);
+							}.bind(this)
+						});
+					}
+					else {
+						alert('Plase, save the record first the by the means of the save button.');
+					}
 				}
 				else {
 					// Switch to the other tab
@@ -164,7 +171,7 @@ if (Prototype) {
 				}
 			}
 			else {
-				alert('No HTML content defined! Please add some one.')
+				alert('No HTML content defined! Please add some one.');
 			}
 		},
 

@@ -50,23 +50,45 @@ class tx_templatedisplay_tceforms {
 	public function mappingField($PA, t3lib_TCEforms $fobj) {
 		$marker = array();
 		$formField = '';
+#				// Get the related (primary) provider
+		$provider = $this->getRelatedProvider($PA['row']);
 		try {
-				// Get the related (primary) provider
-			$provider = $this->getRelatedProvider($PA['row']);
-			try {
+			$fieldsArray = array();
+			if ($provider) {
 				$fieldsArray = $provider->getTablesAndFields();
-				$row = $PA['row'];
+			}
+			$row = $PA['row'];
 
-					// Prepare all content that depends on the list of element types:
-					//		- options for type selector
-					//		- localized string for global JS object
-					//		- icons path for global JS object
-				$JSLabels = '';
-				$JSIcons = '';
-				$marker['###TYPES_OPTIONS###'] = '';
-					// Loop on default types
-				foreach (tx_templatedisplay::$defaultTypes as $type) {
-					$label = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $this->getLL('tx_templatedisplay_displays.' . $type);
+				// Prepare all content that depends on the list of element types:
+				//		- options for type selector
+				//		- localized string for global JS object
+				//		- icons path for global JS object
+			$JSLabels = '';
+			$JSIcons = '';
+			$marker['###TYPES_OPTIONS###'] = '';
+				// Loop on default types
+			foreach (tx_templatedisplay::$defaultTypes as $type) {
+				$label = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $this->getLL('tx_templatedisplay_displays.' . $type);
+				$option = '<option value="' . $type . '">' . $label . '</option>';
+				$marker['###TYPES_OPTIONS###'] .= $option;
+				if (!empty($JSLabels)) {
+					$JSLabels .= ",\n";
+					$JSIcons .= ",\n";
+				}
+				$JSLabels .= $type . ': "' . $label . '"';
+				$JSIcons .= $type . ': "' . t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/' . $type . '.png"';
+			}
+				// Loop on types added by extensions
+			if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types']) && count($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types']) > 0) {
+				$unknownIcon = t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/unknown.png';
+				$unknownLabel = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $this->getLL('tx_templatedisplay_displays.unknown');
+				foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types'] as $type => $newTypeData) {
+					$label = $GLOBALS['LANG']->sL($newTypeData['label']);
+					if (empty($label)) {
+						$label = $unknownLabel;
+					} else {
+						$label = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $label;
+					}
 					$option = '<option value="' . $type . '">' . $label . '</option>';
 					$marker['###TYPES_OPTIONS###'] .= $option;
 					if (!empty($JSLabels)) {
@@ -74,107 +96,86 @@ class tx_templatedisplay_tceforms {
 						$JSIcons .= ",\n";
 					}
 					$JSLabels .= $type . ': "' . $label . '"';
-					$JSIcons .= $type . ': "' . t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/' . $type . '.png"';
-				}
-					// Loop on types added by extensions
-				if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types']) && count($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types']) > 0) {
-					$unknownIcon = t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/unknown.png';
-					$unknownLabel = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $this->getLL('tx_templatedisplay_displays.unknown');
-					foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types'] as $type => $newTypeData) {
-						$label = $GLOBALS['LANG']->sL($newTypeData['label']);
-						if (empty($label)) {
-							$label = $unknownLabel;
-						} else {
-							$label = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $label;
-						}
-						$option = '<option value="' . $type . '">' . $label . '</option>';
-						$marker['###TYPES_OPTIONS###'] .= $option;
-						if (!empty($JSLabels)) {
-							$JSLabels .= ",\n";
-							$JSIcons .= ",\n";
-						}
-						$JSLabels .= $type . ': "' . $label . '"';
-						$icon = $this->evaluateFileName($newTypeData['icon']);
-							// Use the "unknown type" icon if file was not found
-						if (empty($icon)) {
-							$icon = $unknownIcon;
-						}
-						$JSIcons .= $type . ': "' . $icon . '"';
+					$icon = $this->evaluateFileName($newTypeData['icon']);
+						// Use the "unknown type" icon if file was not found
+					if (empty($icon)) {
+						$icon = $unknownIcon;
 					}
+					$JSIcons .= $type . ': "' . $icon . '"';
 				}
-					// Put all labels and icons paths into global JS object
-				$preJS = '
-					var LOCALAPP = {
-						labels : {' .
-							$JSLabels
-						. '},
-						icons : {' .
-							$JSIcons
-						. '}
-					};';
-					// Load JavaScript at top of form
-				$fobj->additionalJS_pre[] = $preJS;
-
-				$marker['###CONTENT_FROM_FILE###'] = '';
-				$marker['###IMPORTED###'] = '';
-				$marker['###TEMPLATE_CONTENT_SRC###'] = $row['template'];
-				$templateContent = $row['template'];
-				
-					// True when the user has defined no template.
-				if (empty($row['template'])) {
-					$templateContent = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError');
-				} elseif (preg_match('/^FILE:/isU', $row['template'])) {
-				
-					$filePath = str_replace('FILE:', '' ,$row['template']);
-					$filePath = t3lib_div::getFileAbsFileName($filePath);
-					$marker['###IMPORTED###'] = '(' . $this->getLL('tx_templatedisplay_displays.imported') . ')';
-					if (is_file($filePath)) {
-					 	$templateContent = file_get_contents($filePath);
-						$templateContent = str_replace('	', '  ', $templateContent);
-					} else {
-					 	$templateContent = $this->getLL('tx_templatedisplay_displays.fileNotFound') . ' ' . $row['template'];
-					}
-				}
-
-					// Initialize the select drop down which contains the fields
-				$options = '';
-				foreach ($fieldsArray as $keyTable => $fields){
-					$options .= '<optgroup label="' . $keyTable . '" class="c-divider">';
-					foreach($fields['fields'] as $keyField => $field){
-						$options .= '<option value="' . $keyTable . '.' . $keyField . '">' . $keyField . '</option>';
-					}
-					$options .= '</optgroup>';
-				}
-				$marker['###AVAILABLE_FIELDS###'] = $options;
-					
-					// Reinitializes the array pointer
-				reset($fieldsArray);
-				
-					// Initialize some template variable
-				$marker['###DEFAULT_TABLE###'] = key($fieldsArray);
-				$marker['###TEMPLATE_CONTENT###'] = $this->transformTemplateContent($templateContent);
-				$marker['###STORED_FIELD_NAME###'] = $PA['itemFormElName'];
-				$marker['###STORED_FIELD_NAME_TEMPLATE###'] = str_replace('mappings', 'template', $PA['itemFormElName']);
-				$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
-				$marker['###INFOMODULE_PATH###'] = t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/';
-				$marker['###UID###'] = $row['uid'];
-				$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.showJson');
-				$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.editJson');
-				$marker['###EDIT_HTML###'] = $this->getLL('tx_templatedisplay_displays.editHtml');
-				$marker['###MAPPING###'] = $this->getLL('tx_templatedisplay_displays.mapping');
-				$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
-				$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
-				$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');
-				$marker['###SAVE_FIELD_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.saveFieldConfiguration');
-
-					// Parse the template and render it.
-				$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
-				$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
 			}
-			catch (Exception $e) {
-				$formField .= tx_tesseract_utilities::wrapMessage($e->getMessage());
+				// Put all labels and icons paths into global JS object
+			$preJS = '
+				var LOCALAPP = {
+					labels : {' .
+						$JSLabels
+					. '},
+					icons : {' .
+						$JSIcons
+					. '}
+				};';
+				// Load JavaScript at top of form
+			$fobj->additionalJS_pre[] = $preJS;
+
+			$marker['###CONTENT_FROM_FILE###'] = '';
+			$marker['###IMPORTED###'] = '';
+			$marker['###TEMPLATE_CONTENT_SRC###'] = $row['template'];
+			$templateContent = $row['template'];
+
+				// True when the user has defined no template.
+			if (empty($row['template'])) {
+				$templateContent = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError');
+			} elseif (preg_match('/^FILE:/isU', $row['template'])) {
+
+				$filePath = str_replace('FILE:', '' ,$row['template']);
+				$filePath = t3lib_div::getFileAbsFileName($filePath);
+				$marker['###IMPORTED###'] = '(' . $this->getLL('tx_templatedisplay_displays.imported') . ')';
+				if (is_file($filePath)) {
+					$templateContent = file_get_contents($filePath);
+					$templateContent = str_replace('	', '  ', $templateContent);
+				} else {
+					$templateContent = $this->getLL('tx_templatedisplay_displays.fileNotFound') . ' ' . $row['template'];
+				}
 			}
 
+				// Initialize the select drop down which contains the fields
+			$options = '';
+			foreach ($fieldsArray as $keyTable => $fields){
+				$options .= '<optgroup label="' . $keyTable . '" class="c-divider">';
+				foreach($fields['fields'] as $keyField => $field){
+					$options .= '<option value="' . $keyTable . '.' . $keyField . '">' . $keyField . '</option>';
+				}
+				$options .= '</optgroup>';
+			}
+			$marker['###AVAILABLE_FIELDS###'] = $options;
+			$marker['###IS_FIELDS_ENABLED###'] = '';
+			if (count($fieldsArray) == 0) {
+				$marker['###IS_FIELDS_ENABLED###'] = 'style="display:none"';
+			}
+
+				// Reinitializes the array pointer
+			reset($fieldsArray);
+
+				// Initialize some template variable
+			$marker['###DEFAULT_TABLE###'] = key($fieldsArray);
+			$marker['###TEMPLATE_CONTENT###'] = $this->transformTemplateContent($templateContent);
+			$marker['###STORED_FIELD_NAME###'] = $PA['itemFormElName'];
+			$marker['###STORED_FIELD_NAME_TEMPLATE###'] = str_replace('mappings', 'template', $PA['itemFormElName']);
+			$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
+			$marker['###INFOMODULE_PATH###'] = t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/';
+			$marker['###UID###'] = $row['uid'];
+			$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.showJson');
+			$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.editJson');
+			$marker['###EDIT_HTML###'] = $this->getLL('tx_templatedisplay_displays.editHtml');
+			$marker['###MAPPING###'] = $this->getLL('tx_templatedisplay_displays.mapping');
+			$marker['###TYPES###'] = $this->getLL('tx_templatedisplay_displays.types');
+			$marker['###FIELDS###'] = $this->getLL('tx_templatedisplay_displays.fields');
+			$marker['###CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.configuration');
+			$marker['###SAVE_FIELD_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.saveFieldConfiguration');
+
+				// Parse the template and render it.
+			$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
+			$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
 		}
 		catch (Exception $e) {
 			$formField .= tx_tesseract_utilities::wrapMessage($e->getMessage());
@@ -285,6 +286,7 @@ class tx_templatedisplay_tceforms {
 	 * @param	array	$row: database record corresponding the instance of template display
 	 */
 	protected function getRelatedProvider($row) {
+		$provider = NULL;
 		$numRelations = 0;
 			// Get the list of tables where relations are stored
 		$mmTables = $this->getMMTablesList();
@@ -298,15 +300,7 @@ class tx_templatedisplay_tceforms {
 			}
 		}
 
-			// If no relations were found, throw an exception
-		if ($numRelations == 0) {
-			throw new Exception('No controller found');
-
-			// Otherwise get all the related records
-			// NOTE:	a templatedisplay component may be related to several providers
-			//			Which one we pick does not matter, as they should all provide the same structure
-			//			(otherwise inconsistencies can only be expected)
-		} else {
+		if ($numRelations != 0) {
 				// Get the related controllers
 			$table = $relations[0]['local_table'];
 			$field = $relations[0]['local_field'];
@@ -317,8 +311,8 @@ class tx_templatedisplay_tceforms {
 			$controller->loadData($uid);
 				// NOTE: getRelatedProvider() may throw an exception, but we just let it pass at this point
 			$provider = $controller->getRelatedProvider();
-			return $provider;
 		}
+		return $provider;
 	}
 }
 
