@@ -1320,24 +1320,17 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 			// Means there is a LOOP in a LOOP
 			if (!empty($templateStructure['loops'])) {
 
-				// TRAVERSES (SUB) TEMPLATE STRUCTURE
-				$loop = 0;
+					// TRAVERSES (SUB) TEMPLATE STRUCTURE
 				foreach ($templateStructure['loops'] as &$subTemplateStructure) {
 
 					$__content = '';
 					$foundSubSds = array();
-
-					// Searches for the correct subsds
-					if (!empty($sds['records'][$index]['sds:subtables'])) {
-						foreach ($sds['records'][$index]['sds:subtables'] as &$subSds) {
-							if ($subSds['name'] == $subTemplateStructure['table']) {
-								$foundSubSds = $subSds;
-								break;
-							}
-						} // end foreach records structure
+					$sdsSubtables = $sds['records'][$index]['sds:subtables'];
+					if (!empty($sdsSubtables) && isset($sdsSubtables[$subTemplateStructure['table']])) {
+						$foundSubSds = $sdsSubtables[$subTemplateStructure['table']];
 					}
 
-					// Transform if $foundSubSds is valid subsds
+						// Transform if $foundSubSds is valid subsds
 					if (!empty($foundSubSds)) {
 						$__content = $this->getContent($subTemplateStructure, $foundSubSds, $sds['records'][$index], $fieldMarkers, $totalfieldMarkers);
 						$_content = str_replace($subTemplateStructure['template'], $__content, $_content);
