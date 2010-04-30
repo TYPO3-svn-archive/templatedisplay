@@ -297,6 +297,11 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 			// Merges array, in order to have only one array (performance!)
 		$markers = array_merge($uniqueMarkers, $LLLMarkers, $expressionMarkers, $sortMarkers, $filterMarkers, $globalVariablesMarkers);
 
+			// Parse evaluation. typically for {config:language} syntax
+		foreach ($markers as &$marker) {
+			$marker = tx_expressions_parser::evaluateString($marker);
+		}
+		
 			// First transformation of $templateCode. Substitutes $markers that can be already substituted. (LLL, GP, TSFE, etc...)
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
 
@@ -320,24 +325,24 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 			}
 		}
 
-		// Useful when the data structure is empty (no records)
+			// Useful when the data structure is empty (no records)
 		if (!$this->getLabelMarkers($this->structure['name'])) {
 			$this->setLabelMarkers($this->structure);
 		}
-		// Translates outter labels and fields.
+			// Translates outter labels and fields.
 		$fieldMarkers = array_merge($this->fieldMarkers, $this->getLabelMarkers($this->structure['name']), array('###COUNTER###' => '0'));
 		$templateContent = t3lib_parsehtml::substituteMarkerArray($templateContent, $fieldMarkers);
 
-		// Handles the page browser
+			// Handles the page browser
 		$templateContent = $this->processPageBrowser($templateContent);
 
-		// Handles the <!--IF(###MARKER### == '')-->
-		// Evaluates the condition and replaces the content whether it is necessary
-		// Must be at the end of startProcess()
+			// Handles the <!--IF(###MARKER### == '')-->
+			// Evaluates the condition and replaces the content whether it is necessary
+			// Must be at the end of startProcess()
 		$templateContent = $this->postProcessFUNCTIONS($templateContent);
 		$this->result = $this->postProcessIF($templateContent);
 
-		// Hook that enables to post process the output)
+			// Hook that enables to post process the output)
 		if (preg_match_all('/#{3}HOOK\.(.+)#{3}/isU', $this->result, $matches, PREG_SET_ORDER)) {
 			foreach ($matches as $match) {
 				$hookName = $match[1];
@@ -350,15 +355,15 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 			}
 		}
 
-		// Processes markers of type ###RECORD(tt_content,1)###
+			// Processes markers of type ###RECORD(tt_content,1)###
 		$this->result = $this->processRECORDS($this->result);
 
-		// add debug[display] in order to see the untranslated markers
+			// add debug[display] in order to see the untranslated markers
 		$this->result = $this->clearMarkers($this->result);
 	}
 
 	function clearMarkers($content) {
-		// Useful for debug purpose. Whenever the paramter is detected, it will not replace empty value.
+			// Useful for debug purpose. Whenever the paramter is detected, it will not replace empty value.
 		if (!isset($GLOBALS['_GET']['debug']['display'])) {
 			$content = preg_replace('/#{3}.+#{3}/isU', '', $content);
 		}
@@ -375,7 +380,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 		if (preg_match_all("/#{3}RECORD\((.+),(.+)\)#{3}/isU", $content, $matches, PREG_SET_ORDER)) {
 
-			// Stores the filter. Templatedisplay is a singleton and the filter property will be override by a child call.
+				// Stores the filter. Templatedisplay is a singleton and the filter property will be override by a child call.
 			$GLOBALS['tesseract']['filter']['parent'] = $this->filter;
 
 			foreach ($matches as $match) {
@@ -383,7 +388,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				$table = trim($match[1]);
 				$uid = trim($match[2]);
 
-				// Avoids recursive call
+					// Avoids recursive call
 				if ($this->pObj->cObj->data['uid'] != $uid) {
 					$conf = array();
 					$conf['source'] = $table.'_'.$uid;
@@ -405,18 +410,18 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 * @return	void
 	 */
 	protected function setPageTitle($configuration) {
-		// Checks wheter the title of the template need to be changed
+			// Checks wheter the title of the template need to be changed
 		if ($configuration['substitutePageTitle']) {
 			$pageTitle = $configuration['substitutePageTitle'];
 
-			// extracts the {table.field}
+				// extracts the {table.field}
 			if (preg_match_all('/\{(.+)\}/isU', $pageTitle, $matches, PREG_SET_ORDER)) {
 				foreach ($matches as $match) {
 					$expression = $match[0];
 					$expressionInner = $match[1];
 					$values = explode('.', $expressionInner);
 
-					// Checks if table name is given or not.
+						// Checks if table name is given or not.
 					if (count($values) == 1) {
 						$table = $this->structure['name'];
 						$field = $values[0];
@@ -462,7 +467,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 			foreach($matches as $match){
 				$marker = $match[0];
 				$markerContent = $match[1];
-				// Get the position of the sort
+					// Get the position of the sort
 				if (preg_match('/([0-9])$/is', $markerContent, $positions)) {
 					$position = $positions[0];
 				}
@@ -470,7 +475,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$position = 1;
 				}
 
-				// Gets whether it is a sort or an order
+					// Gets whether it is a sort or an order
 				if (strpos($markerContent, 'sort') !== FALSE) {
 					$sortTable = '';
 					if ($this->filter['orderby'][$position * 2 - 1]['table'] != '') {
@@ -502,9 +507,9 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		$markers = array();
 		if (preg_match_all('/#{3}FILTER\.(.+)#{3}/isU', $content, $matches, PREG_SET_ORDER)) {
 
-			// Defines the filters array.
-			// It can be the property of the object
-			// But the filter can be given by the caller. @see method processRECORDS();
+				// Defines the filters array.
+				// It can be the property of the object
+				// But the filter can be given by the caller. @see method processRECORDS();
 			$uid = $this->pObj->cObj->data['uid'];
 			if (isset($GLOBALS['tesseract']['filter']['parent'])) {
 				$filters = $GLOBALS['tesseract']['filter']['parent'];
@@ -513,12 +518,12 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				$filters = $this->filter;
 			}
 
-			// Traverse the FILTER markers
+				// Traverse the FILTER markers
 			foreach($matches as $match){
 				$marker = $match[0];
 				$markerInner = $match[1];
 
-				// Traverses the array and finds the value
+					// Traverses the array and finds the value
 				if (isset($filters['parsed']['filters'][$markerInner])) {
 					$_filter = $filters['parsed']['filters'][$markerInner];
 					$_filter = reset($_filter); //retrieve the cell indepantly from the key
@@ -572,15 +577,15 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 */
 	protected function getExpressionMarkers($key, &$source, $content) {
 
-		// Makes sure $expression has a value
+			// Makes sure $expression has a value
 		if (empty($key)){
 			throw new Exception('No key given to getExpressionMarkers()');
 		}
 
-		// Defines empty array.
+			// Defines empty array.
 		$markers = array();
 
-		// Tests if $expressions is found
+			// Tests if $expressions is found
 		$pattern = '/#{3}(' . $key . ':)(.+)#{3}/isU';
 		if (preg_match_all($pattern, $content, $matches)) {
 			if(isset($matches[2])){
@@ -614,7 +619,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				$this->pObj->piVars['page'] = 0;
 			}
 
-			// Computes the record offset
+				// Computes the record offset
 			$recordOffset = ($this->pObj->piVars['page'] + 1) * $this->filter['limit']['max'];
 			if ($recordOffset > $this->structure['totalCount']) {
 				$recordOffset = $this->structure['totalCount'];
