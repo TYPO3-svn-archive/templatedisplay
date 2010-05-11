@@ -76,25 +76,17 @@ if (Prototype) {
 					// Attaches event onto the snippet icon
 					$$('.templatedisplay_snippetBox a').each(function(record, index){
 						Event.observe($(record),'click',function(){
-							var parent = $(this).parentNode;
-							var type = parent.id.replace('templatedisplay_snippet','');
-							var position = '';
-							var thisRef = this;
-							$$('#' + parent.id + ' a').each(function(linkRef, index){
-								if (thisRef == linkRef) {
-									position = index + 1;
-								}
-							});
-							if ($('snippet' + type + position) != null) {
-								var code = $('snippet' + type + position).innerHTML
-								code = code.replace('\n<![CDATA[\n','');
-								code = code.replace(']]>\n','');
-								$('templatedisplay_configuration').value = code;
+								// Get the id of the enclosing tag
+							var parentID = $(this).parentNode.id;
+								// Use that id to locate the corresponding snippet
+							var selectedSnippet = LOCALAPP.snippets[parentID];
+								// Loop on each line of the snippet and add it to the code
+							var snippetCode = '';
+							for (i = 0; i < selectedSnippet.length; i++) {
+								snippetCode += selectedSnippet[i] + "\n";
 							}
-							else {
-								alert('No snippet found!')
-							}
-
+								// Replace the value of the configuration field
+							$('templatedisplay_configuration').value = snippetCode;
 						});
 					});
 				}

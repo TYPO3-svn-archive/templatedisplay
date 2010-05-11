@@ -59,6 +59,44 @@ class tx_templatedisplay_tceforms {
 			}
 			$row = $PA['row'];
 
+				// Read the snippets file
+			$snippets = '';
+			$JSSnippets = '';
+			$xmlObject = simplexml_load_file(t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/snippets.xml'));
+				// Loop on the object types
+			foreach ($xmlObject->type as $typeNode) {
+					// Assemble a unique id per type
+					// (this is used in JavaScript to show the correct snippet list depending on type)
+				$id = 'templatedisplay_snippet' . (string)$typeNode['index'];
+				$snippets .= '<div id="' . $id . '" class="templatedisplay_snippetBox templatedisplay_component">';
+					// Loop on the snippets for the type
+				foreach ($typeNode->snippet as $snippetNode) {
+						// Assemble a unique id per snippet
+						// (this is used in JavaScript to know which snippet is being loaded)
+					$id = 'templatedisplay_snippet' . (string)$snippetNode['id'];
+					$icon = $this->evaluateFileName($snippetNode['icon']);
+					$snippets .= '<span id="' . $id . '"><a href="#" onclick="return false"><img src="' . $icon . '" alt="' . $snippetNode['label'] . '" title="' . $snippetNode['label'] . '"/></a></span>';
+						// Assemble snippets as JavaScript objects
+					if (!empty($JSSnippets)) {
+						$JSSnippets .= ",\n";
+					}
+						// Each snippet is actually assembled as an array, one entry per line of snippet code
+					$typoScript = '';
+					$typoScriptLines = t3lib_div::trimExplode("\n", (string)$snippetNode, TRUE);
+					foreach ($typoScriptLines as $aLine) {
+						if (!empty($typoScript)) {
+							$typoScript .=  ", ";
+						}
+							// Escape double quotes
+						$typoScript .= '"' . str_replace('"', '\"', $aLine) . '"';
+					}
+					$JSSnippets .= $id . ': [' . $typoScript . ']';
+				}
+				$snippets .= '</div>';
+			}
+				// Place the snippets' HTML in the template
+			$marker['###SNIPPETS###'] = $snippets;
+
 				// Prepare all content that depends on the list of element types:
 				//		- options for type selector
 				//		- localized string for global JS object
@@ -104,7 +142,7 @@ class tx_templatedisplay_tceforms {
 					$JSIcons .= $type . ': "' . $icon . '"';
 				}
 			}
-				// Put all labels and icons paths into global JS object
+				// Put all labels, icons paths and snippets definitions into global JS object
 			$preJS = '
 				var LOCALAPP = {
 					labels : {' .
@@ -112,6 +150,9 @@ class tx_templatedisplay_tceforms {
 					. '},
 					icons : {' .
 						$JSIcons
+					. '},
+					snippets : {' .
+						$JSSnippets
 					. '}
 				};';
 				// Load JavaScript at top of form
