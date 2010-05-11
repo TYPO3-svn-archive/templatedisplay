@@ -296,11 +296,6 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 			// Merges array, in order to have only one array (performance!)
 		$markers = array_merge($uniqueMarkers, $LLLMarkers, $expressionMarkers, $sortMarkers, $filterMarkers, $globalVariablesMarkers);
-
-			// Parse evaluation. typically for {config:language} syntax
-		foreach ($markers as &$marker) {
-			$marker = tx_expressions_parser::evaluateString($marker);
-		}
 		
 			// First transformation of $templateCode. Substitutes $markers that can be already substituted. (LLL, GP, TSFE, etc...)
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
