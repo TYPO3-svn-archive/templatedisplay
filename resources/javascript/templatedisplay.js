@@ -150,7 +150,7 @@ if (Prototype) {
 						});
 					}
 					else {
-						alert('Plase, save the record first the by the means of the save button.');
+						alert('Please, save the record first. Click on save button.');
 					}
 				}
 				else {
