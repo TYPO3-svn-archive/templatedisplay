@@ -59,9 +59,6 @@ if (Prototype) {
 					// Checkbox "show json" -> displays the textarea that contains the json
 					Event.observe($('templatedisplay_showJson'), 'click', templatedisplay.toggleJsonBoxVisibility);
 
-					// Checkbox "edit json"
-					Event.observe($('templatedisplay_editJson'), 'click', templatedisplay.toggleJsonBoxReadonly);
-
 					// The save configuration button
 					Event.observe($('templatedisplay_saveConfigurationBt'), 'click', templatedisplay.saveConfiguration);
 
@@ -279,13 +276,9 @@ if (Prototype) {
 			//templatedisplay_hidden
 			if($('templatedisplay_json').className == 'templatedisplay_hidden'){
 				$('templatedisplay_json').className = '';
-				$('templatedisplay_editJson').className = '';
-				$('templatedisplay_labelEditJson').className = '';
 			}
 			else{
 				$('templatedisplay_json').className = 'templatedisplay_hidden';
-				$('templatedisplay_editJson').className = 'templatedisplay_hidden';
-				$('templatedisplay_labelEditJson').className = 'templatedisplay_hidden';
 			}
 		},
 

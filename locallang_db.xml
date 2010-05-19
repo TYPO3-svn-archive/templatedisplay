@@ -37,7 +37,6 @@ Then, you can:
 			<label index="tx_templatedisplay_displays.debug_data_structure">Debug data structure</label>
 			<label index="tx_templatedisplay_displays.email">Email</label>
 			<label index="tx_templatedisplay_displays.showJson">Show JSON</label>
-			<label index="tx_templatedisplay_displays.editJson">Edit JSON</label>
 			<label index="tx_templatedisplay_displays.editHtml">HTML</label>
 			<label index="tx_templatedisplay_displays.mapping">Mapping</label>
 			<label index="tx_templatedisplay_displays.fields">Fields</label>
@@ -84,7 +83,6 @@ Pour changer ce contenu, cliquez sur l'onglet "HTML".
 			<label index="tx_templatedisplay_displays.debug_data_structure">Deboguer la structure de données</label>
 			<label index="tx_templatedisplay_displays.email">Email</label>
 			<label index="tx_templatedisplay_displays.showJson">Afficher JSON</label>
-			<label index="tx_templatedisplay_displays.editJson">Editer JSON</label>
 			<label index="tx_templatedisplay_displays.editHtml">HTML</label>
 			<label index="tx_templatedisplay_displays.fields">Champs</label>
 			<label index="tx_templatedisplay_displays.types">Types</label>
