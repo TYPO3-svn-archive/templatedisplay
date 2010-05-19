@@ -62,7 +62,7 @@ class tx_templatedisplay_tceforms {
 				// Read the snippets file
 			$snippets = '';
 			$JSSnippets = '';
-			$xmlObject = simplexml_load_file(t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/snippets.xml'));
+			$xmlObject = simplexml_load_file(t3lib_div::getFileAbsFileName('EXT:templatedisplay/Resources/Private/Snippets/snippets.xml'));
 				// Loop on the object types
 			foreach ($xmlObject->type as $typeNode) {
 					// Assemble a unique id per type
@@ -114,11 +114,11 @@ class tx_templatedisplay_tceforms {
 					$JSIcons .= ",\n";
 				}
 				$JSLabels .= $type . ': "' . $label . '"';
-				$JSIcons .= $type . ': "' . t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/' . $type . '.png"';
+				$JSIcons .= $type . ': "' . t3lib_extMgm::extRelPath('templatedisplay') . 'Resources/Public/images/' . $type . '.png"';
 			}
 				// Loop on types added by extensions
 			if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types']) && count($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types']) > 0) {
-				$unknownIcon = t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/unknown.png';
+				$unknownIcon = t3lib_extMgm::extRelPath('templatedisplay') . 'Resources/Public/images/unknown.png';
 				$unknownLabel = $this->getLL('tx_templatedisplay_displays.type') . ': ' . $this->getLL('tx_templatedisplay_displays.unknown');
 				foreach ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types'] as $type => $newTypeData) {
 					$label = $GLOBALS['LANG']->sL($newTypeData['label']);
@@ -203,7 +203,7 @@ class tx_templatedisplay_tceforms {
 			$marker['###STORED_FIELD_NAME###'] = $PA['itemFormElName'];
 			$marker['###STORED_FIELD_NAME_TEMPLATE###'] = str_replace('mappings', 'template', $PA['itemFormElName']);
 			$marker['###STORED_FIELD_VALUE###'] = $row['mappings'];
-			$marker['###INFOMODULE_PATH###'] = t3lib_extMgm::extRelPath('templatedisplay') . 'resources/images/';
+			$marker['###INFOMODULE_PATH###'] = t3lib_extMgm::extRelPath('templatedisplay') . 'Resources/Public/images/';
 			$marker['###UID###'] = $row['uid'];
 			$marker['###SHOW_JSON###'] = $this->getLL('tx_templatedisplay_displays.showJson');
 			$marker['###EDIT_JSON###'] = $this->getLL('tx_templatedisplay_displays.editJson');
@@ -215,7 +215,7 @@ class tx_templatedisplay_tceforms {
 			$marker['###SAVE_FIELD_CONFIGURATION###'] = $this->getLL('tx_templatedisplay_displays.saveFieldConfiguration');
 
 				// Parse the template and render it.
-			$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/resources/templates/templatedisplay.html');
+			$backendTemplatefile = t3lib_div::getFileAbsFileName('EXT:templatedisplay/Resources/Private/Templates/templatedisplay.html');
 			$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
 		}
 		catch (Exception $e) {
@@ -263,7 +263,7 @@ class tx_templatedisplay_tceforms {
 
 		# Wrap FIELD markers with a clickable href
 		$pattern[] = '/(#{3}FIELD.+#{3}|#{3}OBJECT.+#{3})/isU';
-		$path = t3lib_extMgm::extRelPath('templatedisplay').'resources/images/';
+		$path = t3lib_extMgm::extRelPath('templatedisplay').'Resources/Public/images/';
 		$_replacement = '<span class="mapping_pictogrammBox">';
 		$_replacement .= '<a href="#" onclick="return false">$1</a>';
 		$_replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm1"/>';
@@ -280,7 +280,7 @@ class tx_templatedisplay_tceforms {
 	 * @param string key of label
 	 */
 	private function getLL($key){
-		$langReference = 'LLL:EXT:templatedisplay/locallang_db.xml:';
+		$langReference = 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:';
 		return $GLOBALS['LANG']->sL($langReference . $key);
 	}
 

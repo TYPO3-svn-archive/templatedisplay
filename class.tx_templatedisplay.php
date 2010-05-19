@@ -1466,7 +1466,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				$image = $this->localCObj->IMAGE($configuration);
 				if (empty($image)) {
 					// TODO: in production mode, nothing should be displayed. "templateDisplay_imageNotFound"
-					$output = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'resources/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
+					$output = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'Resources/Public/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
 				}
 				else {
 					$output = $image;

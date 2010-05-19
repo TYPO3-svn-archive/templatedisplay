@@ -46,9 +46,9 @@ function user_addBackendLibrary($parameters, $pObj) {
 					
 					//... before injected some javascript
 					$pObj->loadJavascriptLib('js/common.js');
-					$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/formatJson.js');
-					$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'resources/javascript/templatedisplay.js');
-					$pObj->inDocStylesArray['templatedisplay'] = file_get_contents(t3lib_extMgm::extPath('templatedisplay').'resources/css/templatedisplay.css');
+					$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'Resources/Public/javascripts/formatJson.js');
+					$pObj->loadJavascriptLib(t3lib_extMgm::extRelPath('templatedisplay') . 'Resources/Public/javascripts/templatedisplay.js');
+					$pObj->inDocStylesArray['templatedisplay'] = file_get_contents(t3lib_extMgm::extPath('templatedisplay').'Resources/Public/stylesheets/templatedisplay.css');
 				}
 			}
 		}

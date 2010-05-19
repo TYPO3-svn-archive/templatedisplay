@@ -397,7 +397,7 @@ if (Prototype) {
 			var field = this.innerHTML.replace(pattern,'$1');
 
 			// Extract the table name's field
-			var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('templatedisplay/resources/images/pencil.png');
+			var content = $$('#templatedisplay_templateBox')[0].innerHTML.split('templatedisplay/Resources/Publicimages/pencil.png');
 			content = content[0].split(/LOOP *\(/);
 
 			var table = '';

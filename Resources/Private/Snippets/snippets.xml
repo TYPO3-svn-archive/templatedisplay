@@ -8,19 +8,19 @@ $Id$
 
 <snippets>
 	<type index="text">
-		<snippet id="1" label="Make uppercase" icon="EXT:templatedisplay/resources/images/tag_blue.png">
+		<snippet id="1" label="Make uppercase" icon="EXT:templatedisplay/Resources/Public/images/tag_blue.png">
 			<![CDATA[
 			wrap = <b>|</b>
 			case = upper
 			]]>
 		</snippet>
-		<snippet id="2" label="Format date" icon="EXT:templatedisplay/resources/images/tag_orange.png">
+		<snippet id="2" label="Format date" icon="EXT:templatedisplay/Resources/Public/images/tag_orange.png">
 			<![CDATA[
 			# Formats local time/date
 			strftime = %e %B %G
 			]]>
 		</snippet>
-		<snippet id="3" label="Example wrap" icon="EXT:templatedisplay/resources/images/tag_purple.png">
+		<snippet id="3" label="Example wrap" icon="EXT:templatedisplay/Resources/Public/images/tag_purple.png">
 			<![CDATA[
 			#Wrap the content with value
 			# {leveltitle:0}
@@ -29,20 +29,20 @@ $Id$
 			dataWrap = Page id {tsfe:id} | ...
 			]]>
 		</snippet>
-		<snippet id="4" label="Alernate fields" icon="EXT:templatedisplay/resources/images/tag_pink.png">
+		<snippet id="4" label="Alernate fields" icon="EXT:templatedisplay/Resources/Public/images/tag_pink.png">
 			<![CDATA[
 			data = field:title // field:subtitle
 			]]>
 		</snippet>
 	</type>
 	<type index="image">
-		<snippet id="5" label="Set width" icon="EXT:templatedisplay/resources/images/tag_pink.png">
+		<snippet id="5" label="Set width" icon="EXT:templatedisplay/Resources/Public/images/tag_pink.png">
 			<![CDATA[
 			# width - height
 			file.width = 100
 			]]>
 		</snippet>
-		<snippet id="6" label="Complete parameters" icon="EXT:templatedisplay/resources/images/tag_blue.png">
+		<snippet id="6" label="Complete parameters" icon="EXT:templatedisplay/Resources/Public/images/tag_blue.png">
 			<![CDATA[
 			file.width = 50
 			file.height = 50
@@ -53,7 +53,7 @@ $Id$
 			titleText.insertData =1
 			]]>
 		</snippet>
-		<snippet id="7" label="With typolink" icon="EXT:templatedisplay/resources/images/tag_red.png">
+		<snippet id="7" label="With typolink" icon="EXT:templatedisplay/Resources/Public/images/tag_red.png">
 			<![CDATA[
 			file.width = 100
 			stdWrap.typolink{
@@ -64,7 +64,7 @@ $Id$
 			}
 			]]>
 		</snippet>
-		<snippet id="8" label="Several images" icon="EXT:templatedisplay/resources/images/tag_yellow.png">
+		<snippet id="8" label="Several images" icon="EXT:templatedisplay/Resources/Public/images/tag_yellow.png">
 			<![CDATA[
 			# Remove white spaces in the URL
 			file.width = 100
@@ -82,7 +82,7 @@ $Id$
 			}
 			]]>
 		</snippet>
-		<snippet id="9" label="Using import property" icon="EXT:templatedisplay/resources/images/tag_green.png">
+		<snippet id="9" label="Using import property" icon="EXT:templatedisplay/Resources/Public/images/tag_green.png">
 			<![CDATA[
 			# Defines the image path
 			file.import = uploads/pics/
@@ -97,7 +97,7 @@ $Id$
 		</snippet>
 	</type>
 	<type index="imageResource">
-		<snippet id="10" label="Example" icon="EXT:templatedisplay/resources/images/tag_pink.png">
+		<snippet id="10" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_pink.png">
 			<![CDATA[
 			# Gets the path of an image. A typo3temp path may be return if the image is resized.
 			file.import = fileadmin/user_upload/resources/
@@ -108,7 +108,7 @@ $Id$
 		</snippet>
 	</type>
 	<type index="linkToDetail">
-		<snippet id="11" label="Example" icon="EXT:templatedisplay/resources/images/tag_pink.png">
+		<snippet id="11" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_pink.png">
 			<![CDATA[
 			# parameter is mandatory
 			parameter = 1
@@ -116,7 +116,7 @@ $Id$
 			additionalParams.insertData = 1
 			]]>
 		</snippet>
-		<snippet id="12" label="Example 2" icon="EXT:templatedisplay/resources/images/tag_green.png">
+		<snippet id="12" label="Example 2" icon="EXT:templatedisplay/Resources/Public/images/tag_green.png">
 			<![CDATA[
 			parameter.data = TSFE:tmpl|setup|config.|key
 			additionalParams = &tx_displaycontroller[table]=tx_plugin&tx_displaycontroller[showUid]={register:parent.uid}
@@ -125,14 +125,14 @@ $Id$
 		</snippet>
 	</type>
 	<type index="linkToPage">
-		<snippet id="13" label="Example" icon="EXT:templatedisplay/resources/images/tag_pink.png">
+		<snippet id="13" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_pink.png">
 			<![CDATA[
 			# parameter is mandatory
 			parameter = 1
 			additionalParams = &tx_myext_pi1[param]=value
 			]]>
 		</snippet>
-		<snippet id="14" label="Example 2" icon="EXT:templatedisplay/resources/images/tag_green.png">
+		<snippet id="14" label="Example 2" icon="EXT:templatedisplay/Resources/Public/images/tag_green.png">
 			<![CDATA[
 			parameter.data = TSFE:tmpl|setup|config.|key
 			additionalParams = &tx_myext_pi1[uid]={field:uid}&tx_myext_pi1[title]={page:title}
@@ -141,7 +141,7 @@ $Id$
 		</snippet>
 	</type>
 	<type index="user">
-		<snippet id="15" label="Example" icon="EXT:templatedisplay/resources/images/tag_pink.png">
+		<snippet id="15" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_pink.png">
 			<![CDATA[
 			userFunc = tx_user_userfuncs->userfunc
 			]]>

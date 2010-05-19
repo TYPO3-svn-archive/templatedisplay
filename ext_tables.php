@@ -11,7 +11,7 @@ require_once(t3lib_extMgm::extPath('templatedisplay', 'class.tx_templatedisplay_
 	// TCA ctrl for new table
 $TCA['tx_templatedisplay_displays'] = array(
 	'ctrl' => array(
-		'title'     => 'LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays',		
+		'title'     => 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays',
 		'label'     => 'title',
 		'tstamp'    => 'tstamp',
 		'crdate'    => 'crdate',
@@ -31,7 +31,7 @@ $TCA['tx_templatedisplay_displays'] = array(
 	// Add a wizard for adding a datadisplay
 $addTemplateDisplayWizard = array(
 						'type' => 'script',
-						'title' => 'LLL:EXT:templatedisplay/locallang_db.xml:wizards.add_templatedisplay',
+						'title' => 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:wizards.add_templatedisplay',
 						'script' => 'wizard_add.php',
 						'icon' => 'EXT:templatedisplay/wizard_icon.gif',
 						'params' => array(

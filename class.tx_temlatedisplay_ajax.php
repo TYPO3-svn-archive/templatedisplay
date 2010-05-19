@@ -93,7 +93,7 @@ class tx_templatedisplay_ajax {
                 	}
                 	else {
                 		global $LANG;
-	                	$template = $LANG->sL('LLL:EXT:templatedisplay/locallang_db.xml:tx_templatedisplay_displays.fileNotFound') . ' ' . $template;
+	                	$template = $LANG->sL('LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.fileNotFound') . ' ' . $template;
                 	}
                 }
 				
