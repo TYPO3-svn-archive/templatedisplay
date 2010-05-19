@@ -1030,7 +1030,6 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 							$_content = $_values[2];
 							if ($search == '\n') $search = array("\r\n", "\n", "\r");
 							$content = str_replace($_marker, str_replace($search, '	', $_content), $content);
-							$content = nl2br($_content);
 							break;
 					}
 
