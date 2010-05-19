@@ -810,7 +810,8 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		protected function processLOOP($content) {
 
 			// Matches the LOOP(table) with offset
-			if (preg_match_all('/<!-- *LOOP *\((.+)\) *-->/isU', $content, $loopMatches, PREG_OFFSET_CAPTURE)) {
+			$pattern = '/<!-- *LOOP *\((.+)\) *-->/isU';
+			if (preg_match_all($pattern, $content, $loopMatches, PREG_OFFSET_CAPTURE)) {
 				preg_match_all('/<!-- *ENDLOOP *-->/isU', $content, $endLoopMatches, PREG_OFFSET_CAPTURE);
 
 				// Traverses the array. Begins at the end
@@ -840,7 +841,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		}
 
 		// Wraps if LOOP
-		if (!preg_match('/<!-- *LOOP\(' . $this->structure['name'] . '\)/isU', $content, $matches)) {
+		if (!preg_match('/<!-- *LOOP *\( *' . $this->structure['name'] . ' *\)/isU', $content, $matches)) {
 			$content = '<!--LOOP(' . $this->structure['name'] . ')-->' . chr(10) . $content . chr(10) . '<!--ENDLOOP(' . $this->structure['name'] . ')-->';
 		}
 		return $content;
