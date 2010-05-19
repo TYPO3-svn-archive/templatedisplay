@@ -970,7 +970,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 */
 	function postProcessFUNCTIONS($content) {
 		foreach ($this->functions as $function) {
-			$pattern = '/!--###' . $function . '\((.+)\)###--/isU';
+			$pattern = '/!--###' . $function . '\((.*)\)###--/isU';
 
 			if (preg_match_all($pattern, $content, $matches)) {
 
