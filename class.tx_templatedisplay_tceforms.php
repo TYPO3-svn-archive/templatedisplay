@@ -251,7 +251,7 @@ class tx_templatedisplay_tceforms {
 		#$replacement[] = '<span class="templatedisplay_if">$1</span>';
 
 		# LIMIT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST
-		$pattern[] = "/(PRINTF\(.+\)|LIMIT\(.+\)|UPPERCASE\(.+\)|LOWERCASE\(.+\)|UPPERCASE_FIRST\(.+\)|COUNT\(.+\))|PAGE_STATUS\(.+\)/isU";
+		$pattern[] = "/(PRINTF\(.+\)|LIMIT\(.+\)|UPPERCASE\(.+\)|FUNCTION:.*\(.+\)|LOWERCASE\(.+\)|UPPERCASE_FIRST\(.+\)|COUNT\(.+\))|PAGE_STATUS\(.+\)/isU";
 		$replacement[] = '<span class="templatedisplay_function">$1</span>';
 
 		# Wrap LOOP markers with a different background

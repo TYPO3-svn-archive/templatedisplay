@@ -92,7 +92,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 *
 	 * @var	array	$functions: list of function handled by templatedisplay 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
 	 */
-	protected $functions = array('LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST', 'COUNT', 'PRINTF', 'STR_REPLACE', 'STRIPSLASHES');
+	protected $functions = array('FUNCTION', 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST', 'COUNT', 'PRINTF', 'STR_REPLACE', 'STRIPSLASHES');
 	/**
 	 *
 	 * @var tslib_cObj
@@ -856,7 +856,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 */
 	protected function preProcessFUNCTIONS($content) {
 		foreach ($this->functions as $function) {
-			$pattern = '/' . $function . '\(.+\)/isU';
+			$pattern = '/' . $function . '\(.+\)|' . $function . ':.*\(.+\)/sU';
 			if (preg_match_all($pattern, $content, $matches)) {
 				// Avoids multiple replacement, which could lead to multiple replacement, which is bad
 				$matches = array_unique($matches[0]);
@@ -971,70 +971,81 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 */
 	function postProcessFUNCTIONS($content) {
 		foreach ($this->functions as $function) {
-			$pattern = '/!--###' . $function . '\((.*)\)###--/isU';
+			$pattern = '/!--###' . $function . '\((.*)\)###--|!--###' . $function . ':(.+)\((.*)\)###--/isU';
 
 			if (preg_match_all($pattern, $content, $matches)) {
-
 				$numberOfMatches = count($matches[0]);
 				for($index = 0; $index < $numberOfMatches; $index ++) {
 					$_marker = $matches[0][$index];
-					$_content = $matches[1][$index];
-					switch ($function) {
-						case 'LIMIT':
-							$_values = explode('%%%,%%%', $_content);
-							$limit = $_values[1];
-							
-							$__content = $this->limit($_values[0], $limit);
-							$content = str_replace($_marker, $__content, $content);
-							break;
-						case 'PRINTF':
-							// explode data
-							$_values = explode('%%%,%%%', $_content);
-							$_values = array_map('trim', $_values);
 
-							// call function passing argument in form an array
-							$_content = call_user_func_array('sprintf',$_values);
-							$content = str_replace($_marker, $_content, $content);
-							break;
-						case 'COUNT':
-							$numberOfRecords = 0;
-							if ($this->structure['name'] == $_content) {
-								$numberOfRecords = $this->structure['count'];
-							}
-							else if (isset($this->structure['records'][0])) {
-								foreach ($this->structure['records'][0]['sds:subtables'] as $structure) {
-									if ($structure['name'] == $_content) {
-										$numberOfRecords = $structure['count'];
-										break;
+					if ($function == 'FUNCTION') {
+						$_functionName = $matches[2][$index];
+						// %%% is used to delimit the comma separated attribute. No need here. A bit tricky, I know...
+						$_content = str_replace('%', '', $matches[3][$index]);
+						$expression = '$__content = ' . $_functionName . '(' . $_content . ');';
+						// Not possible to catch syntax error on eval according to the documentation
+						eval($expression);
+						#t3lib_div::debug($expression, '$expression');
+						$content = str_replace($_marker, $__content, $content);
+					}
+					else {
+						$_content = $matches[1][$index];
+						switch ($function) {
+							case 'LIMIT':
+								$_values = explode('%%%,%%%', $_content);
+								$limit = $_values[1];
+
+								$__content = $this->limit($_values[0], $limit);
+								$content = str_replace($_marker, $__content, $content);
+								break;
+							case 'PRINTF':
+								// explode data
+								$_values = explode('%%%,%%%', $_content);
+								$_values = array_map('trim', $_values);
+
+								// call function passing argument in form an array
+								$_content = call_user_func_array('sprintf',$_values);
+								$content = str_replace($_marker, $_content, $content);
+								break;
+							case 'COUNT':
+								$numberOfRecords = 0;
+								if ($this->structure['name'] == $_content) {
+									$numberOfRecords = $this->structure['count'];
+								}
+								else if (isset($this->structure['records'][0])) {
+									foreach ($this->structure['records'][0]['sds:subtables'] as $structure) {
+										if ($structure['name'] == $_content) {
+											$numberOfRecords = $structure['count'];
+											break;
+										}
 									}
 								}
-							}
-							$content = str_replace($_marker, $numberOfRecords, $content);
-							break;
-						case 'UPPERCASE':
-							$content = str_replace($_marker, strtoupper($_content), $content);
-							break;
-						case 'LOWERCASE':
-							$content = str_replace($_marker, strtolower($_content), $content);
-							break;
-						case 'UPPERCASE_FIRST':
-							$content = str_replace($_marker, ucfirst($_content), $content);
-							break;
-						case 'STRIPSLASHES':
-							$content = str_replace($_marker, stripslashes($_content), $content);
-							break;
-						case 'STR_REPLACE':
-							$_values = explode('%%%,%%%', $_content);
-							$_values = array_map('trim', $_values);
-							$search = substr($_values[0], 1, -1);
-							$replace = substr($_values[1], 1, -1);
-							$_content = $_values[2];
-							if ($search == '\n') $search = array("\r\n", "\n", "\r");
-							$content = str_replace($_marker, str_replace($search, '	', $_content), $content);
-							break;
-					}
-
-				}
+								$content = str_replace($_marker, $numberOfRecords, $content);
+								break;
+							case 'UPPERCASE':
+								$content = str_replace($_marker, strtoupper($_content), $content);
+								break;
+							case 'LOWERCASE':
+								$content = str_replace($_marker, strtolower($_content), $content);
+								break;
+							case 'UPPERCASE_FIRST':
+								$content = str_replace($_marker, ucfirst($_content), $content);
+								break;
+							case 'STRIPSLASHES':
+								$content = str_replace($_marker, stripslashes($_content), $content);
+								break;
+							case 'STR_REPLACE':
+								$_values = explode('%%%,%%%', $_content);
+								$_values = array_map('trim', $_values);
+								$search = substr($_values[0], 1, -1);
+								$replace = substr($_values[1], 1, -1);
+								$_content = $_values[2];
+								if ($search == '\n') $search = array("\r\n", "\n", "\r");
+								$content = str_replace($_marker, str_replace($search, ' ', $_content), $content);
+								break;
+						} // endswitch
+					} // endelse
+				} //
 			}
 		}
 		return $content;
