@@ -1041,8 +1041,12 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 								$search = substr($_values[0], 1, -1);
 								$replace = substr($_values[1], 1, -1);
 								$_content = $_values[2];
-								if ($search == '\n') $search = array("\r\n", "\n", "\r");
-								$content = str_replace($_marker, str_replace($search, ' ', $_content), $content);
+								// special case
+								if ($search == '\n') {
+									$search = array("\r\n", "\n", "\r");
+									$replace = ' ';
+								}
+								$content = str_replace($_marker, str_replace($search, $replace, $_content), $content);
 								break;
 						} // endswitch
 					} // endelse
