@@ -979,14 +979,15 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$_marker = $matches[0][$index];
 
 					if ($function == 'FUNCTION') {
-						$_functionName = $matches[2][$index];
-						// %%% is used to delimit the comma separated attribute. No need here. A bit tricky, I know...
-						$_content = str_replace('%', '', $matches[3][$index]);
-						$expression = '$__content = ' . $_functionName . '(' . $_content . ');';
-						// Not possible to catch syntax error on eval according to the documentation
-						eval($expression);
-						#t3lib_div::debug($expression, '$expression');
-						$content = str_replace($_marker, $__content, $content);
+						$functionName = $matches[2][$index];
+						$_content = $matches[3][$index];
+						// %%% is used to delimit the comma separated parameters.
+						$parameters = explode('%%%,%%%', $_content);
+						#t3lib_div::debug($parameters, '$parameters');
+
+						$_content = call_user_func_array($functionName, $parameters);
+						$content = str_replace($_marker, $_content, $content);
+
 					}
 					else {
 						$_content = $matches[1][$index];
