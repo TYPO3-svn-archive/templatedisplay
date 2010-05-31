@@ -1014,7 +1014,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 									$numberOfRecords = $this->structure['count'];
 								}
 								else if (isset($this->structure['records'][0])) {
-									foreach ($this->structure['records'][0]['sds:subtables'] as $structure) {
+									foreach ($this->structure['records'][0]['__substructure'] as $structure) {
 										if ($structure['name'] == $_content) {
 											$numberOfRecords = $structure['count'];
 											break;
@@ -1169,10 +1169,10 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		}
 		else {
 			// Maybe the $sds contains subtables, have a look into it to find out the value.
-			if (!empty($sds['records'][$index]['sds:subtables'])) {
+			if (!empty($sds['records'][$index]['__substructure'])) {
 
 				// Traverses all subSds and call it recursively
-				foreach ($sds['records'][$index]['sds:subtables'] as $subSds){
+				foreach ($sds['records'][$index]['__substructure'] as $subSds){
 					if ($subSds['name'] == $table) {
 						if (!isset($subSds[$cellName])) {
 							$cellName = 'count';
@@ -1208,10 +1208,10 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		}
 		else {
 			// Maybe the $sds contains subtables, have a look into it to find out the value.
-			if (!empty($sds['records'][$index]['sds:subtables'])) {
+			if (!empty($sds['records'][$index]['__substructure'])) {
 
 				// Traverses all subSds and call it recursively
-				foreach ($sds['records'][$index]['sds:subtables'] as $subSds){
+				foreach ($sds['records'][$index]['__substructure'] as $subSds){
 					$value = $this->getValueFromStructure($subSds, 0, $table, $field);
 					if ($value != NULL) {
 						break;
@@ -1341,7 +1341,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 					$__content = '';
 					$foundSubSds = array();
-					$sdsSubtables = $sds['records'][$index]['sds:subtables'];
+					$sdsSubtables = $sds['records'][$index]['__substructure'];
 					if (!empty($sdsSubtables) && isset($sdsSubtables[$subTemplateStructure['table']])) {
 						$foundSubSds = $sdsSubtables[$subTemplateStructure['table']];
 					}
