@@ -39,7 +39,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 	public $tsKey = 'tx_templatedisplay';
 	public $extKey = 'templatedisplay';
-	public static $defaultTypes = array('text', 'richtext', 'image', 'imageResource', 'linkToDetail', 'linkToPage', 'linkToFile', 'email', 'user');
+	public static $defaultTypes = array('raw', 'text', 'richtext', 'image', 'imageResource', 'linkToDetail', 'linkToPage', 'linkToFile', 'email', 'user');
 	protected $conf;
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
@@ -1441,6 +1441,9 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		}
 			// Render element based on type
 		switch ($datasource['type']) {
+			case 'raw':
+				$output = $value;
+				break;
 			case 'text':
 					// Override configuration as needed
 				if (!isset($configuration['value'])) {

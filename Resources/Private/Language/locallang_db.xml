@@ -23,6 +23,7 @@ Then, you can:
 			</label>
 			<label index="tx_templatedisplay_displays.type">Type</label>
 			<label index="tx_templatedisplay_displays.unknown">Unknown</label>
+			<label index="tx_templatedisplay_displays.raw">Raw text (no transformation)</label>
 			<label index="tx_templatedisplay_displays.text">Text</label>
 			<label index="tx_templatedisplay_displays.richtext">Rich text (HTML)</label>
 			<label index="tx_templatedisplay_displays.image">Image</label>
@@ -69,6 +70,7 @@ Pour changer ce contenu, cliquez sur l'onglet "HTML".
 			</label>
 			<label index="tx_templatedisplay_displays.type">Type</label>
 			<label index="tx_templatedisplay_displays.unknown">Inconnu</label>
+			<label index="tx_templatedisplay_displays.raw">Texte brut (sans transformation)</label>
 			<label index="tx_templatedisplay_displays.text">Texte</label>
 			<label index="tx_templatedisplay_displays.richtext">Texte riche (HTML)</label>
 			<label index="tx_templatedisplay_displays.image">Image</label>
