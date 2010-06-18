@@ -155,7 +155,20 @@ class tx_templatedisplay_tceforms {
 						$JSSnippets
 					. '}
 				};';
-				// Load JavaScript at top of form
+
+				/**
+				 * Get the page renderer object from the BE module
+				 * 
+				 * @var	t3lib_PageRenderer	$pageRenderer
+				 */
+			$pageRenderer = $GLOBALS['SOBE']->doc->getPageRenderer();
+				// Load the necessary JavaScript
+			$pageRenderer->addJsFile(t3lib_extMgm::extRelPath('templatedisplay') . 'Resources/Public/javascripts/formatJson.js');
+			$pageRenderer->addJsFile(t3lib_extMgm::extRelPath('templatedisplay') . 'Resources/Public/javascripts/templatedisplay.js');
+			$pageRenderer->addCssFile(t3lib_extMgm::extRelPath('templatedisplay') . 'Resources/Public/stylesheets/templatedisplay.css');
+			$pageRenderer->addJsLibrary('common', 'js/common.js');
+
+				// Load the dynamically assembled JavaScript at top of form
 			$fobj->additionalJS_pre[] = $preJS;
 
 			$marker['###CONTENT_FROM_FILE###'] = '';

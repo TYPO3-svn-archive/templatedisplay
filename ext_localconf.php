@@ -6,21 +6,13 @@ t3lib_extMgm::addUserTSConfig('
 	options.saveDocNew.tx_templatedisplay_displays=1
 ');
 
-// Register method with generic BE ajax calls handler
-// (as from TYPO3 4.2)
-
+	// Register method with generic BE ajax calls handler
+	// (as from TYPO3 4.2)
 $TYPO3_CONF_VARS['BE']['AJAX']['templatedisplay::saveConfiguration'] = 'typo3conf/ext/templatedisplay/class.tx_temlatedisplay_ajax.php:tx_templatedisplay_ajax->saveConfiguration';
 $TYPO3_CONF_VARS['BE']['AJAX']['templatedisplay::saveTemplate'] = 'typo3conf/ext/templatedisplay/class.tx_temlatedisplay_ajax.php:tx_templatedisplay_ajax->saveTemplate';
-/*
- * Hook for loading Javascript and CSS in the backend
- */
-if (TYPO3_MODE == 'BE')	{
-	require_once(t3lib_extMgm::extPath('templatedisplay').'hook/user_addBackendLibrary.php');
-}
-$TYPO3_CONF_VARS['SC_OPTIONS']['typo3/template.php']['preStartPageHook'][] = 'user_addBackendLibrary';
 
-// Register as Data Consumer service
-// Note that the subtype corresponds to the name of the database table
+	// Register as Data Consumer service
+	// Note that the subtype corresponds to the name of the database table
 t3lib_extMgm::addService($_EXTKEY,  'dataconsumer' /* sv type */,  'tx_templatedisplay_dataconsumer' /* sv key */,
 	array(
 
@@ -41,6 +33,6 @@ t3lib_extMgm::addService($_EXTKEY,  'dataconsumer' /* sv type */,  'tx_templated
 	)
 );
 
-	// Load the interface for custome element types
+	// Load the interface for custom element types
 require_once(t3lib_extMgm::extPath($_EXTKEY, 'interfaces/class.tx_templatedisplay_customtype.php'));
 ?>
