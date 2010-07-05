@@ -1662,6 +1662,15 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 			t3lib_div::devLog('Data structure: "' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
 		}
 	}
+
+	/**
+	 * Return the local instance of tslib_content
+	 *
+	 * @return	tslib_cObj
+	 */
+	public function getLocalCObj() {
+		return $this->localCObj;
+	}
 }
 
 if (defined('TYPO3_MODE') && $TYPO3_CONF_VARS[TYPO3_MODE]['XCLASS']['ext/templatedisplay/class.tx_templatedisplay.php']){
