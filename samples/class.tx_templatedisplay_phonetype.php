@@ -29,7 +29,7 @@
  * @package		TYPO3
  * @subpackage	tx_templatedisplay
  *
- * $Id: class.tx_examples_tceforms.php 30788 2010-03-05 21:54:21Z francois $
+ * $Id$
  */
 class tx_templatedisplay_PhoneType implements tx_templatedisplay_CustomType {
 	/**
