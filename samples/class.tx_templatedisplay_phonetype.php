@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2010 Francois Suter <francois@typo3.org>
+*  (c) 2010 Francois Suter <typo3@cobweb.ch>
 *  All rights reserved
 *
 *  This script is part of the TYPO3 project. The TYPO3 project is
@@ -25,7 +25,7 @@
 /**
  * Example class for custom element types in Template Display
  *
- * @author		Francois Suter <francois@typo3.org>
+ * @author		Francois Suter <typo3@cobweb.ch>
  * @package		TYPO3
  * @subpackage	tx_templatedisplay
  *
