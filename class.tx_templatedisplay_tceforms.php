@@ -68,7 +68,7 @@ class tx_templatedisplay_tceforms {
 					// Assemble a unique id per type
 					// (this is used in JavaScript to show the correct snippet list depending on type)
 				$id = 'templatedisplay_snippet' . (string)$typeNode['index'];
-				$snippets .= '<div id="' . $id . '" class="templatedisplay_snippetBox templatedisplay_component">';
+				$snippets .= '<div id="' . $id . '" class="templatedisplay_snippetBox templatedisplay_component templatedisplay_hidden">';
 					// Loop on the snippets for the type
 				foreach ($typeNode->snippet as $snippetNode) {
 						// Assemble a unique id per snippet

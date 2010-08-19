@@ -456,6 +456,9 @@ if (Prototype) {
 			else{
 				$('templatedisplay_type').value = 'text';
 				$('templatedisplay_configuration').value = '';
+
+				// (Cosmetic) Displays the right snippet Box
+				templatedisplay.showSnippetBox('text');
 			}
 
 			// Makes the control panel facing the marker. (position control panel at the same line)
