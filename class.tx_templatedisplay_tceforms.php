@@ -24,7 +24,6 @@
 ***************************************************************/
 
 require_once(t3lib_extMgm::extPath('tesseract', 'lib/class.tx_tesseract_utilities.php'));
-require_once(t3lib_extMgm::extPath('templatedisplay', 'class.tx_templatedisplay.php'));
 
 /**
  * TCEform custom field for template mapping

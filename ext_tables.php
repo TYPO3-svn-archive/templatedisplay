@@ -5,9 +5,6 @@ if (!defined ('TYPO3_MODE')) {
 
 t3lib_extMgm::allowTableOnStandardPages('tx_templatedisplay_displays');
 
-	// Include class for custom TCEforms field
-require_once(t3lib_extMgm::extPath('templatedisplay', 'class.tx_templatedisplay_tceforms.php'));
-
 	// TCA ctrl for new table
 $TCA['tx_templatedisplay_displays'] = array(
 	'ctrl' => array(
