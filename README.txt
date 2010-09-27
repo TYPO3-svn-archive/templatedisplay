@@ -1,2 +1,1 @@
-
-Feel free to add some documentation or simply add a link to the online manual.
+Tesseract Data Consumer based on HTML templates. Refer to the manual for more details.
