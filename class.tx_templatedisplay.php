@@ -1626,19 +1626,19 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 * @param array $templateStructure
 	 */
 	protected function debug($markers, $templateStructure) {
-		if (isset($GLOBALS['_GET']['debug']['markers']) && isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) {
+		if (isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['TSFE']->beUserLogin) {
 			t3lib_div::debug($markers);
 		}
 
-		if (isset($GLOBALS['_GET']['debug']['template']) && isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) {
+		if (isset($GLOBALS['_GET']['debug']['template']) && $GLOBALS['TSFE']->beUserLogin) {
 			t3lib_div::debug($templateStructure);
 		}
 
-		if (isset($GLOBALS['_GET']['debug']['structure']) && isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) {
+		if (isset($GLOBALS['_GET']['debug']['structure']) && $GLOBALS['TSFE']->beUserLogin) {
 			t3lib_div::debug($this->structure);
 		}
 
-		if (isset($GLOBALS['_GET']['debug']['filter']) && isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) {
+		if (isset($GLOBALS['_GET']['debug']['filter']) && $GLOBALS['TSFE']->beUserLogin) {
 			t3lib_div::debug($this->filter);
 		}
 
