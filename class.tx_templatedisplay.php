@@ -619,6 +619,31 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 			}
 			$markers['###RECORD_OFFSET###']	= $recordOffset;
 		}
+
+		if (preg_match('/#{3}START_AT#{3}/isU', $content)) {
+			if (!$this->pObj->piVars['page']) {
+				$this->pObj->piVars['page'] = 0;
+			}
+
+				// Computes the record offset
+			$recordOffset = ($this->pObj->piVars['page'] + 1) * $this->filter['limit']['max'];
+			if ($recordOffset > $this->structure['totalCount']) {
+				$recordOffset = $this->structure['totalCount'];
+			}
+			$markers['###START_AT###']	= intval($recordOffset) - intval($this->structure['count']) + 1;
+		}
+		if (preg_match('/#{3}STOP_AT#{3}/isU', $content)) {
+			if (!$this->pObj->piVars['page']) {
+				$this->pObj->piVars['page'] = 0;
+			}
+
+				// Computes the record offset
+			$stop_at = ($this->pObj->piVars['page'] + 1) * $this->filter['limit']['max'];
+			if ($stop_at > $this->structure['totalCount']) {
+				$stop_at = $this->structure['totalCount'];
+			}
+			$markers['###STOP_AT###']	= $stop_at;
+		}
 		return $markers;
 	}
 
