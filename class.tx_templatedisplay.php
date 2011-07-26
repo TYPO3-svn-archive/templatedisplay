@@ -168,6 +168,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	/**
 	 * This method sets the result. Useful for hooks.
 	 *
+	 * @param string $result Some existing result
 	 * @return	void
 	 */
 	public function setResult($result) {
@@ -294,7 +295,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 			// Merges array, in order to have only one array (performance!)
 		$markers = array_merge($uniqueMarkers, $LLLMarkers, $expressionMarkers, $sortMarkers, $filterMarkers, $globalVariablesMarkers);
-		
+
 			// First transformation of $templateCode. Substitutes $markers that can be already substituted. (LLL, GP, TSFE, etc...)
 		$templateCode = t3lib_parsehtml::substituteMarkerArray($templateCode, $markers);
 
@@ -1289,7 +1290,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 		// Intializes the label (header part of sds).
 		$this->setLabelMarkers($sds);
-		
+
 		// Computes a possible loop limit
 		// By default $numberOfLoops = 100000
 		// This value may be set to a different one (e.g. NUMBER_OF_LOOPS xx)
@@ -1309,7 +1310,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		// Retrieves the fields from the templateCode that needs a substitution
 		// By the way catch the table name and the field name for futher use. -> "()"
 		preg_match_all('/#{3}(FIELD\..+)\.(.+)\.(.+)#{3}/isU', $templateStructure['content'], $markers, PREG_SET_ORDER);
-		
+
 		$numbersOfRecords = $sds['count'];
 		for($index = 0; $index < $numbersOfRecords && $index < $numberOfLoops; $index++) {
 
@@ -1448,7 +1449,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 * @return	array	$sds: the datastructure
 	 */
 	protected function getValue(&$datasource, $value = '', &$sds = array()) {
-		
+
 			// Checks if the page title needs to be changed
 		$this->setPageTitle($datasource['configuration']);
 
