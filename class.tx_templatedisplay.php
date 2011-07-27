@@ -1486,7 +1486,9 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				break;
 			case 'image':
 					// Override configuration as needed
-				$configuration['file'] = $value;
+				if (!isset($configuration['file'])) {
+					$configuration['file'] = $value;
+				}
 
 					// Sets the alt attribute
 				if (!isset($configuration['altText'])) {
