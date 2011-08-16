@@ -3,7 +3,7 @@ EXT: Templatedisplay
 Extension Key: templatedisplay
 Language: en
 Keywords: forAdmins, forIntermediates
-Copyright 2000-2010, Fabien Udriot, <fabien.udriot@ecodev.ch>
+Copyright 2000-2011, Fabien Udriot, <fabien.udriot@ecodev.ch>
 
 This document is published under the Open Content License
 available from http://www.opencontent.org/opl.shtml
@@ -15,25 +15,24 @@ Table of Contents
 EXT: Templatedisplay	1
 Introduction	3
 Screenshots	3
-Configuration	5
-Element types	5
-List of available markers	6
-Content markers	6
+Configuration	4
+HTML Template setup	4
+Element types	4
+List of available markers	5
+Content markers	5
 Structure Markers	7
 Functions	7
-TypoScript configuration	9
-Default rendering	9
-Other examples	9
-Reference	9
-Templatedisplay by examples	10
-Developer's Guide	11
-Hooks	11
-Custom element types	11
-Debugging	13
-Known issues	14
-Overlapping IF markers does not work.	14
-Multiple edition is not possible (module web > list)	14
-Changelog	15
+TypoScript configuration	8
+Default rendering	8
+Other examples	8
+Reference	8
+Developer's Guide	9
+Hooks	9
+Custom element types	9
+Debugging	11
+Known issues	12
+Nesting IF markers don't work	12
+Multiple edition is not possible (module web > list)	12
 
 Introduction
 Templatedisplay is a kind of "mappable" template engine for TYPO3. The extension is part of the Tesseract extensions family and deals with rendering content onto the Frontend.
@@ -52,6 +51,11 @@ By using the name of the marker, Templatedisplay will tries to identify the fiel
 
 
 Configuration
+HTML Template setup
+HTML Template can be defined of two manners.
+insert inline HTM directly in the text box
+external file loaded with following syntax: FILE:fileadmin/templates/plugins/tesseract/news/list_of_news.html
+External files would have the benefit to make use of an external editor which is more convenient when editing large templates
 Element types
 There are various elements types that can be chosen according to your needs.
 
@@ -167,7 +171,17 @@ Returns the total of records corresponding to a table name without considering a
 ###SUBTOTAL_RECORDS(tablename)###
 Returns the total of records corresponding to a table name considering a possible limit.
 ###RECORD_OFFSET###
-Return the page offset. The page offset correspond to the current position inside a global record set. This marker is useful when displaying a page browser. See marker ###PAGE_BROWSER###. You can have something like this: ###RECORD_OFFSET### / ###TOTAL_RECORDS### which will display the current position among the total number of records. 
+Return the page offset. The page offset corresponds to the current position inside a global record set. This marker is useful when displaying a page browser. See marker ###PAGE_BROWSER###. You can have something like this: ###RECORD_OFFSET### / ###TOTAL_RECORDS### which will display the current position among the total number of records. 
+###START_AT###
+Return the position of the first record returned by a subset, considering a possible limit.
+This marker is useful when displaying a page browser like this one :
+Records 1 – 10 of 2000 in total
+
+which would be coded like this in the template:
+Records ###START_AT### – ###STOP_AT### of ###TOTAL_RECORDS### in total
+###STOP_AT###
+Return the position of the last record returned by a subset, considering a possible limit.
+See ###START_AT### above.
 Structure Markers
 Name
 Description
@@ -176,7 +190,9 @@ Description
 Where loop_name is a table name.
 <!--IF(###FIELD.maker### == 'value')-->
 <!--ENDIF-->
-Allows to display conditional content. Beware, at the moment it is not possible to overlap IF conditions
+Allows to display conditional content. Be careful to use parentheses around the condition.
+
+Warning: it is not possible to nest IF markers.
 Functions
 Name
 Description
@@ -247,10 +263,6 @@ pagebrowse
 pagebrowse configuration 
 See extension pagebrowse
 [tsref:plugin.tx_templatedisplay]
-Templatedisplay by examples
-A good way to acquire a new skill is to observe and learn by examples.
-TODO: What about having a T3 package containing a working Tesseract.
-
 Developer's Guide
 Hooks
 Hooks offer an opportunity to step into the process at various points. They offer the possibility to manipulate data and influence the final output. Hooks can be used to replace personalized markers, introduced previously in the HTML template. There is a convention in templatedisplay to name Hook like ###HOOK.myHook###.
@@ -341,7 +353,7 @@ Display the parameter that are transmitted to the pagebrowser. Extension pagebro
 
 Whenever the extension "devlog" is installed, it is also possible to monitor some information. In a templatedisplay record, check the following options as desired. It may be convenient, in (pre) production mode to check some information produced by visitor.
 Known issues
-Overlapping IF markers does not work.
+Nesting IF markers don't work
 <--IF()-->
   ...
   <--IF()-->
@@ -350,25 +362,8 @@ Overlapping IF markers does not work.
   ...
 <!--ENDIF-->
 This feature seems to be obvious, but is quite difficult to implement, though (at least, with the actual code basis). It comes from the way the template engine works and particularly the general use of regular expressions to handle the HTML. It would require a complex analysis of the template to cut up in right parts and supbarts the "IF" markers.
-Experience has shown that it's possible to live without this feature. If the need of overlapping "IF" markers is required, I would recommend to have a look at "phpdisplay" available on Forge which enables complex processing thanks to the PHP syntax.
+Experience has shown that it's possible to live without this feature. If the need of nested "IF" markers is required, you many want to have a look at the "phpdisplay" or "fluiddisplay" Data Consumers.
 http://forge.typo3.org/issues/show/1954 
 Multiple edition is not possible (module web > list)
 This would require too much effort for very small benefit. The cases of multiple edition in templatedisplay are very rare.
-http://forge.typo3.org/issues/show/1982 
-
-Changelog
-Version
-Changes:
-1.0
-Initial version of the extension
-1.0.1
-Added page browse documentation
-Added Typoscript configuration
-1.1
-Added PRINTF FUNCTION
-1.2
-Added default rendering option
-Added rich text element type
-1.3
-Added raw text element type
-
+http://forge.typo3.org/issues/show/1982
