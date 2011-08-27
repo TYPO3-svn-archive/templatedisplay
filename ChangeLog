@@ -1,3 +1,7 @@
+2011-08-27 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
+	* Image resource type should not override configured "file" property, resolves #29302
+
 2011-08-16 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Released to TER as version 1.1.0

@@ -1518,8 +1518,10 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				}
 				break;
 			case 'imageResource':
-				$configuration = $datasource['configuration'];
-				$configuration['file'] = $value;
+					// Override configuration as needed
+				if (!isset($configuration['file'])) {
+					$configuration['file'] = $value;
+				}
 				$output = $this->localCObj->IMG_RESOURCE($configuration);
 				break;
 			case 'linkToDetail':
