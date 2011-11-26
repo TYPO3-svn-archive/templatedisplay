@@ -14,7 +14,7 @@ $TCA['tx_templatedisplay_displays'] = array(
 		'crdate'    => 'crdate',
 		'cruser_id' => 'cruser_id',
 		'default_sortby' => 'ORDER BY title',
-		'delete' => 'deleted',	
+		'delete' => 'deleted',
 		'enablecolumns' => array(
 			'disabled' => 'hidden',
 		),
