@@ -777,9 +777,11 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 							header("Location: " . $redirect,TRUE,307);
 							break;
 						case '404' : // 404
-							header("HTTP/1.1 404 Not Found");
-							if ($redirect != '') {
-								header("Location: " . $redirect,TRUE,302);
+							if (empty($redirect)) {
+								$GLOBALS['TSFE']->pageNotFoundAndExit();
+							} else {
+								header('HTTP/1.1 404 Not Found');
+								header('Location: ' . $redirect, TRUE, 302);
 							}
 							break;
 						case '500' :
