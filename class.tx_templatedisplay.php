@@ -762,16 +762,16 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 				switch ($errorCode) {
 					case '301' : // 301 Moved Permanently
-						header('Location: ' . $redirect,TRUE, 301);
+						header('Location: ' . $redirect, TRUE, 301);
 						break;
 					case '302' : // 302 Found
-						header('Location: /' . $redirect,TRUE, 302);
+						header('Location: /' . $redirect, TRUE, 302);
 						break;
 					case '303' : // 303 See Other
-						header('Location: ' . $redirect,TRUE, 303);
+						header('Location: ' . $redirect, TRUE, 303);
 						break;
 					case '307' : // 307 Temporary Redirect
-						header('Location: ' . $redirect,TRUE, 307);
+						header('Location: ' . $redirect, TRUE, 307);
 						break;
 					case '404' : // 404
 						if (empty($redirect)) {
