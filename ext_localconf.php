@@ -8,8 +8,8 @@ t3lib_extMgm::addUserTSConfig('
 
 	// Register method with generic BE ajax calls handler
 	// (as from TYPO3 4.2)
-$TYPO3_CONF_VARS['BE']['AJAX']['templatedisplay::saveConfiguration'] = 'typo3conf/ext/templatedisplay/class.tx_temlatedisplay_ajax.php:tx_templatedisplay_ajax->saveConfiguration';
-$TYPO3_CONF_VARS['BE']['AJAX']['templatedisplay::saveTemplate'] = 'typo3conf/ext/templatedisplay/class.tx_temlatedisplay_ajax.php:tx_templatedisplay_ajax->saveTemplate';
+$TYPO3_CONF_VARS['BE']['AJAX']['templatedisplay::saveConfiguration'] = 'typo3conf/ext/templatedisplay/class.tx_templatedisplay_ajax.php:tx_templatedisplay_ajax->saveConfiguration';
+$TYPO3_CONF_VARS['BE']['AJAX']['templatedisplay::saveTemplate'] = 'typo3conf/ext/templatedisplay/class.tx_templatedisplay_ajax.php:tx_templatedisplay_ajax->saveTemplate';
 
 	// Register as Data Consumer service
 	// Note that the subtype corresponds to the name of the database table
