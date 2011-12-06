@@ -37,21 +37,21 @@ class tx_templatedisplay_ajax {
 	/**
 	 * This method answers to the AJAX call and saves the mappings configuration
 	 *
-	 * @param	array	$params
-	 * @param	Object	$ajaxObj
-	 * @return	void	(with 4.2)
+	 * @param array	$params Empty array
+	 * @param TYPO3AJAX $ajaxObj AJAX response object
+	 * @return void
 	 */
-	public function saveConfiguration($params, $ajaxObj) {
+	public function saveConfiguration($params, TYPO3AJAX $ajaxObj) {
 		$uid = t3lib_div::_GP('uid');
 		$mappings = t3lib_div::_GP('mappings');
 		$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid', 'tx_templatedisplay_displays', 'uid = '. $uid);
-		
+
 		$result = 0;
-		
+
 		if (!empty($record)) {
 			$updateArray['mappings'] = $mappings;
 			$msg = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_templatedisplay_displays', 'uid = '. $uid, $updateArray);
-			
+
 			if ($msg == 1) {
 				$result = 1;
 			}
@@ -60,43 +60,43 @@ class tx_templatedisplay_ajax {
 	}
 
 	/**
-	 * This method answers to the AJAX call and saves the template
+	 * This method answers to the AJAX call and performs some highlighting on the template code
 	 *
-	 * @param	array	$params
-	 * @param	Object	$ajaxObj
-	 * @return	void	(with 4.2)
+	 * @param array	$params Empty array
+	 * @param TYPO3AJAX $ajaxObj AJAX response object
+	 * @return void
 	 */
-	public function saveTemplate($params, $ajaxObj) {
+	public function saveTemplate($params, TYPO3AJAX $ajaxObj) {
 		$uid = t3lib_div::_GP('uid');
 		$template = trim(t3lib_div::_GP('template'));
 		$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('uid','tx_templatedisplay_displays','uid = '. $uid);
 
 		$result = 0;
+			/** @var $tceforms tx_templatedisplay_tceforms */
 		$tceforms = t3lib_div::makeInstance('tx_templatedisplay_tceforms');
-		
+
 		if (!empty($record)) {
-			# Replaces tabulations by spaces. It takes less room on the screen
+				// Replaces tabulations by spaces. It takes less room on the screen
 			$template = str_replace('	', '  ',$template);
 			$updateArray['template'] = $template;
 			$msg = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_templatedisplay_displays', 'uid = '. $uid, $updateArray);
 
 			if ($msg == 1) {
-			
+
                 if (preg_match('/^FILE:/isU', $template)) {
-                
+
                 	$filePath = str_replace('FILE:', '' , $template);
                 	$filePath = t3lib_div::getFileAbsFileName($filePath);
-                	
+
                 	if (is_file($filePath)) {
 	                	$template = file_get_contents($filePath);
 						$template = str_replace('	', '  ', $template);
                 	}
                 	else {
-                		global $LANG;
-	                	$template = $LANG->sL('LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.fileNotFound') . ' ' . $template;
+	                	$template = $GLOBALS['LANG']->sL('LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.fileNotFound') . ' ' . $template;
                 	}
                 }
-				
+
 				$result = $tceforms->transformTemplateContent($template);
 			}
 		}
