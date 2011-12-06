@@ -745,16 +745,14 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 */
 	protected function checkPageStatus($content) {
 
-		// Preprocesses the <!--IF(###MARKER### == '')-->, puts a '' around the marker
+			// Check for the PAGE_STATUS() pattern
 		$pattern = '/PAGE_STATUS\((.+)\)/isU';
-		if (preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
+		if ($this->structure['count'] == 0 && preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
 			foreach($matches as $match) {
 				$expression = $match[0];
-
-				// explode values
 				$_match = explode(',',$match[1]);
 
-				// avoid possible problem
+					// Avoid possible problem with extra whitespaces and unitialized values
 				$_match = array_map('trim', $_match);
 				$errorCode = $_match[0];
 				$redirect = $replace = '';
@@ -762,43 +760,41 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$redirect = $_match[1];
 				}
 
-				if (empty($this->structure['records'])) {
-					switch ($errorCode) {
-						case '301' : // 301 Moved Permanently
-							header("Location: " . $redirect,TRUE,301);
-							break;
-						case '302' : // 302 Found
-							header("Location: /" . $redirect,TRUE,302);
-							break;
-						case '303' : // 303 See Other
-							header("Location: " . $redirect,TRUE,303);
-							break;
-						case '307' : // 307 Temporary Redirect
-							header("Location: " . $redirect,TRUE,307);
-							break;
-						case '404' : // 404
-							if (empty($redirect)) {
-								$GLOBALS['TSFE']->pageNotFoundAndExit();
-							} else {
-								header('HTTP/1.1 404 Not Found');
-								header('Location: ' . $redirect, TRUE, 302);
-							}
-							break;
-						case '500' :
-							header("HTTP/1.1 500 Internal Server Error");
-							if ($redirect != '') {
-								header("Location: " . $redirect,TRUE,302);
-							}
-							break;
-						default :
-							$replace = 'Sorry the status ' . $errorCode . ' is not handled yet.';
+				switch ($errorCode) {
+					case '301' : // 301 Moved Permanently
+						header("Location: " . $redirect,TRUE,301);
+						break;
+					case '302' : // 302 Found
+						header("Location: /" . $redirect,TRUE,302);
+						break;
+					case '303' : // 303 See Other
+						header("Location: " . $redirect,TRUE,303);
+						break;
+					case '307' : // 307 Temporary Redirect
+						header("Location: " . $redirect,TRUE,307);
+						break;
+					case '404' : // 404
+						if (empty($redirect)) {
+							$GLOBALS['TSFE']->pageNotFoundAndExit();
+						} else {
+							header('HTTP/1.1 404 Not Found');
+							header('Location: ' . $redirect, TRUE, 302);
 						}
-					}
-					$content = str_replace($expression, $replace, $content);
+						break;
+					case '500' :
+						header("HTTP/1.1 500 Internal Server Error");
+						if ($redirect != '') {
+							header("Location: " . $redirect,TRUE,302);
+						}
+						break;
+					default :
+						$replace = 'Sorry the status ' . $errorCode . ' is not handled yet.';
 				}
+				$content = str_replace($expression, $replace, $content);
 			}
-			return $content;
 		}
+		return $content;
+	}
 
 	/**
 	 * Pre processes the <!--IF(###MARKER### == '')-->, puts a '' around the marker
