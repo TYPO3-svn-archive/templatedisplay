@@ -193,6 +193,9 @@ Where loop_name is a table name.
 Allows to display conditional content. Be careful to use parentheses around the condition.
 
 Warning: it is not possible to nest IF markers.
+<!--EMPTY-->
+<!--ENDEMPTY-->
+This part is displayed only if the Data Structure is empty. Please mind that the rest of the template is still displayed.
 Functions
 Name
 Description
@@ -207,13 +210,15 @@ Limit the number of words in a marker
 E.g.
 LIMIT(###FIELD.description###, 4) will return the first 4 words of field description
 COUNT(tableName)
-Return the number of records from the datastructure. Add parameter debug[structure] in the URL to see the datastructure. (Works with a BE login)
+Return the number of records from the Data Structure. Add parameter debug[structure] in the URL to see the Data Structure. (Works with a BE login)
 E.g.
 COUNT(tt_content) will return the number of records in table tt_content
 PAGE_STATUS(404)
 PAGE_STATUS(404, page/404/) 
 PAGE_STATUS(301, new/page/)
-If the datastructure is empty, send the appropriate header and redirect link when needed.
+If the Data Structure is empty, send the appropriate header and redirect link when needed.
+
+For the 404 status, leaving the redirect URL empty will make it fall back on the internal page not found handling of TYPO3.
 
 
 TypoScript configuration

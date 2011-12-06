@@ -2,6 +2,7 @@
 
 	* Improved the PAGE_STATUS function, resolves #32327
 	* Corrected spelling mistake in file of class tx_templatedisplay_ajax, resolves #32335
+	* Added missing documentation about EMPTY structure, resolves #32336
 
 2011-08-27 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
