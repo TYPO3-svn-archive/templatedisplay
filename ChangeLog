@@ -1,3 +1,7 @@
+2011-12-06 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
+	* Improved the PAGE_STATUS function, resolves #32327
+
 2011-08-27 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Image resource type should not override configured "file" property, resolves #29302

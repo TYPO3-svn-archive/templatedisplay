@@ -155,7 +155,7 @@ class tx_templatedisplay_tceforms {
 
 				/**
 				 * Get the page renderer object from the BE module
-				 * 
+				 *
 				 * @var	t3lib_PageRenderer	$pageRenderer
 				 */
 			$pageRenderer = $GLOBALS['SOBE']->doc->getPageRenderer();
@@ -233,7 +233,7 @@ class tx_templatedisplay_tceforms {
 		}
 		return $formField;
 	}
-	
+
 	/**
 	 * Transformes $templateContent, this method is also util for Ajax called. In this case, the method is called externally.
 	 * 2) wrap IF markers with a different background
@@ -250,7 +250,7 @@ class tx_templatedisplay_tceforms {
 		$pattern = $replacement = array();
 		$pattern[] = "/(&lt;!-- *IF *\(.+--&gt;|&lt;!-- *ELSE *--&gt;|&lt;!-- *ENDIF *--&gt;)/isU";
 		$replacement[] = '<span class="templatedisplay_if">$1</span>';
-		
+
 		$pattern[] = "/(&lt;!-- *EMPTY *--&gt;|&lt;!-- *ENDEMPTY *--&gt;)/isU";
 		$replacement[] = '<span class="templatedisplay_empty">$1</span>';
 
@@ -261,7 +261,7 @@ class tx_templatedisplay_tceforms {
 		#$replacement[] = '<span class="templatedisplay_if">$1</span>';
 
 		# LIMIT, UPPERCASE, LOWERCASE, UPPERCASE_FIRST
-		$pattern[] = "/(PRINTF\(.+\)|LIMIT\(.+\)|UPPERCASE\(.+\)|FUNCTION:.*\(.+\)|LOWERCASE\(.+\)|UPPERCASE_FIRST\(.+\)|COUNT\(.+\))|PAGE_STATUS\(.+\)/isU";
+		$pattern[] = "/(PRINTF\(.+\)|LIMIT\(.+\)|UPPERCASE\(.+\)|FUNCTION:.*\(.+\)|LOWERCASE\(.+\)|UPPERCASE_FIRST\(.+\)|COUNT\(.+\)|PAGE_STATUS\(.+\))/isU";
 		$replacement[] = '<span class="templatedisplay_function">$1</span>';
 
 		# Wrap LOOP markers with a different background
@@ -280,7 +280,7 @@ class tx_templatedisplay_tceforms {
 		$_replacement .= '<img src="'.$path.'empty.png" alt="" class="mapping_pictogramm2"/>';
 		$_replacement .= '</span>';
 		$replacement[] = $_replacement;
-		
+
 		return preg_replace($pattern, $replacement, $templateContent);
 	}
 
