@@ -18,21 +18,21 @@ Screenshots	3
 Configuration	4
 HTML Template setup	4
 Element types	4
-List of available markers	5
-Content markers	5
+List of available markers	6
+Content markers	6
 Structure Markers	7
 Functions	7
-TypoScript configuration	8
-Default rendering	8
-Other examples	8
-Reference	8
-Developer's Guide	9
-Hooks	9
-Custom element types	9
-Debugging	11
-Known issues	12
-Nesting IF markers don't work	12
-Multiple edition is not possible (module web > list)	12
+TypoScript configuration	9
+Default rendering	9
+Other examples	9
+Reference	9
+Developer's Guide	10
+Hooks	10
+Custom element types	10
+Debugging	12
+Known issues	13
+Nested IF markers don't work	13
+Multiple edition is not possible (module web > list)	13
 
 Introduction
 Templatedisplay is a kind of "mappable" template engine for TYPO3. The extension is part of the Tesseract extensions family and deals with rendering content onto the Frontend.
@@ -57,7 +57,7 @@ insert inline HTM directly in the text box
 external file loaded with following syntax: FILE:fileadmin/templates/plugins/tesseract/news/list_of_news.html
 External files would have the benefit to make use of an external editor which is more convenient when editing large templates
 Element types
-There are various elements types that can be chosen according to your needs.
+There are various elements types that can be chosen according to your needs:
 
 Type
 Description
@@ -84,8 +84,12 @@ Image Resource
 Returns only the image-reference, possibly wrapped with stdWrap. The value from the database field will be automatically stored in the “file” property of the object.
 IMG_RESOURCE
 
+Records
+Will render records using the TypoScript RECORDS object. The value is expected to be a uid or have the structure "tablename_uid" (e.g. tt_content_38). The mapped value is automatically stored in the "source" property of the object.
+RECORDS
+
 URL to detail
-This is designed to create a link and corresponds to the typolink TS function. It is automatically loaded with a configuration to create a link to a detail view as expected by the Display Controller (extension: displaycontroller). It is also configured to return only the URL, but this can be overriden in the local TS. 
+This is designed to create a link and corresponds to the typolink TS function. It is automatically loaded with a configuration to create a link to a detail view as expected by the Display Controller (extension: displaycontroller). It is also configured to return only the URL, but this can be overridden in the local TS. 
 The value from the database field will be automatically stored in the “additionalParams” property of the object.
 typolink
 useCacheHash = 1
@@ -108,6 +112,7 @@ typolink
 User function
 It is preconfigured with a property called “parameter” which will contain the value from the database field. The value from the database field will be automatically stored in the “parameter” property of the object.
 USER
+
 
 
 List of available markers
@@ -358,7 +363,7 @@ Display the parameter that are transmitted to the pagebrowser. Extension pagebro
 
 Whenever the extension "devlog" is installed, it is also possible to monitor some information. In a templatedisplay record, check the following options as desired. It may be convenient, in (pre) production mode to check some information produced by visitor.
 Known issues
-Nesting IF markers don't work
+Nested IF markers don't work
 <--IF()-->
   ...
   <--IF()-->
@@ -366,7 +371,7 @@ Nesting IF markers don't work
   <!--ENDIF-->
   ...
 <!--ENDIF-->
-This feature seems to be obvious, but is quite difficult to implement, though (at least, with the actual code basis). It comes from the way the template engine works and particularly the general use of regular expressions to handle the HTML. It would require a complex analysis of the template to cut up in right parts and supbarts the "IF" markers.
+This feature seems to be obvious, but is quite difficult to implement, though (at least, with the actual code base). It comes from the way the template engine works and particularly the general use of regular expressions to handle the HTML. It would require a complex analysis of the template to cut up in right parts and supbarts the "IF" markers.
 Experience has shown that it's possible to live without this feature. If the need of nested "IF" markers is required, you many want to have a look at the "phpdisplay" or "fluiddisplay" Data Consumers.
 http://forge.typo3.org/issues/show/1954 
 Multiple edition is not possible (module web > list)

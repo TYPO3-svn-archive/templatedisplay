@@ -107,6 +107,14 @@ $Id$
 			]]>
 		</snippet>
 	</type>
+    <type index="records">
+   		<snippet id="10" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_green.png">
+   			<![CDATA[
+   			# You must define at least the tables property
+   			tables = tt_content
+   			]]>
+   		</snippet>
+   	</type>
 	<type index="linkToDetail">
 		<snippet id="11" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_pink.png">
 			<![CDATA[
