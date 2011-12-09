@@ -1,6 +1,7 @@
 2011-12-09 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
     * Added a RECORDS element type, resolves #32430
+    * Updated the manual, added an "Installation" chapter, resolves #13483
 
 2011-12-06 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 

@@ -15,28 +15,32 @@ Table of Contents
 EXT: Templatedisplay	1
 Introduction	3
 Screenshots	3
-Configuration	4
-HTML Template setup	4
-Element types	4
-List of available markers	6
-Content markers	6
-Structure Markers	7
-Functions	7
-TypoScript configuration	9
-Default rendering	9
-Other examples	9
-Reference	9
-Developer's Guide	10
-Hooks	10
-Custom element types	10
-Debugging	12
-Known issues	13
-Nested IF markers don't work	13
-Multiple edition is not possible (module web > list)	13
+Questions?	4
+Keeping the developer happy	4
+Installation	5
+Requirements	5
+Configuration	6
+HTML Template setup	6
+Element types	6
+List of available markers	8
+Content markers	8
+Structure Markers	9
+Functions	9
+TypoScript configuration	11
+Default rendering	11
+Other examples	11
+Reference	11
+Developer's Guide	12
+Hooks	12
+Custom element types	12
+Debugging	14
+Known issues	15
+Nested IF markers don't work	15
+Multiple edition is not possible (module web > list)	15
 
 Introduction
 Templatedisplay is a kind of "mappable" template engine for TYPO3. The extension is part of the Tesseract extensions family and deals with rendering content onto the Frontend.
-In short words, it enables to do a mapping between markers and databases fields. A marker is a pattern that will be replaced dynamically by a value coming from the database. This value can be formatted according to some typoscript configuration. It is also possible to incorporate user defined markers within a hook.
+In short words, it enables to do a mapping between markers and databases fields. A marker is a pattern that will be replaced dynamically by a value coming from the database. This value can be formatted according to some TypoScript configuration. It is also possible to incorporate user defined markers within a hook.
 Templatedisplay is well designed for rendering lists with advanced features like sorting, filtering, page browsing. It offers a simple syntax for looping on record set, testing condition, counting records.
 Screenshots
 This is basically the default view where it is possible to map any markers to a database's field. The mapping is done by
@@ -50,6 +54,17 @@ By using the name of the marker, Templatedisplay will tries to identify the fiel
 
 
 
+Questions?
+If you have any questions about this extension, you may want to refer to the Tesseract Project web site (http://www.typo3-tesseract.com/) for support and tutorials. You may also ask questions in the TYPO3 English mailing list (typo3.english).
+Keeping the developer happy
+If you like this extension, do not hesitate to rate it. Go the Extension Repository, search for this extension, click on its title to go to the details view, then click on the “Ratings” tab and vote (you need to be logged in). Every new vote keeps the developer ticking. So just do it!
+You may also take a step back and reflect about the beauty of sharing. Think about how much you are benefiting and how much yourself is giving back to the community.
+Installation
+Extension "templatedisplay" is part of the Tesseract framework. It will not do anything if installed alone.
+After installation you must load the static TypoScript template for proper rendering.
+Templatedisplay can easily display a page browser, but this requires extension "pagebrowse" to be installed too.
+Requirements
+Extension "templatedisplay" requires the PHP Simple XML library.
 Configuration
 HTML Template setup
 HTML Template can be defined of two manners.
@@ -112,7 +127,6 @@ typolink
 User function
 It is preconfigured with a property called “parameter” which will contain the value from the database field. The value from the database field will be automatically stored in the “parameter” property of the object.
 USER
-
 
 
 List of available markers
