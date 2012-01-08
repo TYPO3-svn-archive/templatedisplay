@@ -1,3 +1,7 @@
+2012-01-08 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
+	* Replaced reference to parent object with new, general member variable, resolves #33051
+
 2011-12-09 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
     * Added a RECORDS element type, resolves #32430

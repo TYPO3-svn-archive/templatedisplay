@@ -2,7 +2,7 @@
 /***************************************************************
 *  Copyright notice
 *
-*  (c) 2007-2010	Francois Suter (Cobweb) <typo3@cobweb.ch>
+*  (c) 2007-2012	Francois Suter (Cobweb) <typo3@cobweb.ch>
 *					Fabien Udriot <fabien.udriot@ecodev.ch>
 *  All rights reserved
 *
@@ -74,7 +74,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 * @return	array
 	 */
 	public function getController() {
-		return $this->pObj;
+		return $this->controller;
 	}
 
 	/**
@@ -383,7 +383,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				$uid = trim($match[2]);
 
 					// Avoids recursive call
-				if ($this->pObj->cObj->data['uid'] != $uid) {
+				if ($this->controller->cObj->data['uid'] != $uid) {
 					$conf = array();
 					$conf['source'] = $table.'_'.$uid;
 					$conf['tables'] = $table;
@@ -504,7 +504,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				// Defines the filters array.
 				// It can be the property of the object
 				// But the filter can be given by the caller. @see method processRECORDS();
-			$uid = $this->pObj->cObj->data['uid'];
+			$uid = $this->controller->cObj->data['uid'];
 			if (isset($GLOBALS['tesseract']['filter']['parent'])) {
 				$filters = $GLOBALS['tesseract']['filter']['parent'];
 			}
@@ -609,12 +609,12 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		}
 
 		if (preg_match('/#{3}RECORD_OFFSET#{3}/isU', $content)) {
-			if (!$this->pObj->piVars['page']) {
-				$this->pObj->piVars['page'] = 0;
+			if (!$this->controller->piVars['page']) {
+				$this->controller->piVars['page'] = 0;
 			}
 
 				// Computes the record offset
-			$recordOffset = ($this->pObj->piVars['page'] + 1) * $this->filter['limit']['max'];
+			$recordOffset = ($this->controller->piVars['page'] + 1) * $this->filter['limit']['max'];
 			if ($recordOffset > $this->structure['totalCount']) {
 				$recordOffset = $this->structure['totalCount'];
 			}
@@ -622,24 +622,24 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		}
 
 		if (preg_match('/#{3}START_AT#{3}/isU', $content)) {
-			if (!$this->pObj->piVars['page']) {
-				$this->pObj->piVars['page'] = 0;
+			if (!$this->controller->piVars['page']) {
+				$this->controller->piVars['page'] = 0;
 			}
 
 				// Computes the record offset
-			$recordOffset = ($this->pObj->piVars['page'] + 1) * $this->filter['limit']['max'];
+			$recordOffset = ($this->controller->piVars['page'] + 1) * $this->filter['limit']['max'];
 			if ($recordOffset > $this->structure['totalCount']) {
 				$recordOffset = $this->structure['totalCount'];
 			}
 			$markers['###START_AT###']	= intval($recordOffset) - intval($this->structure['count']) + 1;
 		}
 		if (preg_match('/#{3}STOP_AT#{3}/isU', $content)) {
-			if (!$this->pObj->piVars['page']) {
-				$this->pObj->piVars['page'] = 0;
+			if (!$this->controller->piVars['page']) {
+				$this->controller->piVars['page'] = 0;
 			}
 
 				// Computes the record offset
-			$stop_at = ($this->pObj->piVars['page'] + 1) * $this->filter['limit']['max'];
+			$stop_at = ($this->controller->piVars['page'] + 1) * $this->filter['limit']['max'];
 			if ($stop_at > $this->structure['totalCount']) {
 				$stop_at = $this->structure['totalCount'];
 			}
@@ -696,7 +696,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 				// Adds limit to the query and calculates the number of pages.
 				if ($this->filter['limit']['max'] != '' && $this->filter['limit']['max'] != '0') {
-					//$conf['extraQueryString'] .= '&' . $this->pObj->getPrefixId() . '[max]=' . $this->filter['limit']['max'];
+					//$conf['extraQueryString'] .= '&' . $this->controller->getPrefixId() . '[max]=' . $this->filter['limit']['max'];
 					$conf['numberOfPages'] = ceil($this->structure['totalCount'] / $this->filter['limit']['max']);
 					$conf['items_per_page'] = $this->filter['limit']['max'];
 					$conf['total_items'] = $this->structure['totalCount'];
@@ -707,7 +707,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				}
 
 				// Can be tx_displaycontroller_pi1 OR tx_displaycontroller_pi1
-				$conf['pageParameterName'] = $this->pObj->getPrefixId() . '|page';
+				$conf['pageParameterName'] = $this->controller->getPrefixId() . '|page';
 
 				// Defines pagebrowse configuration options
 				$values = array('templateFile', 'enableMorePages', 'enableLessPages', 'pagesBefore', 'pagesAfter');
@@ -1397,9 +1397,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 	/**
 	 *
-	 * @param	array	$sds: standard data structure
 	 * @param	array	$templateStructure
-	 * @param	int		$index
 	 * @param	array	$markers
 	 * @return	string
 	 */
@@ -1441,12 +1439,13 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 * Important method! Formats the $value given as input according to the $key.
 	 * The variable $key will tell the type of $value. Then format the $value whenever there is TypoScript configuration.
 	 *
-	 * @param	array	$datasource: can be $this->datasourceObjects or $this->datasourceFields
-	 * @param	string	$key: the key of the datasource element e.g. OBJECT.userDefined
-	 * @param	string	$value (optional) makes sense for method getContent()
-	 * @return	array	$sds: the datastructure
+	 * @param array $datasource Can be $this->datasourceObjects or $this->datasourceFields
+	 * @param string $value Makes sense for method getContent()
+	 * @param array $sds The datastructure
+	 * @return string The rendered value
 	 */
 	protected function getValue(&$datasource, $value = '', &$sds = array()) {
+		$output = '';
 
 			// Checks if the page title needs to be changed
 		$this->setPageTitle($datasource['configuration']);
@@ -1529,7 +1528,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$configuration['returnLast'] = 'url';
 				}
 
-				$additionalParams = '&' . $this->pObj->getPrefixId() . '[table]=' . $sds['trueName'] . '&' . $this->pObj->getPrefixId() .'[showUid]=' . $value;
+				$additionalParams = '&' . $this->controller->getPrefixId() . '[table]=' . $sds['trueName'] . '&' . $this->controller->getPrefixId() .'[showUid]=' . $value;
 				$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
 
 					// Generates the link
@@ -1610,8 +1609,8 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	/**
 	 * Extracts the filename of a path
 	 *
-	 * @param	string	$filename
-	 * @return	string	the filename
+	 * @param string $filepath The path to parse
+	 * @return string The filename
 	 */
 	protected function getFileName($filepath) {
 		$filename = '';
@@ -1646,7 +1645,8 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	/**
 	 * Debugs content in production context.
 	 *
-	 * @param	 mixed	 $variable
+	 * @param mixed $variable Variable to debug
+	 * @param string $nameOfVariable Name of the variable to debug (informational)
 	 */
 	protected function dump($variable, $nameOfVariable = '') {
 		if (isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) {
@@ -1680,7 +1680,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		if ($this->configuration['debug'] || TYPO3_DLOG) {
 			t3lib_div::devLog('Markers: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $markers);
 			t3lib_div::devLog('Template structure: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $templateStructure);
-			t3lib_div::devLog('Data structure: "' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
+			t3lib_div::devLog('Data structure: "' . $this->controller->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
 		}
 
 		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
@@ -1692,7 +1692,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		}
 
 		if ($this->consumerData['debug_data_structure'] && !$this->configuration['debug']) {
-			t3lib_div::devLog('Data structure: "' . $this->pObj->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
+			t3lib_div::devLog('Data structure: "' . $this->controller->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
 		}
 	}
 
