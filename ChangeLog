@@ -1,3 +1,7 @@
+2012-02-06 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
+	* Released to TER as version 1.2.0
+
 2012-01-08 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Replaced reference to parent object with new, general member variable, resolves #33051
