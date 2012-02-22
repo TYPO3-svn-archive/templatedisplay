@@ -3,7 +3,7 @@ EXT: Templatedisplay
 Extension Key: templatedisplay
 Language: en
 Keywords: forAdmins, forIntermediates
-Copyright 2000-2011, Fabien Udriot, <fabien.udriot@ecodev.ch>
+Copyright 2000-2012, Fabien Udriot, <fabien.udriot@ecodev.ch>
 
 This document is published under the Open Content License
 available from http://www.opencontent.org/opl.shtml
@@ -19,24 +19,25 @@ Questions?	4
 Keeping the developer happy	4
 Installation	5
 Requirements	5
+Upgrading	5
 Configuration	6
 HTML Template setup	6
 Element types	6
-List of available markers	8
-Content markers	8
+List of available markers	7
+Content markers	7
 Structure Markers	9
 Functions	9
-TypoScript configuration	11
-Default rendering	11
-Other examples	11
-Reference	11
-Developer's Guide	12
-Hooks	12
-Custom element types	12
-Debugging	14
-Known issues	15
-Nested IF markers don't work	15
-Multiple edition is not possible (module web > list)	15
+TypoScript configuration	10
+Default rendering	10
+Other examples	10
+Reference	10
+Developer's Guide	11
+Hooks	11
+Custom element types	11
+Debugging	13
+Known issues	14
+Nested IF markers don't work	14
+Multiple edition is not possible (module web > list)	14
 
 Introduction
 Templatedisplay is a kind of "mappable" template engine for TYPO3. The extension is part of the Tesseract extensions family and deals with rendering content onto the Frontend.
@@ -65,6 +66,18 @@ After installation you must load the static TypoScript template for proper rende
 Templatedisplay can easily display a page browser, but this requires extension "pagebrowse" to be installed too.
 Requirements
 Extension "templatedisplay" requires the PHP Simple XML library.
+Upgrading
+Please read the sections below carefully to know if you are impacted by changes in some versions.
+Upgrading to 1.3.0
+In version 1.3.0, the static TypoScript setup was changed to use a reference to lib.parseFunc_RTE, instead of making a copy. This was made so that plugin.tx_templatedisplay.richtext.parseFunc stays in sync with  lib.parseFunc_RTE. The drawback is that you cannot make changes like:
+plugin.tx_templatedisplay.richtext.parseFunc.foo = bar
+
+anymore. If you did such changes before, you should first override the reference by a copy and make your change again, e.g.
+plugin.tx_templatedisplay.richtext.parseFunc >
+plugin.tx_templatedisplay.richtext.parseFunc < lib.parseFunc_RTE
+plugin.tx_templatedisplay.richtext.parseFunc.foo = bar
+
+
 Configuration
 HTML Template setup
 HTML Template can be defined of two manners.

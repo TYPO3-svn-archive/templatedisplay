@@ -1,5 +1,5 @@
 plugin.tx_templatedisplay {
 	defaultRendering {
-		richtext.parseFunc < lib.parseFunc_RTE
+		richtext.parseFunc =< lib.parseFunc_RTE
 	}
 }

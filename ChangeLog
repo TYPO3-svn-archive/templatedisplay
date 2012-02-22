@@ -1,3 +1,7 @@
+2012-02-22 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
+	* Changed static TS to use reference to lib.parseFunc_RTE, resolves #34184
+
 2012-02-06 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Released to TER as version 1.2.0
