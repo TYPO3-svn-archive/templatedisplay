@@ -64,6 +64,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		$this->table = '';
 		$this->conf = array();
 		$this->datasourceFields = array();
+		$this->datasourceObjects = array();
 		$this->LLkey = 'default';
 		$this->fieldMarkers = array();
 	}
