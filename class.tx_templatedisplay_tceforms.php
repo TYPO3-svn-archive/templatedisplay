@@ -47,7 +47,7 @@ class tx_templatedisplay_tceforms {
 	public function mappingField($PA, t3lib_TCEforms $fobj) {
 		$marker = array();
 		$formField = '';
-#				// Get the related (primary) provider
+			// Get the related (primary) provider
 		$provider = $this->getRelatedProvider($PA['row']);
 		try {
 			$fieldsArray = array();
@@ -229,7 +229,14 @@ class tx_templatedisplay_tceforms {
 			$formField .= t3lib_parsehtml::substituteMarkerArray(file_get_contents($backendTemplatefile), $marker);
 		}
 		catch (Exception $e) {
-			$formField .= tx_tesseract_utilities::wrapMessage($e->getMessage());
+				/** @var $flashMessage t3lib_FlashMessage */
+			$flashMessage = t3lib_div::makeInstance(
+				't3lib_FlashMessage',
+				$e->getMessage(),
+				'',
+				t3lib_FlashMessage::ERROR
+			);
+			$formField .= $flashMessage->render();
 		}
 		return $formField;
 	}
@@ -332,9 +339,10 @@ class tx_templatedisplay_tceforms {
 	}
 
 	/**
-	 * This method retrieves a controller which calls this specific instance of template display
+	 * Retrieves a controller which calls this specific instance of template display
 	 *
-	 * @param	array	$row: database record corresponding the instance of template display
+	 * @param array $row Database record corresponding the instance of template display
+	 * @return tx_tesseract_dataprovider
 	 */
 	protected function getRelatedProvider($row) {
 		$provider = NULL;
@@ -358,6 +366,7 @@ class tx_templatedisplay_tceforms {
 			$uid = $relations[0]['uid_local'];
 			$relatedRecords = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows($field, $table, "uid = '" . $uid . "'");
 				// Instantiate the corresponding service and load the data into it
+				/** @var $controller tx_tesseract_datacontroller */
 			$controller = t3lib_div::makeInstanceService('datacontroller', $relatedRecords[0][$field]);
 			$controller->loadData($uid);
 				// NOTE: getRelatedProvider() may throw an exception, but we just let it pass at this point
