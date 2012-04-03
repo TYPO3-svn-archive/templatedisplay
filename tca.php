@@ -18,7 +18,6 @@ $TCA['tx_templatedisplay_displays'] = array(
 		),
 		'debug_markers' => array(
 			'exclude' => 1,
-			#'label' => 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.debug',
 			'config'  => array(
 				'type'    => 'check',
 				'default' => '0',
@@ -29,7 +28,6 @@ $TCA['tx_templatedisplay_displays'] = array(
 		),
 		'debug_template_structure' => array(
 			'exclude' => 1,
-			#'label' => 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.debug_data_template',
 			'config'  => array(
 				'type'    => 'check',
 				'default' => '0',
@@ -40,7 +38,6 @@ $TCA['tx_templatedisplay_displays'] = array(
 		),
 		'debug_data_structure' => array(
 			'exclude' => 1,
-			#'label' => 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.debug_data_structure',
 			'config'  => array(
 				'type'    => 'check',
 				'default' => '0',
@@ -86,22 +83,13 @@ $TCA['tx_templatedisplay_displays'] = array(
 		),
 	),
 	'types' => array(
-		'0' => array('showitem' => 'hidden;;1;;1-1-1, title;;;;2-2-2, mappings, description')
+		'0' => array('showitem' => 'hidden, title, mappings, description, --palette--;LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.debug;1')
 	),
 	'palettes' => array(
-		'1' => array('showitem' => '')
+		'1' => array(
+			'showitem' => 'debug_markers, debug_template_structure, debug_data_structure',
+			'canNotCollapse' => 1
+		)
 	)
-);
-
-t3lib_extMgm::addToAllTCAtypes("tx_templatedisplay_displays","--palette--;LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.debug;10","","after:description");
-t3lib_extMgm::addToAllTCAtypes("tx_templatedisplay_displays","--palette--;LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.pagebrowser;20","","after:description");
-
-$TCA['tx_templatedisplay_displays']['palettes']['10'] = array(
-	"showitem" => "debug_markers, debug_template_structure, debug_data_structure",
-	"canNotCollapse" => 1
-);
-$TCA['tx_templatedisplay_displays']['palettes']['20'] = array(
-	"showitem" => "pagebrowser_tpl, pagebrowser_pagesbefore, pagebrowser_pagesafter, pagebrowser_showmore, pagebrowser_showless",
-	"canNotCollapse" => 1
 );
 ?>

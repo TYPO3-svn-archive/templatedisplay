@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- $Id$-->
+<T3locallang>
+	<meta type="array">
+		<description>Contents of templatedisplay csh</description>
+		<type>CSH</type>
+		<csh_table>tx_templatedisplay_displays</csh_table>
+		<fileId>EXT:templatedisplay/Resources/Private/Language/locallang_csh_txtemplatedisplaydisplays.xml</fileId>
+		<labelContext type="array">
+		</labelContext>
+	</meta>
+	<data type="array">
+		<languageKey index="default" type="array">
+			<label index=".alttitle">Template-based Display</label>
+			<label index=".description">Template-based display are Data Consumers for Tesseract that use HTML template with a maker syntax close to the one used by TYPO3.</label>
+			<label index="hidden.description">This field is not actively used inside Tesseract.</label>
+			<label index="hidden.details">
+				This field is not considered by the existing components of Tesseract. It could be used to give a visual indication of an obsolete filter.
+				May be used actively in the future or remove altogether.
+			</label>
+			<label index="title.description">Some significant name or label for the template.</label>
+			<label index="mappings.alttitle">HTML template</label>
+			<label index="mappings.description">The template for the rendering.</label>
+			<label index="mappings.syntax">
+				The HTML template is used for the rendering of the data coming from the Data Provider. The HTML can be typed directly into this field or a file can be referenced with the following syntax:
+
+				FILE:fileadmin/templates/tesseract/foo.html
+
+				The base syntax involves markers similar to those used in traditional TYPO3 templates. The most useful elements are the loops, which will iterate on all elements from a given table, and the field markers which can be mapped to a given field from the table. Please refer to the manual for more information.
+			</label>
+			<label index="mappings.image">EXT:templatedisplay/Resources/Public/images/mappings_screenshot.png</label>
+			<label index="mappings.image_descr">A typical template, with a variety of markers</label>
+			<label index="description.description">Some significant description for the template.</label>
+		</languageKey>
+	</data>
+</T3locallang>

@@ -1,6 +1,7 @@
 2012-04-03 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Dropped usage of tx_tesseract_utilities::wrapMessage(), resolves #35602
+	* Added CSH for tx_templatedisplay_displays table, resolves #9250
 
 2012-03-21 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 

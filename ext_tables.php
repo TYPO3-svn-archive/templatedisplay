@@ -23,7 +23,8 @@ $TCA['tx_templatedisplay_displays'] = array(
 	),
 );
 
-
+	// Add context sensitive help (csh) for this table
+t3lib_extMgm::addLLrefForTCAdescr('tx_templatedisplay_displays', t3lib_extMgm::extPath($_EXTKEY) . 'Resources/Private/Language/locallang_csh_txtemplatedisplaydisplays.xml');
 
 	// Add a wizard for adding a datadisplay
 $addTemplateDisplayWizard = array(
@@ -38,9 +39,6 @@ $addTemplateDisplayWizard = array(
 							)
 						);
 $TCA['tt_content']['columns']['tx_displaycontroller_consumer']['config']['wizards']['add_templatedisplay'] = $addTemplateDisplayWizard;
-
-
-
 
 
 	// Register templatedisplay with the Display Controller as a Data Consumer
