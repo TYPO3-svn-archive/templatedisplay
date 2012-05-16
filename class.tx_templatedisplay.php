@@ -1547,7 +1547,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				if (!isset($configuration['returnLast'])) {
 					$configuration['returnLast'] = 'url';
 				}
-				$configuration['additionalParams'] = $additionalParams . $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
+				$configuration['additionalParams'] = $this->localCObj->stdWrap($configuration['additionalParams'], $configuration['additionalParams.']);
 
 					// Generates the link
 				$output = $this->localCObj->typolink('',$configuration);
