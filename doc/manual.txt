@@ -112,6 +112,11 @@ Image Resource
 Returns only the image-reference, possibly wrapped with stdWrap. The value from the database field will be automatically stored in the “file” property of the object.
 IMG_RESOURCE
 
+Media
+Uses the MEDIA content object for rendering, so it can be used for displaying video or audio files. The value from the database field is used automatically for the "file" property.
+MEDIA
+type = video
+renderType = auto
 Records
 Will render records using the TypoScript RECORDS object. The value is expected to be a uid or have the structure "tablename_uid" (e.g. tt_content_38). The mapped value is automatically stored in the "source" property of the object.
 RECORDS

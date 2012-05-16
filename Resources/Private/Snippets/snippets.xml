@@ -107,6 +107,14 @@ $Id$
 			]]>
 		</snippet>
 	</type>
+	<type index="media">
+		<snippet id="16" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_yellow.png">
+			<![CDATA[
+			# Important if type is not "video" (which is default)
+			type = audio
+			]]>
+		</snippet>
+	</type>
     <type index="records">
    		<snippet id="10" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_green.png">
    			<![CDATA[

@@ -28,6 +28,7 @@ Then, you can:
 			<label index="tx_templatedisplay_displays.richtext">Rich text (HTML)</label>
 			<label index="tx_templatedisplay_displays.image">Image</label>
 			<label index="tx_templatedisplay_displays.imageResource">Image Resource</label>
+			<label index="tx_templatedisplay_displays.media">Media</label>
             <label index="tx_templatedisplay_displays.records">Records</label>
 			<label index="tx_templatedisplay_displays.linkToDetail">URL to detail</label>
 			<label index="tx_templatedisplay_displays.linkToPage">URL to page</label>
@@ -76,6 +77,7 @@ Pour changer ce contenu, cliquez sur l'onglet "HTML".
 			<label index="tx_templatedisplay_displays.richtext">Texte riche (HTML)</label>
 			<label index="tx_templatedisplay_displays.image">Image</label>
 			<label index="tx_templatedisplay_displays.imageResource">Image Ressource</label>
+			<label index="tx_templatedisplay_displays.media">Média</label>
             <label index="tx_templatedisplay_displays.records">Enregistrements</label>
 			<label index="tx_templatedisplay_displays.linkToDetail">URL vers detail</label>
 			<label index="tx_templatedisplay_displays.linkToPage">URL vers page</label>

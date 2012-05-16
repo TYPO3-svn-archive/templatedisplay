@@ -37,7 +37,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 	public $tsKey = 'tx_templatedisplay';
 	public $extKey = 'templatedisplay';
-	public static $defaultTypes = array('raw', 'text', 'richtext', 'image', 'imageResource', 'records', 'linkToDetail', 'linkToPage', 'linkToFile', 'email', 'user');
+	public static $defaultTypes = array('raw', 'text', 'richtext', 'image', 'imageResource', 'media', 'records', 'linkToDetail', 'linkToPage', 'linkToFile', 'email', 'user');
 	protected $conf;
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
@@ -1521,6 +1521,21 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$configuration['file'] = $value;
 				}
 				$output = $this->localCObj->IMG_RESOURCE($configuration);
+				break;
+			case 'media':
+					// Override configuration as needed
+				if (!isset($configuration['file'])) {
+					$configuration['file'] = $value;
+				}
+					// Make sure to have a type (default to video)
+				if (!isset($configuration['type'])) {
+					$configuration['type'] = 'video';
+				}
+					// Make sure to have a render type (default to auto)
+				if (!isset($configuration['renderType'])) {
+					$configuration['renderType'] = 'auto';
+				}
+				$output = $this->localCObj->MEDIA($configuration);
 				break;
 			case 'linkToDetail':
 					// Override configuration as needed
