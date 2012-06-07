@@ -66,6 +66,7 @@ After installation you must load the static TypoScript template for proper rende
 Templatedisplay can easily display a page browser, but this requires extension "pagebrowse" to be installed too.
 Requirements
 Extension "templatedisplay" requires the PHP Simple XML library.
+Versions 1.4.0 and above require TYPO3 4.5.
 Upgrading
 Please read the sections below carefully to know if you are impacted by changes in some versions.
 Upgrading to 1.3.0
