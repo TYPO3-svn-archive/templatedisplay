@@ -38,7 +38,8 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	public $tsKey = 'tx_templatedisplay';
 	public $extKey = 'templatedisplay';
 	public static $defaultTypes = array('raw', 'text', 'richtext', 'image', 'imageResource', 'media', 'records', 'linkToDetail', 'linkToPage', 'linkToFile', 'email', 'user');
-	protected $conf;
+	protected $conf; // TypoScript configuration
+	protected $configuration; // Extension configuration
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
 	protected $structure = array(); // Input standardised data structure
@@ -50,6 +51,18 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	protected $datasourceObjects = array();
 	protected $LLkey = 'default';
 	protected $fieldMarkers = array();
+
+	/**
+	 *
+	 * @var	array	$functions: list of function handled by templatedisplay 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
+	 */
+	protected $functions = array('FUNCTION', 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST', 'COUNT', 'PRINTF', 'STR_REPLACE', 'STRIPSLASHES');
+
+	/**
+	 *
+	 * @var tslib_cObj
+	 */
+	protected $localCObj;
 
 	/**
 	 * This method resets values for a number of properties
@@ -70,15 +83,6 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	}
 
 	/**
-	 * Return the controller data.
-	 *
-	 * @return	array
-	 */
-	public function getController() {
-		return $this->controller;
-	}
-
-	/**
 	 * Return the filter data.
 	 *
 	 * @return	array
@@ -86,17 +90,6 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	public function getFilter() {
 		return $this->filter;
 	}
-
-	/**
-	 *
-	 * @var	array	$functions: list of function handled by templatedisplay 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST
-	 */
-	protected $functions = array('FUNCTION', 'LIMIT', 'UPPERCASE', 'LOWERCASE', 'UPPERCASE_FIRST', 'COUNT', 'PRINTF', 'STR_REPLACE', 'STRIPSLASHES');
-	/**
-	 *
-	 * @var tslib_cObj
-	 */
-	protected $localCObj;
 
 	/**
 	 * This method is used to pass a TypoScript configuration (in array form) to the Data Consumer
@@ -215,7 +208,8 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 		$uniqueMarkers = array();
 
-		// Formats TypoScript configuration as array.
+			// Formats TypoScript configuration as array
+			/** @var $parseObj t3lib_TSparser */
 		$parseObj = t3lib_div::makeInstance('t3lib_TSparser');
 		foreach ($datasource as $data) {
 			if(trim($data['configuration']) != ''){
@@ -505,7 +499,6 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				// Defines the filters array.
 				// It can be the property of the object
 				// But the filter can be given by the caller. @see method processRECORDS();
-			$uid = $this->controller->cObj->data['uid'];
 			if (isset($GLOBALS['tesseract']['filter']['parent'])) {
 				$filters = $GLOBALS['tesseract']['filter']['parent'];
 			}
@@ -521,7 +514,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					// Traverses the array and finds the value
 				if (isset($filters['parsed']['filters'][$markerInner])) {
 					$_filter = $filters['parsed']['filters'][$markerInner];
-					$_filter = reset($_filter); //retrieve the cell indepantly from the key
+					$_filter = reset($_filter); //retrieve the cell independently from the key
 					$markers[$marker] = $_filter['value'];
 				}
 			}
@@ -566,15 +559,17 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 *
 	 * Example of GP marker: ###GP:tx_displaycontroller_pi2|parameter###
 	 *
-	 * @param	string	$key: Maybe, tsfe, page, gp
-	 * @param	string	$content HTML code
-	 * @return	string	$content transformed HTML code
+	 * @param string $key Maybe, tsfe, page, gp
+	 * @param array $source Source of data to search in
+	 * @param string $content HTML code
+	 * @throws Exception
+	 * @return string Transformed HTML code
 	 */
 	protected function getExpressionMarkers($key, &$source, $content) {
 
 			// Makes sure $expression has a value
 		if (empty($key)){
-			throw new Exception('No key given to getExpressionMarkers()');
+			throw new Exception('No key given to getExpressionMarkers()', 1340714264);
 		}
 
 			// Defines empty array.
@@ -653,10 +648,10 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 * This method is used to get a value from inside a multi-dimensional array or object
 	 * NOTE: this code is largely inspired by tslib_content::getGlobal()
 	 *
-	 * @param	mixed	$source: array or object to look into
-	 * @param	string	$indices: "path" of indinces inside the multi-dimensional array, of the form index1|index2|...
-	 * @return	mixed	Whatever value was found in the array
-	 * @author	François Suter (Cobweb)
+	 * @param mixed $source Array or object to look into
+	 * @param string $indices "Path" of indices inside the multi-dimensional array, of the form index1|index2|...
+	 * @throws Exception
+	 * @return mixed Whatever value was found in the array
 	 */
 	protected function getValueFromArray($source, $indices) {
 		if (empty($indices)) {
@@ -722,7 +717,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 				// Debug pagebrowse
 				if (isset($GLOBALS['_GET']['debug']['pagebrowse']) && isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) {
-					t3lib_div::debug($conf);
+					t3lib_utility_Debug::debug($conf);
 				}
 
 				$this->localCObj->start(array(), '');
@@ -803,63 +798,67 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
-		protected function preProcessIF($content) {
+	protected function preProcessIF($content) {
 
 			// Preprocesses the <!--IF(###MARKER### == '')-->, puts a '' around the marker
-			$pattern = '/<!-- *IF *\((.+)\) *-->/isU';
-			if (preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
-				foreach($matches as $match) {
-					$searches[] = $expression = $match[0];
-					$expressionInner = $match[1]; // actually this is the condition between the bracket
+		$pattern = '/<!-- *IF *\((.+)\) *-->/isU';
+		if (preg_match_all($pattern, $content, $matches, PREG_SET_ORDER)) {
+			$searches = array();
+			$replacements = array();
+			foreach($matches as $match) {
+				$searches[] = $expression = $match[0];
+				$expressionInner = $match[1]; // actually this is the condition between the bracket
 
-					$pattern = '/#{3}(.+)#{3}/isU';
-					$replacement = "'###$1###'";
-					$_expressionInner = preg_replace($pattern, $replacement, $expressionInner);
-					$replacements[] = str_replace($expressionInner, $_expressionInner, $expression);
-				}
-				$content = str_replace($searches, $replacements, $content);
+				$pattern = '/#{3}(.+)#{3}/isU';
+				$replacement = "'###$1###'";
+				$_expressionInner = preg_replace($pattern, $replacement, $expressionInner);
+				$replacements[] = str_replace($expressionInner, $_expressionInner, $expression);
 			}
-			return $content;
+			$content = str_replace($searches, $replacements, $content);
 		}
+		return $content;
+	}
 
 	/**
 	 * Adds a LOOP marker of first level, if it does not exist and close according to the table name.
 	 * E.g. <!--ENDLOOP--> becomes <!--ENDLOOP(tablename)-->
-	 * This additionnal information allows a better cuting out of the template.
+	 * This additional information allows a better cutting out of the template.
 	 *
 	 * @param	string	$content HTML code
 	 * @return	string	$content transformed HTML code
 	 */
-		protected function processLOOP($content) {
+	protected function processLOOP($content) {
 
 			// Matches the LOOP(table) with offset
-			$pattern = '/<!-- *LOOP *\((.+)\) *-->/isU';
-			if (preg_match_all($pattern, $content, $loopMatches, PREG_OFFSET_CAPTURE)) {
-				preg_match_all('/<!-- *ENDLOOP *-->/isU', $content, $endLoopMatches, PREG_OFFSET_CAPTURE);
+		$pattern = '/<!-- *LOOP *\((.+)\) *-->/isU';
+		if (preg_match_all($pattern, $content, $loopMatches, PREG_OFFSET_CAPTURE)) {
+			preg_match_all('/<!-- *ENDLOOP *-->/isU', $content, $endLoopMatches, PREG_OFFSET_CAPTURE);
 
-				// Traverses the array. Begins at the end
-				$numberOfMatches = count($loopMatches[0]);
-				for ($index = ($numberOfMatches - 1); $index >= 0; $index--) {
-					$table = $loopMatches[1][$index][0];
-					$offset = $loopMatches[1][$index][1];
+			// Traverses the array. Begins at the end
+			$numberOfMatches = count($loopMatches[0]);
+			for ($index = ($numberOfMatches - 1); $index >= 0; $index--) {
+				$table = $loopMatches[1][$index][0];
+				$offset = $loopMatches[1][$index][1];
 
-					// Loops around the ENDLOOP.
-					// Checks the value offset. The first bigger is the good one. -> remembers the table name.
-					for ($index2 = 0; $index2 < $numberOfMatches; $index2++) {
-						$_offset = $endLoopMatches[0][$index2][1];
-						if($_offset > $offset && !isset($endLoopMatches[0][$index2][2])) {
-							$endLoopMatches[0][$index2][2] = $table;
-							break;
+				// Loops around the ENDLOOP.
+				// Checks the value offset. The first bigger is the good one. -> remembers the table name.
+				for ($index2 = 0; $index2 < $numberOfMatches; $index2++) {
+					$_offset = $endLoopMatches[0][$index2][1];
+					if($_offset > $offset && !isset($endLoopMatches[0][$index2][2])) {
+						$endLoopMatches[0][$index2][2] = $table;
+						break;
 					}
 				} // end for ENDLOOP
 			} // end for LOOP
 
-			// Builds replacement array
+				// Builds replacement array
+			$patterns = array();
+			$replacements = array();
 			for ($index = 0; $index < $numberOfMatches; $index ++) {
 				$patterns[$index] = '/<!-- *ENDLOOP *-->/isU';
 				$replacements[$index] = '<!--ENDLOOP(' . $endLoopMatches[0][$index][2] . ')-->';
 			}
-			// Replacement with limit 1
+				// Replacement with limit 1
 			$content = preg_replace($patterns, $replacements, $content, 1);
 		}
 
@@ -957,7 +956,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				}
 
 				if (eval('$result = ' . $evaluation .';') === FALSE) {
-					t3lib_div::debug('expression: ' . $evaluation, 'ERROR evaluating, line: ' . __LINE__ . ' file: ' . __FILE__);
+					t3lib_utility_Debug::debug('expression: ' . $evaluation, 'ERROR evaluating, line: ' . __LINE__ . ' file: ' . __FILE__);
 				}
 
 				$searchContent = $matches[0][$index];
@@ -969,8 +968,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 						$replaceContent = $_matches[1];
 					}
 					// else is not necessary, it would be equal to write $replaceContent = $replaceContent;
-				}
-				else {
+				} else {
 					// checks if $replaceContent contains a <!-- ELSE -->
 					if (preg_match('/(.+)(<!-- *ELSE *-->)(.+)/is', $replaceContent, $_matches)) {
 						$replaceContent = $_matches[3];
@@ -1006,7 +1004,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 						$_content = $matches[3][$index];
 						// %%% is used to delimit the comma separated parameters.
 						$parameters = explode('%%%,%%%', $_content);
-						#t3lib_div::debug($parameters, '$parameters');
+						#t3lib_utility_Debug::debug($parameters, '$parameters');
 
 						$_content = call_user_func_array($functionName, $parameters);
 						$content = str_replace($_marker, $_content, $content);
@@ -1109,15 +1107,10 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 * [emptyLoops]	=>	(string) Contains the value if loops is empty.
 	 * [loops]		=>	(array) Contains a templateStructure array [table], [template], [content], [emptyLoops], [loops]
 	 *
-	 * @param	string	$template: template code with markers
-	 * @param	string	$content: template code without <LOOP> marker (outer)
-	 * @return	array	$templateStructure: multidemensionl array
+	 * @param string $template Template code with markers
+	 * @return array $templateStructure Multidimensional array
 	 */
-	protected function getTemplateStructure($template, $content = '') {
-		// Defines a value for $content
-		if ($content == '') {
-			$content = $template;
-		}
+	protected function getTemplateStructure($template) {
 
 		// Default value
 		$templateStructure = array();
@@ -1172,11 +1165,11 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	/**
 	 * Looks up for a value in a sds.
 	 *
-	 * @param	array	$sds: standard data structure
-	 * @param	int		$index: the position in the array
-	 * @param	string	$table: the name of the table
-	 * @param	string	$cellname: the name of the field. Can be either 'totalCount' or 'count'
-	 * @return	int	$value: if no value is found return NULL
+	 * @param array $sds Standard data structure
+	 * @param int $index The position in the array
+	 * @param string $table The name of the table
+	 * @param string $cellName The name of the field. Can be either 'totalCount' or 'count'
+	 * @return int If no value is found return NULL
 	 */
 	protected function getTotalValueFromStructure(&$sds, $index, $table, $cellName) {
 
@@ -1281,9 +1274,12 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	/**
 	 * Gets the subpart template and substitutes content (label or field).
 	 *
-	 * @param	array	$templateStructure
-	 * @param	array	$sds: standard data structure
-	 * @return	string	$content: HTML content
+	 * @param array $templateStructure
+	 * @param array $sds Standard data structure
+	 * @param array $pRecords
+	 * @param array $fieldMarkers
+	 * @param array $totalfieldMarkers
+	 * @return string HTML content
 	 */
 	protected function getContent($templateStructure, &$sds, $pRecords = array(), $fieldMarkers = array(), $totalfieldMarkers = array()){
 
@@ -1362,7 +1358,6 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					// TRAVERSES (SUB) TEMPLATE STRUCTURE
 				foreach ($templateStructure['loops'] as &$subTemplateStructure) {
 
-					$__content = '';
 					$foundSubSds = array();
 					$sdsSubtables = $sds['records'][$index]['__substructure'];
 					if (!empty($sdsSubtables) && isset($sdsSubtables[$subTemplateStructure['table']])) {
@@ -1381,14 +1376,14 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 						$__content = $this->getEmptyValue($subTemplateStructure, $fieldMarkers);
 						$_content = str_replace($subTemplateStructure['template'], $__content, $_content);
 					} // end else
-					$loop ++;
+					$loop++;
 				} // end foreach template structure
 			} // end if
 
-			// Merges array(FIELD, LABEL, COUNTER)
+				// Merges array(FIELD, LABEL, COUNTER)
 			$this->fieldMarkers = array_merge($fieldMarkers, $totalfieldMarkers, $this->getLabelMarkers($sds['name']), array('###COUNTER###' => $index), $this->counter);
 
-			// Substitues content
+				// Substitutes content
 			$content .= t3lib_parsehtml::substituteMarkerArray($_content, $this->fieldMarkers);
 
 		} // end for (records)
@@ -1455,7 +1450,6 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		$tsIndex = $datasource['type'] . '.';
 		$baseConfiguration = isset($this->conf['defaultRendering.'][$tsIndex]) ? $this->conf['defaultRendering.'][$tsIndex] : array();
 			// Merge base configuration with local configuration
-		$configuration = array();
 		if (is_array($datasource['configuration'])) {
 			$configuration = t3lib_div::array_merge_recursive_overrule($baseConfiguration, $datasource['configuration']);
 		} else {
@@ -1666,7 +1660,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 */
 	protected function dump($variable, $nameOfVariable = '') {
 		if (isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) {
-			t3lib_div::debug($variable, $nameOfVariable);
+			t3lib_utility_Debug::debug($variable, $nameOfVariable);
 		}
 	}
 
@@ -1678,19 +1672,19 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	 */
 	protected function debug($markers, $templateStructure) {
 		if (isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['TSFE']->beUserLogin) {
-			t3lib_div::debug($markers);
+			t3lib_utility_Debug::debug($markers);
 		}
 
 		if (isset($GLOBALS['_GET']['debug']['template']) && $GLOBALS['TSFE']->beUserLogin) {
-			t3lib_div::debug($templateStructure);
+			t3lib_utility_Debug::debug($templateStructure);
 		}
 
 		if (isset($GLOBALS['_GET']['debug']['structure']) && $GLOBALS['TSFE']->beUserLogin) {
-			t3lib_div::debug($this->structure);
+			t3lib_utility_Debug::debug($this->structure);
 		}
 
 		if (isset($GLOBALS['_GET']['debug']['filter']) && $GLOBALS['TSFE']->beUserLogin) {
-			t3lib_div::debug($this->filter);
+			t3lib_utility_Debug::debug($this->filter);
 		}
 
 		if ($this->configuration['debug'] || TYPO3_DLOG) {

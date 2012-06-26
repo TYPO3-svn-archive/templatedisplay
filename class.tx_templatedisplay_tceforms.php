@@ -294,7 +294,7 @@ class tx_templatedisplay_tceforms {
 	/**
 	 * Return the translated string according to the key
 	 *
-	 * @param string key of label
+	 * @param string $key Key of the label
 	 */
 	private function getLL($key){
 		$langReference = 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:';
@@ -313,8 +313,6 @@ class tx_templatedisplay_tceforms {
 		$relFilePath = '';
 			// If the file path begins with EXT:, interpret the path to the extension
 		if (substr($filename, 0, 4) == 'EXT:') {
-			$extKey = '';
-			$local = '';
 			list($extKey, $local) = explode('/', substr($filename, 4), 2);
 			if (!empty($extKey) && t3lib_extMgm::isLoaded($extKey) && !empty($local)) {
 				$relFilePath = t3lib_extMgm::extRelPath($extKey) . $local;
