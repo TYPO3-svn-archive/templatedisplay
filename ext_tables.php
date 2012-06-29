@@ -18,6 +18,7 @@ $TCA['tx_templatedisplay_displays'] = array(
 		'enablecolumns' => array(
 			'disabled' => 'hidden',
 		),
+		'searchFields' => 'title,description,template',
 		'dynamicConfigFile' => t3lib_extMgm::extPath($_EXTKEY).'tca.php',
 		'iconfile'          => t3lib_extMgm::extRelPath($_EXTKEY).'icon_tx_templatedisplay_displays.png',
 	),
@@ -26,7 +27,7 @@ $TCA['tx_templatedisplay_displays'] = array(
 	// Add context sensitive help (csh) for this table
 t3lib_extMgm::addLLrefForTCAdescr('tx_templatedisplay_displays', t3lib_extMgm::extPath($_EXTKEY) . 'Resources/Private/Language/locallang_csh_txtemplatedisplaydisplays.xml');
 
-	// Add a wizard for adding a datadisplay
+	// Add a wizard for adding a data consumer
 $addTemplateDisplayWizard = array(
 						'type' => 'script',
 						'title' => 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:wizards.add_templatedisplay',
