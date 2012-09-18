@@ -1486,8 +1486,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				if (!isset($configuration['altText'])) {
 						// Gets the file name
 					$configuration['altText'] = $this->getFileName($configuration['file']);
-				}
-				else {
+				} else {
 					$configuration['altText'] = $this->localCObj->stdWrap($configuration['altText'], $configuration['altText.']);
 				}
 
@@ -1495,8 +1494,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				if (!isset($configuration['titleText'])) {
 						// Gets the file name
 					$configuration['titleText'] = $this->getFileName($configuration['file']);
-				}
-				else {
+				} else {
 					$configuration['titleText'] = $this->localCObj->stdWrap($configuration['titleText'], $configuration['titleText.']);
 				}
 
@@ -1504,8 +1502,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				if (empty($image)) {
 					// TODO: in production mode, nothing should be displayed. "templateDisplay_imageNotFound"
 					$output = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'Resources/Public/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
-				}
-				else {
+				} else {
 					$output = $image;
 				}
 				break;
@@ -1533,7 +1530,9 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				break;
 			case 'linkToDetail':
 					// Override configuration as needed
-				$configuration['useCacheHash'] = 1;
+				if (!isset($configuration['useCacheHash'])) {
+					$configuration['useCacheHash'] = 1;
+				}
 				if (!isset($configuration['returnLast'])) {
 					$configuration['returnLast'] = 'url';
 				}
@@ -1546,7 +1545,9 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				break;
 			case 'linkToPage':
 					// Override configuration as needed
-				$configuration['useCacheHash'] = 1;
+				if (!isset($configuration['useCacheHash'])) {
+					$configuration['useCacheHash'] = 1;
+				}
 
 					// Defines parameter
 				if (!isset($configuration['parameter'])) {
@@ -1563,7 +1564,9 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				break;
 			case 'linkToFile':
 					// Override configuration as needed
-				$configuration['useCacheHash'] = 1;
+				if (!isset($configuration['useCacheHash'])) {
+					$configuration['useCacheHash'] = 1;
+				}
 
 				if (!isset($configuration['returnLast'])) {
 					$configuration['returnLast'] = 'url';
