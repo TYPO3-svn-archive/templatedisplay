@@ -253,11 +253,13 @@ E.g.
 COUNT(tt_content) will return the number of records in table tt_content
 PAGE_STATUS(404)
 PAGE_STATUS(404, page/404/) 
+PAGE_STATUS(404, uid:30)
 PAGE_STATUS(301, new/page/)
 If the Data Structure is empty, send the appropriate header and redirect link when needed.
 
 For the 404 status, leaving the redirect URL empty will make it fall back on the internal page not found handling of TYPO3.
 
+You can also specifiy a page uid to redirect on. In this case, the QUERY_STRING is added to the link.
 
 TypoScript configuration
 Default rendering

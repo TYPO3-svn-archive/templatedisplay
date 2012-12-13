@@ -752,7 +752,21 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				$_match = array_map('trim', $_match);
 				$errorCode = $_match[0];
 				$redirect = $replace = '';
-				if (isset($_match[1])) {
+
+				// if target is prefixed with pid:, then we try to build a typolink to the pid
+				if (isset($_match[1]) && substr($_match[1],0,4) == 'pid:') {
+
+					/** @var $contentObject tslib_cObj */
+					$contentObject = $GLOBALS['TSFE']->cObj;
+					$config = array();
+					$config['returnLast'] = 'url';
+					$config['parameter'] = substr($_match[1],4);
+					$config['useCacheHash'] = 1;
+					$config['addQueryString'] = 1;
+					$redirect = $contentObject->typolink('', $config);
+				}
+				// target is a link on which we just point
+				elseif (isset($_match[1])) {
 					$redirect = $_match[1];
 				}
 
