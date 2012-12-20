@@ -773,15 +773,19 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				switch ($errorCode) {
 					case '301' : // 301 Moved Permanently
 						header('Location: ' . $redirect, TRUE, 301);
+						die();
 						break;
 					case '302' : // 302 Found
 						header('Location: /' . $redirect, TRUE, 302);
+						die();
 						break;
 					case '303' : // 303 See Other
 						header('Location: ' . $redirect, TRUE, 303);
+						die();
 						break;
 					case '307' : // 307 Temporary Redirect
 						header('Location: ' . $redirect, TRUE, 307);
+						die();
 						break;
 					case '404' : // 404
 						if (empty($redirect)) {
@@ -789,12 +793,14 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 						} else {
 							header('HTTP/1.1 404 Not Found');
 							header('Location: ' . $redirect, TRUE, 302);
+							die();
 						}
 						break;
 					case '500' :
 						header('HTTP/1.1 500 Internal Server Error');
 						if ($redirect != '') {
 							header('Location: ' . $redirect, TRUE, 302);
+							die();
 						}
 						break;
 					default :
