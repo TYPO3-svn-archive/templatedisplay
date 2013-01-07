@@ -353,22 +353,31 @@ class tx_templatedisplay_tceforms {
 			$numRelations = count($relations);
 				// Exit the loop as soon as at least one relation is found
 			if ($numRelations > 0) {
-				break;
-			}
-		}
+				foreach ($relations as $aRelation) {
+						// Try to get the related controller
+					$table = $aRelation['local_table'];
+					$field = $aRelation['local_field'];
+					$uid = intval($aRelation['uid_local']);
+					$where = 'uid = ' . $uid;
+					$deleteClause = t3lib_BEfunc::deleteClause($table);
+					if (!empty($deleteClause)) {
+						$where .= $deleteClause;
+					}
+					$relatedRecords = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows($field, $table, $where);
 
-		if ($numRelations != 0) {
-				// Get the related controllers
-			$table = $relations[0]['local_table'];
-			$field = $relations[0]['local_field'];
-			$uid = $relations[0]['uid_local'];
-			$relatedRecords = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows($field, $table, "uid = '" . $uid . "'");
-				// Instantiate the corresponding service and load the data into it
-				/** @var $controller tx_tesseract_datacontroller */
-			$controller = t3lib_div::makeInstanceService('datacontroller', $relatedRecords[0][$field]);
-			$controller->loadData($uid);
-				// NOTE: getRelatedProvider() may throw an exception, but we just let it pass at this point
-			$provider = $controller->getRelatedProvider();
+						// Continue if a controller was found
+					if (count($relatedRecords) > 0) {
+							// Instantiate the corresponding service and load the data into it
+							/** @var $controller tx_tesseract_datacontroller */
+						$controller = t3lib_div::makeInstanceService('datacontroller', $relatedRecords[0][$field]);
+						$controller->loadData($uid);
+							// Now get the provider an return it (no need to check other relations, if any)
+							// NOTE: getRelatedProvider() may throw an exception, but we just let it pass at this point
+						$provider = $controller->getRelatedProvider();
+						return $provider;
+					}
+				}
+			}
 		}
 		return $provider;
 	}
