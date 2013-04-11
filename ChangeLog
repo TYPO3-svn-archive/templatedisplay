@@ -1,3 +1,7 @@
+2013-04-11 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
+	* Used new API for accessing controller properties, resolves #47130
+
 2013-01-07 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Corrected error in fetching related controller in BE mapping interface, resolves #44364

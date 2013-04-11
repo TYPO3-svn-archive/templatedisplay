@@ -369,8 +369,18 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 		if (preg_match_all("/#{3}RECORD\((.+),(.+)\)#{3}/isU", $content, $matches, PREG_SET_ORDER)) {
 
-				// Stores the filter. Templatedisplay is a singleton and the filter property will be override by a child call.
+				// Stores the filter. Templatedisplay is a singleton and the filter property will be overridden by a child call.
 			$GLOBALS['tesseract']['filter']['parent'] = $this->filter;
+
+				// Get the current controller's id
+				// NOTE: At least in a FE context, it should never be missing,
+				// since it will correspond to a tt_content record.
+			try {
+				$currentUid = $this->controller->getControllerDataValue('uid');
+			}
+			catch (tx_tesseract_exception $e) {
+				$currentUid = 0;
+			}
 
 			foreach ($matches as $match) {
 				$marker = $match[0];
@@ -378,9 +388,17 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 				$uid = trim($match[2]);
 
 					// Avoids recursive call
-				if ($this->controller->cObj->data['uid'] != $uid) {
+					// Issue a warning if that is the case
+				if ($currentUid == $uid) {
+					$this->controller->addMessage(
+						$this->extKey,
+						'Recursive call to RECORD ' . $table . ':' . $uid,
+						'',
+						t3lib_FlashMessage::WARNING
+					);
+				} else {
 					$conf = array();
-					$conf['source'] = $table.'_'.$uid;
+					$conf['source'] = $table . '_' . $uid;
 					$conf['tables'] = $table;
 					$_content = $this->localCObj->RECORDS($conf);
 					$content = str_replace($marker, $_content, $content);
@@ -391,7 +409,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	}
 
 	/**
-	 * Changes the page title if templatedisplay encounters typoScript configuration.
+	 * Changes the page title if templatedisplay encounters TypoScript configuration.
 	 * Typoscript configuration have the insertData syntax e.g. {table.field}
 	 * This is done by changing the page title in the tslib_fe object.
 	 *
@@ -605,12 +623,10 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		}
 
 		if (preg_match('/#{3}RECORD_OFFSET#{3}/isU', $content)) {
-			if (!$this->controller->piVars['page']) {
-				$this->controller->piVars['page'] = 0;
-			}
+			$page = $this->getCurrentPage();
 
 				// Computes the record offset
-			$recordOffset = ($this->controller->piVars['page'] + 1) * $this->filter['limit']['max'];
+			$recordOffset = ($page + 1) * $this->filter['limit']['max'];
 			if ($recordOffset > $this->structure['totalCount']) {
 				$recordOffset = $this->structure['totalCount'];
 			}
@@ -618,30 +634,41 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		}
 
 		if (preg_match('/#{3}START_AT#{3}/isU', $content)) {
-			if (!$this->controller->piVars['page']) {
-				$this->controller->piVars['page'] = 0;
-			}
+			$page = $this->getCurrentPage();
 
 				// Computes the record offset
-			$recordOffset = ($this->controller->piVars['page'] + 1) * $this->filter['limit']['max'];
+			$recordOffset = ($page + 1) * $this->filter['limit']['max'];
 			if ($recordOffset > $this->structure['totalCount']) {
 				$recordOffset = $this->structure['totalCount'];
 			}
 			$markers['###START_AT###']	= intval($recordOffset) - intval($this->structure['count']) + 1;
 		}
 		if (preg_match('/#{3}STOP_AT#{3}/isU', $content)) {
-			if (!$this->controller->piVars['page']) {
-				$this->controller->piVars['page'] = 0;
-			}
+			$page = $this->getCurrentPage();
 
 				// Computes the record offset
-			$stop_at = ($this->controller->piVars['page'] + 1) * $this->filter['limit']['max'];
+			$stop_at = ($page + 1) * $this->filter['limit']['max'];
 			if ($stop_at > $this->structure['totalCount']) {
 				$stop_at = $this->structure['totalCount'];
 			}
 			$markers['###STOP_AT###']	= $stop_at;
 		}
 		return $markers;
+	}
+
+	/**
+	 * Gets the current page for pagination from the controller
+	 *
+	 * @return int
+	 */
+	protected function getCurrentPage() {
+		try {
+			$page = $this->controller->getControllerArgumentValue('page');
+		}
+		catch (tx_tesseract_exception $e) {
+			$page = 0;
+		}
+		return $page;
 	}
 
 	/**
@@ -697,8 +724,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$conf['items_per_page'] = $this->filter['limit']['max'];
 					$conf['total_items'] = $this->structure['totalCount'];
 					$conf['total_pages'] = $conf['numberOfPages']; // duplicated, because $conf['numberOfPages'] is protected
-				}
-				else {
+				} else {
 					$conf['numberOfPages'] = 1;
 				}
 
