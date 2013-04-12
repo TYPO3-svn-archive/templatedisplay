@@ -208,7 +208,7 @@ if (Prototype) {
 				}
 			}
 			catch(error){
-				alert('JSON transformation has failed!\n\n' + error)
+				alert('JSON transformation has failed!\n\n' + error);
 				return;
 			}
 
@@ -218,7 +218,7 @@ if (Prototype) {
 			var type = $('templatedisplay_type').value;
 			var configuration = $('templatedisplay_configuration').value;
 			var marker = $('templatedisplay_marker').value;
-			var newRecord = '{"marker": "' + marker + '", "table": "' + content[0] + '", "field": "' + content[1] + '", "type": "' + type + '", "configuration": "' + protectJsonString(configuration) + '"}'
+			var newRecord = '{"marker": "' + marker + '", "table": "' + content[0] + '", "field": "' + content[1] + '", "type": "' + type + '", "configuration": "' + protectJsonString(configuration) + '"}';
 			newRecord = newRecord.evalJSON(true);
 
 			// Make sure the newRecord does not exist in the datasource. If yes, remember the offset of the record for further use.
@@ -305,12 +305,12 @@ if (Prototype) {
 				var pattern = /#{3}FIELD\.([0-9a-zA-Z\_\-\.]+)#{3}/g;
 			}
 			var field = element.innerHTML.replace(pattern,'$1');
-			
+
 			// Extract the table name's field
 			var table = '';
 
 			// Get a reference of the first image. (accept.png || exclamation.png)
-			var image = $(element.nextSibling)
+			var image = $(element.nextSibling);
 
 			// Add a little mark in order to be able to split the content in the right place
 			image.src = '';
@@ -324,7 +324,7 @@ if (Prototype) {
 			// True, when no JSON information is available -> put an empty icon
 			if($('templatedisplay_json').value == ''){
 				image.src = infomodule_path + 'exclamation.png';
-				image.title = 'Status: not matched'
+				image.title = 'Status: not matched';
 				return;
 			}
 
@@ -334,7 +334,7 @@ if (Prototype) {
 					templatedisplay.records = $('templatedisplay_json').value.evalJSON(true);
 				}
 				catch(error){
-					alert('JSON transformation has failed!\n You should check the datasource \n' + error)
+					alert('JSON transformation has failed!\n You should check the datasource \n' + error);
 					return;
 				}
 			}
