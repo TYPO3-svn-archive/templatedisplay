@@ -39,12 +39,15 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	public $extKey = 'templatedisplay';
 	public static $defaultTypes = array('raw', 'text', 'richtext', 'image', 'imageResource', 'media', 'records', 'linkToDetail', 'linkToPage', 'linkToFile', 'email', 'user');
 	protected $conf; // TypoScript configuration
-	protected $configuration; // Extension configuration
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
 	protected $structure = array(); // Input standardised data structure
 	protected $result = ''; // The result of the processing by the Data Consumer
 	protected $counter = array();
+	/**
+	 * @var bool Debug flag
+	 */
+	protected $debug = FALSE;
 
 	protected $labelMarkers = array();
 	protected $datasourceFields = array();
@@ -183,7 +186,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 		// Initializes local cObj
 		$this->localCObj = t3lib_div::makeInstance('tslib_cObj');
-		$this->configuration = unserialize($GLOBALS['TYPO3_CONF_VARS']['EXT']['extConf'][$this->extKey]);
+		$this->debug = $this->controller->getDebug();
 
 		$this->setPageTitle($this->conf);
 
@@ -194,7 +197,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		// Transforms the string from field mappings into a PHP array.
 		// This array contains the mapping information btw a marker and a field.
 		try {
-			$datasource = json_decode($this->consumerData['mappings'],true);
+			$datasource = json_decode($this->consumerData['mappings'], TRUE);
 
 			// Makes sure $datasource is an array
 			if ($datasource === NULL) {
@@ -202,8 +205,15 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 			}
 		}
 		catch (Exception $e) {
-			$this->result .= '<div style="color :red; font-weight: bold">JSON decoding problem for tx_templatedisplay_displays.uid = '.$this->uid . '.</div>';
-			return false;
+				// Issue error message and exit immediately
+			$this->controller->addMessage(
+				$this->extKey,
+				'JSON decoding failed, rendering aborted',
+				'',
+				t3lib_FlashMessage::ERROR,
+				array($this->consumerData['mappings'])
+			);
+			return;
 		}
 
 		$uniqueMarkers = array();
@@ -298,7 +308,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		$templateStructure = $this->getTemplateStructure($templateCode);
 
 			// Debug
-		$this->debug($markers, $templateStructure);
+		$this->performDebug($markers, $templateStructure);
 
 			// Transforms the HTML template to HTML content
 		$templateContent = $templateCode;
@@ -347,13 +357,18 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 			// Processes markers of type ###RECORD(tt_content,1)###
 		$this->result = $this->processRECORDS($this->result);
 
-			// add debug[display] in order to see the untranslated markers
 		$this->result = $this->clearMarkers($this->result);
 	}
 
+	/**
+	 * Removes unreplaced markers (unless debug is active)
+	 *
+	 * @param string $content The prepared output
+	 * @return string Cleaned up output
+	 */
 	function clearMarkers($content) {
-			// Useful for debug purpose. Whenever the paramter is detected, it will not replace empty value.
-		if (!isset($GLOBALS['_GET']['debug']['display'])) {
+			// Useful for debug purpose. Whenever the parameter is detected, it will not replace empty value.
+		if (!$this->debug) {
 			$content = preg_replace('/#{3}.+#{3}/isU', '', $content);
 		}
 		return $content;
@@ -563,8 +578,12 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 						$markers[$matches[$index][0]] = tx_expressions_parser::evaluateExpression($matches[$index][1]);
 					}
 					catch (Exception $e) {
-							// TODO: if and when a debug mode is implemented, this exception should be floated up
-						continue;
+						$this->controller->addMessage(
+							$this->extKey,
+							'Problem parsing expression "' . $matches[$index][1] . '" (' . $e->getMessage() . ')',
+							'',
+							t3lib_FlashMessage::WARNING
+						);
 					}
 				}
 			}
@@ -1544,12 +1563,15 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$configuration['titleText'] = $this->localCObj->stdWrap($configuration['titleText'], $configuration['titleText.']);
 				}
 
-				$image = $this->localCObj->IMAGE($configuration);
-				if (empty($image)) {
-					// TODO: in production mode, nothing should be displayed. "templateDisplay_imageNotFound"
-					$output = '<img src="'.t3lib_extMgm::extRelPath($this->extKey).'Resources/Public/images/missing_image.png'.'" class="templateDisplay_imageNotFound" alt="Image not found"/>';
-				} else {
-					$output = $image;
+				$output = $this->localCObj->IMAGE($configuration);
+				if (empty($output)) {
+					$this->controller->addMessage(
+						$this->extKey,
+						'Image not found for marker: ' . $datasource['marker'],
+						'',
+						t3lib_FlashMessage::WARNING,
+						$configuration
+					);
 				}
 				break;
 			case 'imageResource':
@@ -1657,8 +1679,12 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$class = t3lib_div::makeInstance($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['templatedisplay']['types'][$datasource['type']]['class']);
 					$output = $class->render($value, $configuration, $this);
 				} else {
-					// TODO: error reporting
-					// Ideally this should be an exception, to display when in debug mode
+					$this->controller->addMessage(
+						$this->extKey,
+						'Unknow object type "' . $datasource['type'] . '" for marker: ' . $datasource['marker'],
+						'',
+						t3lib_FlashMessage::ERROR
+					);
 				}
 		} // end switch
 
@@ -1702,56 +1728,35 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 	}
 
 	/**
-	 * Debugs content in production context.
-	 *
-	 * @param mixed $variable Variable to debug
-	 * @param string $nameOfVariable Name of the variable to debug (informational)
-	 */
-	protected function dump($variable, $nameOfVariable = '') {
-		if (isset($GLOBALS['TYPO3_MISC']['microtime_BE_USER_start'])) {
-			t3lib_utility_Debug::debug($variable, $nameOfVariable);
-		}
-	}
-
-	/**
 	 * Displays in the frontend or in the devlog some debug output
 	 *
 	 * @param array $markers
 	 * @param array $templateStructure
+	 * @return void
 	 */
-	protected function debug($markers, $templateStructure) {
-		if (isset($GLOBALS['_GET']['debug']['markers']) && $GLOBALS['TSFE']->beUserLogin) {
-			t3lib_utility_Debug::debug($markers);
-		}
-
-		if (isset($GLOBALS['_GET']['debug']['template']) && $GLOBALS['TSFE']->beUserLogin) {
-			t3lib_utility_Debug::debug($templateStructure);
-		}
-
-		if (isset($GLOBALS['_GET']['debug']['structure']) && $GLOBALS['TSFE']->beUserLogin) {
-			t3lib_utility_Debug::debug($this->structure);
-		}
-
-		if (isset($GLOBALS['_GET']['debug']['filter']) && $GLOBALS['TSFE']->beUserLogin) {
-			t3lib_utility_Debug::debug($this->filter);
-		}
-
-		if ($this->configuration['debug'] || TYPO3_DLOG) {
-			t3lib_div::devLog('Markers: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $markers);
-			t3lib_div::devLog('Template structure: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $templateStructure);
-			t3lib_div::devLog('Data structure: "' . $this->controller->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
-		}
-
-		if ($this->consumerData['debug_markers'] && !$this->configuration['debug']) {
-			t3lib_div::devLog('Markers: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $markers);
-		}
-
-		if ($this->consumerData['debug_template_structure'] && !$this->configuration['debug']) {
-			t3lib_div::devLog('Template structure: "' . $this->consumerData['title'] . '"', $this->extKey, -1, $templateStructure);
-		}
-
-		if ($this->consumerData['debug_data_structure'] && !$this->configuration['debug']) {
-			t3lib_div::devLog('Data structure: "' . $this->controller->cObj->data['header'] . '"', $this->extKey, -1, $this->structure);
+	protected function performDebug($markers, $templateStructure) {
+		if ($this->debug) {
+			$this->controller->addMessage(
+				$this->extKey,
+				'Markers and their replacement values',
+				'',
+				t3lib_FlashMessage::INFO,
+				$markers
+			);
+			$this->controller->addMessage(
+				$this->extKey,
+				'Template structure',
+				'',
+				t3lib_FlashMessage::INFO,
+				$templateStructure
+			);
+			$this->controller->addMessage(
+				$this->extKey,
+				'Received data structure',
+				'',
+				t3lib_FlashMessage::INFO,
+				$this->structure
+			);
 		}
 	}
 

@@ -3,7 +3,7 @@ EXT: Templatedisplay
 Extension Key: templatedisplay
 Language: en
 Keywords: forAdmins, forIntermediates
-Copyright 2000-2012, Fabien Udriot, <fabien.udriot@ecodev.ch>
+Copyright 2008-2013, Fabien Udriot, <fabien.udriot@ecodev.ch>
 
 This document is published under the Open Content License
 available from http://www.opencontent.org/opl.shtml
@@ -35,6 +35,7 @@ Developer's Guide	11
 Hooks	11
 Custom element types	11
 Debugging	13
+Debugging in version 1.6.0 and later	13
 Known issues	14
 Nested IF markers don't work	14
 Multiple edition is not possible (module web > list)	14
@@ -58,7 +59,7 @@ By using the name of the marker, Templatedisplay will tries to identify the fiel
 Questions?
 If you have any questions about this extension, you may want to refer to the Tesseract Project web site (http://www.typo3-tesseract.com/) for support and tutorials. You may also ask questions in the TYPO3 English mailing list (typo3.english).
 Keeping the developer happy
-If you like this extension, do not hesitate to rate it. Go the Extension Repository, search for this extension, click on its title to go to the details view, then click on the “Ratings” tab and vote (you need to be logged in). Every new vote keeps the developer ticking. So just do it!
+If you like this extension, do not hesitate to make noise about it by using the social bookmarks available in the extension's detailed view on typo3.org.
 You may also take a step back and reflect about the beauty of sharing. Think about how much you are benefiting and how much yourself is giving back to the community.
 Installation
 Extension "templatedisplay" is part of the Tesseract framework. It will not do anything if installed alone.
@@ -253,13 +254,15 @@ E.g.
 COUNT(tt_content) will return the number of records in table tt_content
 PAGE_STATUS(404)
 PAGE_STATUS(404, page/404/) 
-PAGE_STATUS(404, uid:30)
+PAGE_STATUS(404, uid:30) 
 PAGE_STATUS(301, new/page/)
 If the Data Structure is empty, send the appropriate header and redirect link when needed.
 
 For the 404 status, leaving the redirect URL empty will make it fall back on the internal page not found handling of TYPO3.
 
-You can also specifiy a page uid to redirect on. In this case, the QUERY_STRING is added to the link.
+You can also specifiy a page uid to redirect on. In this case, the QUERY_STRING is added to the link. 
+
+
 
 TypoScript configuration
 Default rendering
@@ -397,6 +400,8 @@ debug[pagebrowse]
 Display the parameter that are transmitted to the pagebrowser. Extension pagebrowse is expected here.
 
 Whenever the extension "devlog" is installed, it is also possible to monitor some information. In a templatedisplay record, check the following options as desired. It may be convenient, in (pre) production mode to check some information produced by visitor.
+Debugging in version 1.6.0 and later
+All debugging options were removed in version 1.6.0. Instead templatedisplay relies on the debug flag provided by the controller and uses the same messaging system as the other Tesseract components to display its debug output.
 Known issues
 Nested IF markers don't work
 <--IF()-->

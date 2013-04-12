@@ -1,3 +1,7 @@
+2013-04-12 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
+	* Made full usage of centralized debug and messaging API, resolves #38397
+
 2013-04-11 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Used new API for accessing controller properties, resolves #47130

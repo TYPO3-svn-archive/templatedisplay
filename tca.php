@@ -16,36 +16,6 @@ $TCA['tx_templatedisplay_displays'] = array(
 				'default' => '0'
 			)
 		),
-		'debug_markers' => array(
-			'exclude' => 1,
-			'config'  => array(
-				'type'    => 'check',
-				'default' => '0',
-				'items' => array(
-					array('LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.debug_markers', ''),
-				),
-			)
-		),
-		'debug_template_structure' => array(
-			'exclude' => 1,
-			'config'  => array(
-				'type'    => 'check',
-				'default' => '0',
-				'items' => array(
-					array('LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.debug_template_structure', ''),
-				),
-			)
-		),
-		'debug_data_structure' => array(
-			'exclude' => 1,
-			'config'  => array(
-				'type'    => 'check',
-				'default' => '0',
-				'items' => array(
-					array('LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.debug_data_structure', ''),
-				),
-			)
-		),
 		'title' => array(
 			'exclude' => 0,
 			'label' => 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.title',
@@ -83,13 +53,7 @@ $TCA['tx_templatedisplay_displays'] = array(
 		),
 	),
 	'types' => array(
-		'0' => array('showitem' => 'hidden, title, mappings, description, --palette--;LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.debug;1')
+		'0' => array('showitem' => 'hidden, title, mappings, description')
 	),
-	'palettes' => array(
-		'1' => array(
-			'showitem' => 'debug_markers, debug_template_structure, debug_data_structure',
-			'canNotCollapse' => 1
-		)
-	)
 );
 ?>
