@@ -1,12 +1,12 @@
 <?php
 if (!defined ('TYPO3_MODE')) 	die ('Access denied.');
 
-$TCA['tx_templatedisplay_displays'] = array(
-	'ctrl' => $TCA['tx_templatedisplay_displays']['ctrl'],
+$GLOBALS['TCA']['tx_templatedisplay_displays'] = array(
+	'ctrl' => $GLOBALS['TCA']['tx_templatedisplay_displays']['ctrl'],
 	'interface' => array(
 		'showRecordFieldList' => 'hidden,title,description,mappings'
 	),
-	'feInterface' => $TCA['tx_templatedisplay_displays']['feInterface'],
+	'feInterface' => $GLOBALS['TCA']['tx_templatedisplay_displays']['feInterface'],
 	'columns' => array(
 		'hidden' => array(
 			'exclude' => 1,

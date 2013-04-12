@@ -1,6 +1,7 @@
 2013-04-12 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Made full usage of centralized debug and messaging API, resolves #38397
+	* Verified compatibility with TYPO3 CMS 6.0, resolves #47149
 
 2013-04-11 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 

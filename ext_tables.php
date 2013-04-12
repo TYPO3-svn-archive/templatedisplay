@@ -6,7 +6,7 @@ if (!defined ('TYPO3_MODE')) {
 t3lib_extMgm::allowTableOnStandardPages('tx_templatedisplay_displays');
 
 	// TCA ctrl for new table
-$TCA['tx_templatedisplay_displays'] = array(
+$GLOBALS['TCA']['tx_templatedisplay_displays'] = array(
 	'ctrl' => array(
 		'title'     => 'LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays',
 		'label'     => 'title',
@@ -39,12 +39,12 @@ $addTemplateDisplayWizard = array(
 								'setValue' => 'set'
 							)
 						);
-$TCA['tt_content']['columns']['tx_displaycontroller_consumer']['config']['wizards']['add_templatedisplay'] = $addTemplateDisplayWizard;
+$GLOBALS['TCA']['tt_content']['columns']['tx_displaycontroller_consumer']['config']['wizards']['add_templatedisplay'] = $addTemplateDisplayWizard;
 
 
 	// Register templatedisplay with the Display Controller as a Data Consumer
 t3lib_div::loadTCA('tt_content');
-$TCA['tt_content']['columns']['tx_displaycontroller_consumer']['config']['allowed'] .= ',tx_templatedisplay_displays';
+$GLOBALS['TCA']['tt_content']['columns']['tx_displaycontroller_consumer']['config']['allowed'] .= ',tx_templatedisplay_displays';
 
 	// Define the path to the static TS files
 t3lib_extMgm::addStaticFile($_EXTKEY, 'static/', 'Template Display');
