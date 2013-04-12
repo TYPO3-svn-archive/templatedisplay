@@ -268,8 +268,8 @@ For the 404 status, leaving the redirect URL empty will make it fall back on the
 
 You can also specifiy a page uid to redirect to, using the "pid:" syntax. In this case, the QUERY_STRING is added to the link. 
 
-
-
+Escaping markers
+In the rare case where you content might contain a part like "###foobar###", it will be stripped at the end of the rendering, because templatedisplay cleans up all unreplaced markers. If you need to display such content, you need to escape the hash-characters, like "\#\#\#foobar\#\#\#". This will be replaced by "###foobar###" at the end of the processing, but after the clean up of unused markers.
 TypoScript configuration
 Default rendering
 A default rendering can be defined for each element type. The static template provided with the extension contains the following:

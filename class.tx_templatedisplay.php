@@ -371,6 +371,8 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 		if (!$this->debug) {
 			$content = preg_replace('/#{3}.+#{3}/isU', '', $content);
 		}
+			// Replace escaped markers
+		$content = str_replace('\#\#\#', '###', $content);
 		return $content;
 	}
 
