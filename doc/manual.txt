@@ -240,27 +240,33 @@ Name
 Description
 FUNCTION:php_function("###MARKER###",parameter1,...)
 A PHP function. No simple / double quote required.
+
 Examples:
+
 FUNCTION:str_replace(P ,X, ###LABEL.title###)
 FUNCTION:str_repeat(###LABEL.title###,2)
 FUNCTION:md5(###LABEL.title###)
 LIMIT(###MARKER###, 4)
-Limit the number of words in a marker
-E.g.
+Limit the number of words in a marker.
+
+Examples:
+
 LIMIT(###FIELD.description###, 4) will return the first 4 words of field description
 COUNT(tableName)
-Return the number of records from the Data Structure. Add parameter debug[structure] in the URL to see the Data Structure. (Works with a BE login)
-E.g.
+Return the number of records from the Data Structure. Add parameter debug[structure] in the URL to see the Data Structure. (Works with a BE login).
+
+Examples:
+
 COUNT(tt_content) will return the number of records in table tt_content
 PAGE_STATUS(404)
 PAGE_STATUS(404, page/404/) 
-PAGE_STATUS(404, uid:30) 
+PAGE_STATUS(404, pid:30) 
 PAGE_STATUS(301, new/page/)
 If the Data Structure is empty, send the appropriate header and redirect link when needed.
 
 For the 404 status, leaving the redirect URL empty will make it fall back on the internal page not found handling of TYPO3.
 
-You can also specifiy a page uid to redirect on. In this case, the QUERY_STRING is added to the link. 
+You can also specifiy a page uid to redirect to, using the "pid:" syntax. In this case, the QUERY_STRING is added to the link. 
 
 
 
