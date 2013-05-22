@@ -1,3 +1,7 @@
+2013-05-22 Roberto Presedo (Cobweb)  <typo3@cobweb.ch>
+
+	* Verified compatibility with TYPO3 CMS 6.1, resolves #47516
+
 2013-04-12 Roberto Presedo (Cobweb)  <typo3@cobweb.ch>
 
 	* Expanded PAGE_STATUS feature to use page id's, resolves #43128
