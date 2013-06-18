@@ -41,6 +41,7 @@ $GLOBALS['TCA']['tx_templatedisplay_displays'] = array(
 				'type' => 'text',
 				'cols' => '40',
 				'rows' => '4',
+				'softref' => 'templatedisplay'
 			)
 		),
 		'mappings' => array(

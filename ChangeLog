@@ -1,4 +1,8 @@
-2013-05-22 Roberto Presedo (Cobweb)  <typo3@cobweb.ch>
+2013-04-12 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
+	* Added support for FAL, including soft reference parser, resolves #47150
+
+2013-05-22 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Verified compatibility with TYPO3 CMS 6.1, resolves #47516
 

@@ -176,15 +176,24 @@ class tx_templatedisplay_tceforms {
 				// True when the user has defined no template.
 			if (empty($row['template'])) {
 				$templateContent = $this->getLL('tx_templatedisplay_displays.noTemplateFoundError');
-			} elseif (preg_match('/^FILE:/isU', $row['template'])) {
 
-				$filePath = str_replace('FILE:', '' ,$row['template']);
-				$filePath = t3lib_div::getFileAbsFileName($filePath);
-				$marker['###IMPORTED###'] = '(' . $this->getLL('tx_templatedisplay_displays.imported') . ')';
-				if (is_file($filePath)) {
-					$templateContent = file_get_contents($filePath);
+			// If the content starts with "FILE:" (or "file:"), handle file inclusion
+			} elseif (stripos($row['template'], 'FILE:') === 0) {
+				// Remove the "FILE:" key
+				$filePath = str_ireplace('FILE:', '' , $row['template']);
+				// If the rest of the string is numeric, assume it is a reference to a sys_file
+				if (is_numeric($filePath)) {
+					$filePath = 'file:' . intval($filePath);
+				}
+				// Try getting the full file path and the content of referenced file
+				try {
+					$fullFilePath = tx_tesseract_utilities::getTemplateFilePath($filePath);
+					$marker['###IMPORTED###'] = '(' . $this->getLL('tx_templatedisplay_displays.imported') . ')';
+					$templateContent = file_get_contents($fullFilePath);
 					$templateContent = str_replace('	', '  ', $templateContent);
-				} else {
+				}
+				catch (Exception $e) {
+					// The file reference could not be resolved, issue an error message
 					$templateContent = $this->getLL('tx_templatedisplay_displays.fileNotFound') . ' ' . $row['template'];
 				}
 			}

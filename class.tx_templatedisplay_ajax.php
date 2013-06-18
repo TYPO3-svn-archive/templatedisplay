@@ -82,19 +82,24 @@ class tx_templatedisplay_ajax {
 			$msg = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('tx_templatedisplay_displays', 'uid = '. $uid, $updateArray);
 
 			if ($msg == 1) {
-
-                if (preg_match('/^FILE:/isU', $template)) {
-
-                	$filePath = str_replace('FILE:', '' , $template);
-                	$filePath = t3lib_div::getFileAbsFileName($filePath);
-
-                	if (is_file($filePath)) {
-	                	$template = file_get_contents($filePath);
+				// If the content starts with "FILE:" (or "file:"), handle file inclusion
+				if (stripos($template, 'FILE:') === 0) {
+					// Remove the "FILE:" key
+					$filePath = str_ireplace('FILE:', '' , $template);
+					// If the rest of the string is numeric, assume it is a reference to a sys_file
+					if (is_numeric($filePath)) {
+						$filePath = 'file:' . intval($filePath);
+					}
+					// Try getting the full file path and the content of referenced file
+					try {
+						$fullFilePath = tx_tesseract_utilities::getTemplateFilePath($filePath);
+						$template = file_get_contents($fullFilePath);
 						$template = str_replace('	', '  ', $template);
-                	}
-                	else {
-	                	$template = $GLOBALS['LANG']->sL('LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.fileNotFound') . ' ' . $template;
-                	}
+					}
+					catch (Exception $e) {
+						// The file reference could not be resolved, issue an error message
+						$template = $GLOBALS['LANG']->sL('LLL:EXT:templatedisplay/Resources/Private/Language/locallang_db.xml:tx_templatedisplay_displays.fileNotFound') . ' ' . $template;
+					}
                 }
 
 				$result = $tceforms->transformTemplateContent($template);

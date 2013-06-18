@@ -33,4 +33,7 @@ t3lib_extMgm::addService($_EXTKEY,  'dataconsumer' /* sv type */,  'tx_templated
 	)
 );
 
+if (strpos(TYPO3_version, '6') === 0) {
+	$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['GLOBAL']['softRefParser'][$_EXTKEY] = 'Tesseract\Templatedisplay\Service\SoftReferenceParser';
+}
 ?>

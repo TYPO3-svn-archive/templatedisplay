@@ -258,15 +258,32 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 		// LOCAL DOCUMENTATION:
 		// $templateCode -> HTML template roughly extracted from the database
-		// $templateContent -> HTML that is going to be outputed
+		// $templateContent -> HTML that is going to be output
 
 		// Loads the template file
 		$templateCode = $this->consumerData['template'];
-		if (preg_match('/^FILE:/isU', $templateCode)) {
-			$filePath = str_replace('FILE:', '' , $templateCode);
-			$filePath = t3lib_div::getFileAbsFileName($filePath);
-			if (is_file($filePath)) {
-				$templateCode = file_get_contents($filePath);
+		// If the content starts with "FILE:" (or "file:"), handle file inclusion
+		if (stripos($templateCode, 'FILE:') === 0) {
+			// Remove the "FILE:" key
+			$filePath = str_ireplace('FILE:', '' , $templateCode);
+			// If the rest of the string is numeric, assume it is a reference to a sys_file
+			if (is_numeric($filePath)) {
+				$filePath = 'file:' . intval($filePath);
+			}
+			// Try getting the full file path and the content of referenced file
+			try {
+				$fullFilePath = tx_tesseract_utilities::getTemplateFilePath($filePath);
+				$templateCode = file_get_contents($fullFilePath);
+			}
+			catch (Exception $e) {
+				// The file reference could not be resolved, set an empty template and issue an error message
+				$templateCode = '';
+				$this->controller->addMessage(
+					$this->extKey,
+					$e->getMessage() . ' (' . $e->getCode() . ')',
+					'Template file not found',
+					t3lib_FlashMessage::ERROR
+				);
 			}
 		}
 
