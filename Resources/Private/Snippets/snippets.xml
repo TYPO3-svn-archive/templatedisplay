@@ -115,6 +115,25 @@ $Id$
 			]]>
 		</snippet>
 	</type>
+	<type index="files">
+		<snippet id="17" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_blue.png">
+			<![CDATA[
+			references {
+				# Name of the table to which the file is related
+				table = tx_foo_bar
+				# Name of the field containing the file relations
+				fieldName = field_foo
+				# Most likely the uid of the current record
+				uid.data = uid
+			}
+			renderObj = IMAGE
+			renderObj {
+				file.import.data = file:current:publicUrl
+				altText.dataWrap = file:current:title
+			}
+			]]>
+		</snippet>
+	</type>
     <type index="records">
    		<snippet id="10" label="Example" icon="EXT:templatedisplay/Resources/Public/images/tag_green.png">
    			<![CDATA[

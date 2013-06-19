@@ -27,18 +27,18 @@ List of available markers	7
 Content markers	7
 Structure Markers	9
 Functions	9
-TypoScript configuration	10
-Default rendering	10
-Other examples	10
-Reference	10
-Developer's Guide	11
-Hooks	11
-Custom element types	11
-Debugging	13
-Debugging in version 1.6.0 and later	13
-Known issues	14
-Nested IF markers don't work	14
-Multiple edition is not possible (module web > list)	14
+TypoScript configuration	11
+Default rendering	11
+Other examples	11
+Reference	11
+Developer's Guide	12
+Hooks	12
+Custom element types	12
+Debugging	14
+Debugging in version 1.6.0 and later	15
+Known issues	16
+Nested IF markers don't work	16
+Multiple edition is not possible (module web > list)	16
 
 Introduction
 Templatedisplay is a kind of "mappable" template engine for TYPO3. The extension is part of the Tesseract extensions family and deals with rendering content onto the Frontend.
@@ -120,6 +120,10 @@ Uses the MEDIA content object for rendering, so it can be used for displaying vi
 MEDIA
 type = video
 renderType = auto
+FAL references
+Used for rendering data related to FAL, be it references, collections or folders, anything that can be handled by the FILES content object.
+FILES
+
 Records
 Will render records using the TypoScript RECORDS object. The value is expected to be a uid or have the structure "tablename_uid" (e.g. tt_content_38). The mapped value is automatically stored in the "source" property of the object.
 RECORDS

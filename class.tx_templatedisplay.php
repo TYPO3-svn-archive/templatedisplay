@@ -37,7 +37,7 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 
 	public $tsKey = 'tx_templatedisplay';
 	public $extKey = 'templatedisplay';
-	public static $defaultTypes = array('raw', 'text', 'richtext', 'image', 'imageResource', 'media', 'records', 'linkToDetail', 'linkToPage', 'linkToFile', 'email', 'user');
+	public static $defaultTypes = array('raw', 'text', 'richtext', 'image', 'imageResource', 'media', 'files', 'records', 'linkToDetail', 'linkToPage', 'linkToFile', 'email', 'user');
 	protected $conf; // TypoScript configuration
 	protected $table; // Name of the table where the details about the data display are stored
 	protected $uid; // Primary key of the record to fetch for the details
@@ -1617,6 +1617,10 @@ class tx_templatedisplay extends tx_tesseract_feconsumerbase {
 					$configuration['renderType'] = 'auto';
 				}
 				$output = $this->localCObj->MEDIA($configuration);
+				break;
+			case 'files':
+				// NOTE: there's no default configuration that would make sense in this case
+				$output = $this->localCObj->FILES($configuration);
 				break;
 			case 'linkToDetail':
 					// Override configuration as needed
