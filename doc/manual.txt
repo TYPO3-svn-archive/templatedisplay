@@ -200,6 +200,7 @@ This kind of counter is handy in case of LOOP in a LOOP. Let's assume, we need t
 If extension "pagebrowse" is installed and correctly loaded, displays a universal page browser. Other page browsers are possible but must be handled with a Hook.
 ###RECORD(tt_content, 12)###
 Call in the template it self an external record. Very handy for including records in a records.
+If using a FAL file id as a template reference (see above), the records pointed to using this marker will be properly recorded in references (sys_reference).
 ###HOOK.myHook###
 See section Hooks
 ###TOTAL_RECORDS###

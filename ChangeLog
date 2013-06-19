@@ -1,5 +1,9 @@
 2013-04-12 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
+	* Expanded soft reference parser to read ###RECORD### markers, resolves #49180
+
+2013-04-12 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
 	* Added support for FAL, including soft reference parser, resolves #47150
 
 2013-05-22 Francois Suter (Cobweb)  <typo3@cobweb.ch>
