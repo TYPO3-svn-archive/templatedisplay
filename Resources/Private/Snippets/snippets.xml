@@ -129,7 +129,7 @@ $Id$
 			renderObj = IMAGE
 			renderObj {
 				file.import.data = file:current:publicUrl
-				altText.dataWrap = file:current:title
+				altText.data = file:current:title
 			}
 			]]>
 		</snippet>
