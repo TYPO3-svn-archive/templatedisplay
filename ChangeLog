@@ -1,3 +1,7 @@
+2013-06-21 Francois Suter (Cobweb)  <typo3@cobweb.ch>
+
+	* Released to TER as version 1.6.0
+
 2013-06-19 Francois Suter (Cobweb)  <typo3@cobweb.ch>
 
 	* Added FILES object for FAL support in output, resolves #49262
